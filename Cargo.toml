@@ -1,0 +1,54 @@
+[package]
+name = "ultrasonic"
+version = "0.12.0-nightly"
+authors = ["Dr Maxim Orlovsky <orlovsky@ubideco.org>"]
+description = "Transactional execution layer with capability-based memory access for zk-AluVM"
+repository = "https://github.com/AluVM/ultrasonic"
+homepage = "https://ubideco.org/UltraSONIC"
+keywords = ["state-machines", "distributed-systems", "decentralized"]
+categories = ["algorithms", "cryptography", "science"]
+readme = "README.md"
+license = "Apache-2.0"
+edition = "2021"
+rust-version = "1.77.0" # Due to `rustfix`
+exclude = [".github"]
+
+[lib]
+name = "ultrasonic"
+crate-type = ["cdylib", "rlib"] # We need this for WASM
+
+[dependencies]
+amplify = "~4.8.0"
+baid64 = "~0.3.0"
+strict_encoding = "~2.8.0"
+strict_types = "~2.8.0" # TODO: Make strict types optional, used only in STL
+aluvm = { version = "~0.12.0-beta.1", features = ["zk-aluvm"] }
+commit_verify = { version = "~0.12.0-alpha.2", features = ["derive"] }
+single_use_seals = "~0.12.0-alpha.2"
+serde = { version = "1", features = ["derive"], optional = true }
+
+[features]
+default = ["chf-sha256"]
+all = ["stl", "serde", "chf-sha256"]
+
+chf-sha256 = []
+
+stl = ["commit_verify/stl", "aluvm/stl", "strict_types/armor"]
+serde = [
+    "dep:serde",
+    "amplify/serde",
+    "strict_types/serde",
+    "commit_verify/serde",
+    "aluvm/serde",
+]
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
+rand = { version = "0.8.4", optional = true }
+getrandom = { version = "0.2", features = ["js"] }
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+[package.metadata.docs.rs]
+features = ["all"]
