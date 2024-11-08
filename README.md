@@ -58,7 +58,7 @@ the License.
 
 [Strict types]: https://strict-types.org
 [AluVM]: https://aluvm.org
-[SONARE]: https://github.com/AlyVM/SONARE
+[SONARE]: https://github.com/AluVM/SONARE
 [Cation]: https://cation-lang.org
 [Contractum]: https://contractum.org
 
