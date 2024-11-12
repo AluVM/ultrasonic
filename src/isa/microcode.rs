@@ -21,30 +21,37 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+use aluvm::{CoreExt, ExecStep, RegE, Site, SiteId};
+use amplify::num::u4;
 
-extern crate alloc;
+use crate::{UsonicCore, VmContext};
 
-#[macro_use]
-extern crate amplify;
-#[macro_use]
-extern crate strict_encoding;
-#[macro_use]
-extern crate commit_verify;
-extern crate zkaluvm as aluvm;
+impl UsonicCore {
+    pub fn next<Id: SiteId>(
+        &mut self,
+        jmp: Site<Id>,
+        reg: usize,
+        context: &VmContext,
+    ) -> ExecStep<Site<Id>> {
+        if !context.read_once_input.len() <= self.ui[reg] as usize {
+            return ExecStep::Next;
+        };
+        self.ui[reg] += 1;
+        self.ue[reg] = 0;
+        ExecStep::Call(jmp)
+    }
 
-#[cfg(feature = "serde")]
-#[macro_use]
-extern crate serde;
-
-mod codex;
-mod state;
-mod operation;
-mod isa;
-
-pub use codex::{AccessId, CallId, Codex, Memory, VmContext};
-pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
-pub use operation::{CellAddr, Input, Operation, Opid};
-pub use state::{StateCell, StateData};
-
-pub const LIB_NAME_ULTRASONIC: &str = "UltraSONIC";
+    pub fn load<Id: SiteId>(&mut self, reg: usize, context: &VmContext) -> ExecStep<Site<Id>> {
+        let Some(data) = context.read_once_input.get(self.ui[reg] as usize) else {
+            return ExecStep::FailHalt;
+        };
+        let e = RegE::from(u4::with(4 + reg as u8));
+        if let Some(el) = data.get(self.ue[reg]) {
+            self.gfa.set(e, el);
+            self.ue[reg] += 1;
+        } else {
+            self.gfa.clr(e);
+        }
+        ExecStep::Next
+    }
+}

@@ -21,30 +21,12 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+mod instr;
+mod core;
+mod bytecode;
+mod exec;
+mod microcode;
 
-extern crate alloc;
+pub use core::{UsonicCore, REG_IN_IM, REG_IN_RO, REG_OUT_IM, REG_OUT_RO};
 
-#[macro_use]
-extern crate amplify;
-#[macro_use]
-extern crate strict_encoding;
-#[macro_use]
-extern crate commit_verify;
-extern crate zkaluvm as aluvm;
-
-#[cfg(feature = "serde")]
-#[macro_use]
-extern crate serde;
-
-mod codex;
-mod state;
-mod operation;
-mod isa;
-
-pub use codex::{AccessId, CallId, Codex, Memory, VmContext};
-pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
-pub use operation::{CellAddr, Input, Operation, Opid};
-pub use state::{StateCell, StateData};
-
-pub const LIB_NAME_ULTRASONIC: &str = "UltraSONIC";
+pub use instr::{Instr, UsonicInstr, ISA_ULTRASONIC};

@@ -19,7 +19,7 @@ global memory. This had opened a door for the all the vulnerabilities and hacks 
 computer systems across the world for the past decades... CAM model instead, divides all memory into
 parts (called *words*) addressable only with some access token (called *capability*). You may think
 of this as of a memory where each part is "owned" by certain party, and can be accessed or modified
-only given a proof of ownership (that is what single-use seals are for).
+only given a proof of ownership.
 
 **UltraSONIC** leverages zk-AluVM, so it is (1) zk-STARK-compatible and (2) exception-less, made
 with category theory in mind.
@@ -27,6 +27,7 @@ with category theory in mind.
 ## Ecosystem
 
 SONARE is a part of a larger ecosystem used to build safe distributed software, which includes:
+
 - [Strict types]: strong type system made with [generalized algebraic data types][GADT] (*GADT*) and
   [dependent types];
 - [AluVM]: a functional register-based virtual machine with a reduced instruction set (RISC);
@@ -57,10 +58,13 @@ or implied. See the License for the specific language governing permissions and 
 the License.
 
 [Strict types]: https://strict-types.org
+
 [AluVM]: https://aluvm.org
 [SONARE]: https://github.com/AluVM/SONARE
 [Cation]: https://cation-lang.org
+
 [Contractum]: https://contractum.org
 
 [GADT]: https://en.wikipedia.org/wiki/Generalized_algebraic_data_type
+
 [dependent types]: https://en.wikipedia.org/wiki/Dependent_type
