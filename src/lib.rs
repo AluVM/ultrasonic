@@ -41,8 +41,10 @@ mod codex;
 mod state;
 mod operation;
 mod isa;
+#[cfg(feature = "stl")]
+pub mod stl;
 
-pub use codex::{AccessId, CallId, Codex, Memory, VmContext};
+pub use codex::{AccessId, CallError, CallId, Codex, LibRepo, Memory, VmContext};
 pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
 pub use operation::{CellAddr, Input, Operation, Opid};
 pub use state::{StateCell, StateData};
