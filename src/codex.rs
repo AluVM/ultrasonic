@@ -23,7 +23,7 @@
 
 use aluvm::regs::Status;
 use aluvm::{fe128, CoreConfig, CoreExt, Lib, LibId, LibSite, RegE, Vm};
-use amplify::confinement::{SmallVec, TinyOrdMap};
+use amplify::confinement::{SmallString, SmallVec, TinyOrdMap, TinyString};
 use commit_verify::ReservedBytes;
 
 use crate::{CellAddr, Instr, Operation, StateCell, StateData, LIB_NAME_ULTRASONIC};
@@ -38,6 +38,8 @@ pub type AccessId = u16;
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct Codex {
+    pub name: TinyString,
+    pub developer: SmallString,
     pub version: ReservedBytes<2>,
     pub field_order: u128,
     pub input_config: CoreConfig,
