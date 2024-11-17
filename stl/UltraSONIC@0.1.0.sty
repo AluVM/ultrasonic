@@ -1,0 +1,100 @@
+{-
+  Id: stl:rTpiIXN~-sOPO_bu-Auzd8N~-cuTsT2m-XcJDNap-1NqVvqE#arizona-voltage-garage
+  Name: UltraSONIC
+  Version: 0.1.0
+  Description: Consensus commitment layer for RGB smart contracts
+  Author: Dr Maxim Orlovsky <orlovsky@lnp-bp.org>
+  Copyright (C) 2023-2024 LNP/BP Standards Association. All rights reserved.
+  License: Apache-2.0
+-}
+
+@context
+typelib UltraSONIC
+
+import FiniteField#tomato-jeep-thomas
+  use Fe128#reserve-source-patrol
+
+import Std#delete-roman-hair
+  use Bool#oxygen-complex-duet
+  use AlphaNumLodash#percent-bingo-caesar
+  use AlphaCapsLodash#duet-hammer-labor
+
+import AluVM#reward-accent-swim
+  use LibId#germany-culture-olivia
+  use CoreConfig#ventura-ibiza-special
+  use LibSite#polo-macro-elite
+
+import StrictTypes#henry-heart-survive
+  use TypeName#edgar-carol-mystery
+
+import CommitVerify#uranium-alien-extend
+  use ReservedBytes2#florida-libra-circus
+  use ReservedBytes4MAX#factor-athlete-camel
+  use ReservedBytes10#marble-prepare-arnold
+  use ReservedBytes8#rudolf-tape-adrian
+
+
+@mnemonic(tahiti-tobacco-grid)
+data CellAddr          : opid Opid, pos U16
+
+@mnemonic(hope-premium-prince)
+data Codex             : name [Unicode ^ ..0xff]
+                       , developer [Unicode]
+                       , version CommitVerify.ReservedBytes2
+                       , fieldOrder U128
+                       , inputConfig AluVM.CoreConfig
+                       , verificationConfig AluVM.CoreConfig
+                       , verifiers {U16 -> ^ ..0xff AluVM.LibSite}
+                       , reserved CommitVerify.ReservedBytes8
+
+@mnemonic(uniform-welcome-papa)
+data ContractId        : [Byte ^ 32]
+
+@mnemonic(value-reform-lesson)
+data ContractName      : unnamed ()
+                       | named StrictTypes.TypeName
+
+@mnemonic(explore-jordan-tonight)
+data ContractPrivate   : version Ffv
+                       , proofOfPubl Private
+                       , reserved CommitVerify.ReservedBytes10
+                       , salt U64
+                       , timestamp I64
+                       , name ContractName
+                       , issuer [Unicode]
+                       , codex Codex
+                       , initial Operation
+
+@mnemonic(pigment-career-hippie)
+data Ffv               : U16
+
+@mnemonic(slogan-saddle-brush)
+data Input             : addr CellAddr, witness StateData
+
+@mnemonic(gilbert-multi-alamo)
+data Operation         : callId U16
+                       , destroying [Input]
+                       , reading [CellAddr]
+                       , destructible [StateCell]
+                       , immutable [StateData]
+                       , reserved CommitVerify.ReservedBytes8
+
+@mnemonic(storm-dragon-brain)
+data Opid              : [Byte ^ 32]
+
+@mnemonic(mercury-field-drum)
+data Private           : CommitVerify.ReservedBytes4MAX
+
+@mnemonic(permit-blast-legacy)
+data StateCell         : data StateData
+                       , seal FiniteField.Fe128
+                       , lock AluVM.LibSite?
+
+@mnemonic(exact-regard-direct)
+data StateData         : none ()
+                       | single FiniteField.Fe128
+                       | double (FiniteField.Fe128, FiniteField.Fe128)
+                       | three (FiniteField.Fe128, FiniteField.Fe128, FiniteField.Fe128)
+                       | four (FiniteField.Fe128, FiniteField.Fe128, FiniteField.Fe128, FiniteField.Fe128)
+
+

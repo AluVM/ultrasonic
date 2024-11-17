@@ -37,6 +37,18 @@ pub trait ProofOfPubl:
 {
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Display)]
+#[display("~")]
+#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC)]
+pub struct Private(ReservedBytes<4, 0xFF>);
+impl From<Private> for [u8; 4] {
+    fn from(_: Private) -> Self { [0xFF; 4] }
+}
+impl ProofOfPubl for Private {}
+
+pub type ContractPrivate = Contract<Private>;
+
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Display)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC, tags = custom)]

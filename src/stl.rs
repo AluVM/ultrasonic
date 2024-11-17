@@ -24,29 +24,17 @@
 pub use aluvm::stl::aluvm_stl;
 pub use aluvm::zkstl::{finite_field_stl, LIB_ID_FINITE_FIELD};
 use commit_verify::stl::commit_verify_stl;
-use commit_verify::ReservedBytes;
-use strict_encoding::StrictType;
 use strict_types::stl::{std_stl, strict_types_stl};
 use strict_types::typelib::LibBuilder;
 use strict_types::{CompileError, TypeLib};
 
-use crate::{Contract, ContractId, Opid, ProofOfPubl, LIB_NAME_ULTRASONIC};
+use crate::{ContractId, ContractPrivate, Opid, LIB_NAME_ULTRASONIC};
 
 /// Strict types id for the library providing data types for RGB consensus.
 pub const LIB_ID_ULTRASONIC: &str =
-    "stl:H6oarJ1h-_jClMng-fxqty04-k_GZIF5-iffjNox-LuLq47w#corner-phoenix-mirror";
+    "stl:rTpiIXN~-sOPO_bu-Auzd8N~-cuTsT2m-XcJDNap-1NqVvqE#arizona-voltage-garage";
 
 fn _usonic_stl() -> Result<TypeLib, CompileError> {
-    #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Display)]
-    #[display("~")]
-    #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
-    #[strict_type(lib = LIB_NAME_ULTRASONIC)]
-    struct NotPublic(ReservedBytes<4, 0xFF>);
-    impl From<NotPublic> for [u8; 4] {
-        fn from(_: NotPublic) -> Self { [0xFF; 4] }
-    }
-    impl ProofOfPubl for NotPublic {}
-
     LibBuilder::new(libname!(LIB_NAME_ULTRASONIC), tiny_bset! {
         std_stl().to_dependency(),
         strict_types_stl().to_dependency(),
@@ -56,7 +44,7 @@ fn _usonic_stl() -> Result<TypeLib, CompileError> {
     })
     .transpile::<Opid>()
     .transpile::<ContractId>()
-    .transpile::<Contract<NotPublic>>()
+    .transpile::<ContractPrivate>()
     .compile()
 }
 
