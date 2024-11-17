@@ -41,9 +41,11 @@ mod codex;
 mod state;
 mod operation;
 mod isa;
+mod contract;
 #[cfg(feature = "stl")]
 pub mod stl;
 
+pub use contract::{ContractId, Ffv, ProofOfPubl, Contract};
 pub use codex::{AccessId, CallError, CallId, Codex, LibRepo, Memory, VmContext};
 pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
 pub use operation::{CellAddr, Input, Operation, Opid};
