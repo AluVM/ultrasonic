@@ -102,9 +102,9 @@ mod _baid4 {
     use super::*;
 
     impl DisplayBaid64 for ContractId {
-        const HRI: &'static str = "sonic";
+        const HRI: &'static str = "contract";
         const CHUNKING: bool = true;
-        const PREFIX: bool = false;
+        const PREFIX: bool = true;
         const EMBED_CHECKSUM: bool = false;
         const MNEMONIC: bool = false;
         fn to_baid64_payload(&self) -> [u8; 32] { self.to_byte_array() }
@@ -127,6 +127,7 @@ mod _baid4 {
     }
 }
 
+// TODO: Use Base64 macro
 #[cfg(feature = "serde")]
 mod _serde {
     use amplify::ByteArray;

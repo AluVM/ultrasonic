@@ -36,6 +36,7 @@ extern crate zkaluvm as aluvm;
 #[cfg(feature = "serde")]
 #[macro_use]
 extern crate serde;
+extern crate core;
 
 mod codex;
 mod state;
@@ -45,7 +46,7 @@ mod contract;
 #[cfg(feature = "stl")]
 pub mod stl;
 
-pub use codex::{AccessId, CallError, CallId, Codex, LibRepo, Memory, VmContext};
+pub use codex::{AccessId, CallError, CallId, Codex, CodexId, LibRepo, Memory, VmContext};
 pub use contract::{Contract, ContractId, ContractPrivate, Ffv, ProofOfPubl};
 pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
 pub use operation::{CellAddr, Input, Operation, Opid};

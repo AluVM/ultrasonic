@@ -24,6 +24,7 @@
 use aluvm::regs::Status;
 use aluvm::{fe128, CoreConfig, CoreExt, Lib, LibId, LibSite, RegE, Vm};
 use amplify::confinement::{SmallString, SmallVec, TinyOrdMap, TinyString};
+use amplify::Bytes32;
 use commit_verify::ReservedBytes;
 
 use crate::{CellAddr, ContractId, Instr, Operation, StateCell, StateData, LIB_NAME_ULTRASONIC};
@@ -167,4 +168,87 @@ pub enum CallError {
     Script(fe128),
     /// verification failure (details are unspecified).
     ScriptUnspecified,
+}
+
+/// Unique codex identifier - a commitment to all codex data
+#[derive(Wrapper, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, From)]
+#[wrapper(Deref, BorrowSlice, Hex, Index, RangeOps)]
+#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC)]
+pub struct CodexId(
+    #[from]
+    #[from([u8; 32])]
+    Bytes32,
+);
+
+#[cfg(feature = "baid64")]
+mod _baid4 {
+    use core::fmt::{self, Display, Formatter};
+    use core::str::FromStr;
+
+    use baid64::{Baid64ParseError, DisplayBaid64, FromBaid64Str};
+    use commit_verify::{CommitmentId, DigestExt, Sha256};
+
+    use super::*;
+
+    impl DisplayBaid64 for CodexId {
+        const HRI: &'static str = "codex";
+        const CHUNKING: bool = true;
+        const PREFIX: bool = false;
+        const EMBED_CHECKSUM: bool = false;
+        const MNEMONIC: bool = true;
+        fn to_baid64_payload(&self) -> [u8; 32] { self.to_byte_array() }
+    }
+    impl FromBaid64Str for CodexId {}
+    impl FromStr for CodexId {
+        type Err = Baid64ParseError;
+        fn from_str(s: &str) -> Result<Self, Self::Err> { Self::from_baid64_str(s) }
+    }
+    impl Display for CodexId {
+        fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { self.fmt_baid64(f) }
+    }
+
+    impl From<Sha256> for CodexId {
+        fn from(hasher: Sha256) -> Self { hasher.finish().into() }
+    }
+
+    impl CommitmentId for CodexId {
+        const TAG: &'static str = "urn:ubideco:sonic:codex#2024-11-19";
+    }
+}
+
+// TODO: Use Base64 macro
+#[cfg(feature = "serde")]
+mod _serde {
+    use core::str::FromStr;
+
+    use amplify::ByteArray;
+    use serde::de::Error;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    use super::*;
+
+    impl Serialize for CodexId {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer {
+            if serializer.is_human_readable() {
+                self.to_string().serialize(serializer)
+            } else {
+                self.to_byte_array().serialize(serializer)
+            }
+        }
+    }
+
+    impl<'de> Deserialize<'de> for CodexId {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de> {
+            if deserializer.is_human_readable() {
+                let s = String::deserialize(deserializer)?;
+                Self::from_str(&s).map_err(D::Error::custom)
+            } else {
+                let bytes = <[u8; 32]>::deserialize(deserializer)?;
+                Ok(Self::from_byte_array(bytes))
+            }
+        }
+    }
 }
