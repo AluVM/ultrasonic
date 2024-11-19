@@ -27,7 +27,9 @@ use amplify::confinement::{SmallString, SmallVec, TinyOrdMap, TinyString};
 use amplify::Bytes32;
 use commit_verify::ReservedBytes;
 
-use crate::{CellAddr, ContractId, Instr, Operation, StateCell, StateData, LIB_NAME_ULTRASONIC};
+use crate::{
+    CellAddr, ContractId, Instr, Operation, StateCell, StateData, StateValue, LIB_NAME_ULTRASONIC,
+};
 
 pub type CallId = u16;
 pub type AccessId = u16;
@@ -132,13 +134,13 @@ impl Codex {
 
 pub trait Memory {
     fn read_once(&self, addr: CellAddr) -> Option<StateCell>;
-    fn immutable(&self, addr: CellAddr) -> Option<StateData>;
+    fn immutable(&self, addr: CellAddr) -> Option<StateValue>;
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct VmContext<'ctx> {
-    pub read_once_input: &'ctx [StateData],
-    pub immutable_input: &'ctx [StateData],
+    pub read_once_input: &'ctx [StateValue],
+    pub immutable_input: &'ctx [StateValue],
     pub read_once_output: &'ctx [StateCell],
     pub immutable_output: &'ctx [StateData],
 }

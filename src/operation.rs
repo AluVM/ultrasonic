@@ -30,7 +30,7 @@ use commit_verify::{
     CommitEncode, CommitEngine, CommitmentId, DigestExt, MerkleHash, ReservedBytes, Sha256,
 };
 
-use crate::{CallId, ContractId, StateCell, StateData, LIB_NAME_ULTRASONIC};
+use crate::{CallId, ContractId, StateCell, StateData, StateValue, LIB_NAME_ULTRASONIC};
 
 /// Unique operation (genesis, extensions & state transition) identifier
 /// equivalent to the commitment hash
@@ -85,7 +85,7 @@ pub struct CellAddr {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct Input {
     pub addr: CellAddr,
-    pub witness: StateData,
+    pub witness: StateValue,
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]

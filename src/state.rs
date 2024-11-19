@@ -22,13 +22,12 @@
 // the License.
 
 use aluvm::{fe128, LibSite};
-use commit_verify::MerkleHash;
+use amplify::confinement::SmallBlob;
+use commit_verify::{CommitEncode, CommitEngine, MerkleHash, StrictHash};
 
 use crate::LIB_NAME_ULTRASONIC;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Default)]
-#[derive(CommitEncode)]
-#[commit_encode(strategy = strict, id = MerkleHash)]
 #[derive(StrictType, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC, tags = custom)]
 #[cfg_attr(
@@ -36,7 +35,7 @@ use crate::LIB_NAME_ULTRASONIC;
     derive(Serialize, Deserialize),
     serde(untagged, rename_all = "camelCase")
 )]
-pub enum StateData {
+pub enum StateValue {
     #[default]
     #[strict_type(tag = 0x00)]
     None,
@@ -50,7 +49,7 @@ pub enum StateData {
     Four(fe128, fe128, fe128, fe128),
 }
 
-impl StateData {
+impl StateValue {
     pub fn get(&self, pos: u8) -> Option<fe128> {
         match (*self, pos) {
             (Self::Single(el), 0)
@@ -79,7 +78,35 @@ impl StateData {
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct StateCell {
-    pub data: StateData,
+    pub data: StateValue,
     pub seal: fe128,
     pub lock: Option<LibSite>,
+}
+
+#[derive(Wrapper, WrapperMut, Clone, PartialEq, Eq, Debug, From)]
+#[wrapper(AsSlice, BorrowSlice, Hex, RangeOps)]
+#[wrapper_mut(BorrowSliceMut, RangeMut)]
+#[derive(CommitEncode)]
+#[commit_encode(strategy = strict, id = StrictHash)]
+#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
+pub struct RawData(#[from] SmallBlob);
+
+#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
+pub struct StateData {
+    pub value: StateValue,
+    pub data: RawData,
+}
+
+impl CommitEncode for StateData {
+    type CommitmentId = MerkleHash;
+
+    fn commit_encode(&self, e: &mut CommitEngine) {
+        e.commit_to_serialized(&self.value);
+        e.commit_to_hash(&self.data);
+    }
 }

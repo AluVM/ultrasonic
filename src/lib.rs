@@ -22,6 +22,8 @@
 // the License.
 
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
+// TODO: Activate no_std once StrictEncoding will support it
+// #![no_std]
 
 extern crate alloc;
 
@@ -50,6 +52,6 @@ pub use codex::{AccessId, CallError, CallId, Codex, CodexId, LibRepo, Memory, Vm
 pub use contract::ContractId;
 pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
 pub use operation::{CellAddr, Input, Operation, Opid};
-pub use state::{StateCell, StateData};
+pub use state::{StateCell, StateData, StateValue};
 
 pub const LIB_NAME_ULTRASONIC: &str = "UltraSONIC";
