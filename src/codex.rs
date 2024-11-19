@@ -26,7 +26,7 @@ use aluvm::{fe128, CoreConfig, CoreExt, Lib, LibId, LibSite, RegE, Vm};
 use amplify::confinement::{SmallString, SmallVec, TinyOrdMap, TinyString};
 use commit_verify::ReservedBytes;
 
-use crate::{CellAddr, Instr, Operation, StateCell, StateData, LIB_NAME_ULTRASONIC};
+use crate::{CellAddr, ContractId, Instr, Operation, StateCell, StateData, LIB_NAME_ULTRASONIC};
 
 pub type CallId = u16;
 pub type AccessId = u16;
@@ -52,11 +52,19 @@ pub struct Codex {
 impl Codex {
     pub fn verify(
         &self,
+        contract_id: ContractId,
         operation: &Operation,
         memory: &impl Memory,
         repo: &impl LibRepo,
     ) -> Result<(), CallError> {
         let resolver = |lib_id: LibId| repo.get_lib(lib_id);
+
+        if operation.contract_id != contract_id {
+            return Err(CallError::WrongContract {
+                expected: contract_id,
+                found: operation.contract_id,
+            });
+        }
 
         // Phase one: get inputs, verify access conditions
         let mut vm_inputs =
@@ -141,6 +149,12 @@ pub trait LibRepo {
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Display, Error)]
 #[display(doc_comments)]
 pub enum CallError {
+    /// operation doesn't belong to the current contract {expected} (operation contract is
+    /// {found}).
+    WrongContract {
+        expected: ContractId,
+        found: ContractId,
+    },
     /// operation verifier {0} is not present in the codex.
     NotFound(CallId),
     /// operation references read-once memory cell {0} which was not defined.

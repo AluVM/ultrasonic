@@ -30,7 +30,7 @@ use commit_verify::{
     CommitEncode, CommitEngine, CommitmentId, DigestExt, MerkleHash, ReservedBytes, Sha256,
 };
 
-use crate::{CallId, StateCell, StateData, LIB_NAME_ULTRASONIC};
+use crate::{CallId, ContractId, StateCell, StateData, LIB_NAME_ULTRASONIC};
 
 /// Unique operation (genesis, extensions & state transition) identifier
 /// equivalent to the commitment hash
@@ -93,6 +93,7 @@ pub struct Input {
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct Operation {
+    pub contract_id: ContractId,
     pub call_id: CallId,
     /// Memory cells which were destroyed.
     pub destroying: SmallVec<Input>,
@@ -108,6 +109,7 @@ impl CommitEncode for Operation {
     type CommitmentId = Opid;
 
     fn commit_encode(&self, e: &mut CommitEngine) {
+        e.commit_to_serialized(&self.contract_id);
         e.commit_to_serialized(&self.call_id);
         e.commit_to_merkle(&self.destroying);
         e.commit_to_merkle(&self.reading);
