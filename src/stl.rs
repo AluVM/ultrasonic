@@ -28,7 +28,7 @@ use strict_types::stl::{std_stl, strict_types_stl};
 use strict_types::typelib::LibBuilder;
 use strict_types::{CompileError, TypeLib};
 
-use crate::{ContractId, ContractPrivate, Opid, LIB_NAME_ULTRASONIC};
+use crate::{ContractId, Opid, LIB_NAME_ULTRASONIC};
 
 /// Strict types id for the library providing data types for RGB consensus.
 pub const LIB_ID_ULTRASONIC: &str =
@@ -44,7 +44,6 @@ fn _usonic_stl() -> Result<TypeLib, CompileError> {
     })
     .transpile::<Opid>()
     .transpile::<ContractId>()
-    .transpile::<ContractPrivate>()
     .compile()
 }
 

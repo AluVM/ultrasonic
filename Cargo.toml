@@ -17,13 +17,9 @@ exclude = [".github"]
 name = "ultrasonic"
 crate-type = ["dylib", "rlib"]
 
-[[bin]]
-name = "usonic-stl"
-required-features = ["stl"]
-
 [dependencies]
 amplify = { version = "~4.8.0", default-features = false, features = ["derive", "hex"] }
-baid64 = { version = "0.3.0", optional = true }
+baid64 = { version = "~0.4.0", optional = true }
 strict_encoding = { version = "~2.8.1", default-features = false, features = ["derive"] }
 strict_types = { version = "~2.8.1", optional = true }
 zk-aluvm = "~0.12.0-beta.1"
@@ -36,11 +32,10 @@ all = ["stl", "baid64", "serde", "chf-sha256"]
 
 chf-sha256 = []
 
-stl = ["commit_verify/stl", "strict_types/armor", "zk-aluvm/stl"]
+stl = ["commit_verify/stl", "zk-aluvm/stl"]
 serde = [
     "dep:serde",
     "amplify/serde",
-    "strict_types/serde",
     "commit_verify/serde",
     "zk-aluvm/serde",
 ]

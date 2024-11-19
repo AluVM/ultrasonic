@@ -47,7 +47,7 @@ mod contract;
 pub mod stl;
 
 pub use codex::{AccessId, CallError, CallId, Codex, CodexId, LibRepo, Memory, VmContext};
-pub use contract::{Contract, ContractId, ContractPrivate, Ffv, ProofOfPubl};
+pub use contract::ContractId;
 pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
 pub use operation::{CellAddr, Input, Operation, Opid};
 pub use state::{StateCell, StateData};
