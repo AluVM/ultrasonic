@@ -25,7 +25,7 @@ use aluvm::regs::Status;
 use aluvm::{fe128, CoreConfig, CoreExt, Lib, LibId, LibSite, RegE, Vm};
 use amplify::confinement::{SmallString, SmallVec, TinyOrdMap, TinyString};
 use amplify::Bytes32;
-use commit_verify::ReservedBytes;
+use commit_verify::{CommitId, ReservedBytes};
 
 use crate::{
     CellAddr, ContractId, Instr, Operation, StateCell, StateData, StateValue, LIB_NAME_ULTRASONIC,
@@ -37,6 +37,8 @@ pub type AccessId = u16;
 /// Codex is a crucial part of a contract; it provides a set of commitments to the contract terms
 /// and conditions expressed as a deterministic program able to run in SONIC computer model.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+#[derive(CommitEncode)]
+#[commit_encode(strategy = strict, id = CodexId)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
@@ -53,6 +55,8 @@ pub struct Codex {
 }
 
 impl Codex {
+    pub fn codex_id(&self) -> CodexId { self.commit_id() }
+
     pub fn verify(
         &self,
         contract_id: ContractId,
