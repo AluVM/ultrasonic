@@ -23,7 +23,7 @@
 
 use aluvm::regs::Status;
 use aluvm::{fe128, CoreConfig, CoreExt, Lib, LibId, LibSite, RegE, Vm};
-use amplify::confinement::{SmallString, SmallVec, TinyOrdMap, TinyString};
+use amplify::confinement::{SmallVec, TinyOrdMap, TinyString};
 use amplify::Bytes32;
 use commit_verify::{CommitId, ReservedBytes};
 
@@ -45,7 +45,7 @@ pub type AccessId = u16;
 pub struct Codex {
     pub version: ReservedBytes<2>,
     pub name: TinyString,
-    pub developer: SmallString,
+    pub developer: TinyString,
     pub field_order: u128,
     pub input_config: CoreConfig,
     pub verification_config: CoreConfig,

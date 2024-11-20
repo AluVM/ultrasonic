@@ -31,8 +31,10 @@ SONARE is a part of a larger ecosystem used to build safe distributed software, 
 - [Strict types]: strong type system made with [generalized algebraic data types][GADT] (*GADT*) and
   [dependent types];
 - [AluVM]: a functional register-based virtual machine with a reduced instruction set (RISC);
-  UltraSONIC uses a zk-STARK-compatible subset of its instruction set architecture (called zk-AluVM);
-- [SONARE]: runtime environment for UltraSONIC software;
+  UltraSONIC uses a zk-STARK-compatible subset of its instruction set architecture (called
+  zk-AluVM);
+- [SONIC]: toolchain for building SONIC contracts;
+- [SONARE]: runtime environment for running SONIC contracts;
 - [Cation]: a general-purpose high-level programming language made with category theory, which
   features strict types, termination analysis and can be formally verified;
 - [Contractum]: a domain-specific version of Cation for writing programs for UltraSONIC.
@@ -60,7 +62,9 @@ the License.
 [Strict types]: https://strict-types.org
 
 [AluVM]: https://aluvm.org
+
 [SONARE]: https://github.com/AluVM/SONARE
+
 [Cation]: https://cation-lang.org
 
 [Contractum]: https://contractum.org
