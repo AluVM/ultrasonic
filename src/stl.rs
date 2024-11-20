@@ -32,7 +32,7 @@ use crate::{ContractId, Opid, LIB_NAME_ULTRASONIC};
 
 /// Strict types id for the library providing data types for RGB consensus.
 pub const LIB_ID_ULTRASONIC: &str =
-    "stl:rTpiIXN~-sOPO_bu-Auzd8N~-cuTsT2m-XcJDNap-1NqVvqE#arizona-voltage-garage";
+    "stl:QwuXj4iY-v45AGHf-1BaUvTS-MxD4k24-JqC1w8n-qEOw48M#volume-sierra-ship";
 
 fn _usonic_stl() -> Result<TypeLib, CompileError> {
     LibBuilder::new(libname!(LIB_NAME_ULTRASONIC), tiny_bset! {

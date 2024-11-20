@@ -43,9 +43,9 @@ pub type AccessId = u16;
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct Codex {
+    pub version: ReservedBytes<2>,
     pub name: TinyString,
     pub developer: SmallString,
-    pub version: ReservedBytes<2>,
     pub field_order: u128,
     pub input_config: CoreConfig,
     pub verification_config: CoreConfig,

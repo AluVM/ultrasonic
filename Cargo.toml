@@ -32,7 +32,7 @@ all = ["stl", "baid64", "serde", "chf-sha256"]
 
 chf-sha256 = []
 
-stl = ["commit_verify/stl", "zk-aluvm/stl"]
+stl = ["strict_types", "commit_verify/stl", "zk-aluvm/stl"]
 serde = [
     "dep:serde",
     "amplify/serde",
