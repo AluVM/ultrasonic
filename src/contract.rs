@@ -26,7 +26,7 @@ use core::fmt::{Debug, Display, Formatter};
 use core::str::FromStr;
 
 use amplify::{Bytes32, Wrapper};
-use commit_verify::{CommitmentId, DigestExt, ReservedBytes, Sha256};
+use commit_verify::{CommitmentId, DigestExt, Sha256};
 use strict_encoding::{StrictDecode, StrictDumb, StrictEncode};
 
 use crate::LIB_NAME_ULTRASONIC;
@@ -35,16 +35,6 @@ pub trait ProofOfPubl:
     Copy + Eq + StrictDumb + StrictEncode + StrictDecode + Debug + Display + Into<[u8; 4]>
 {
 }
-
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Display)]
-#[display("~")]
-#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
-#[strict_type(lib = LIB_NAME_ULTRASONIC)]
-pub struct Private(ReservedBytes<4, 0xFF>);
-impl From<Private> for [u8; 4] {
-    fn from(_: Private) -> Self { [0xFF; 4] }
-}
-impl ProofOfPubl for Private {}
 
 /// Unique contract identifier equivalent to the contract genesis commitment
 #[derive(Wrapper, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, From)]
