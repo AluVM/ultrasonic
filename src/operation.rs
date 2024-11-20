@@ -30,7 +30,7 @@ use commit_verify::{
     CommitEncode, CommitEngine, CommitmentId, DigestExt, MerkleHash, ReservedBytes, Sha256,
 };
 
-use crate::{CallId, ContractId, StateCell, StateData, StateValue, LIB_NAME_ULTRASONIC};
+use crate::{CallId, CodexId, ContractId, StateCell, StateData, StateValue, LIB_NAME_ULTRASONIC};
 
 /// Unique operation (genesis, extensions & state transition) identifier
 /// equivalent to the commitment hash
@@ -92,6 +92,33 @@ pub struct Input {
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
+pub struct Genesis {
+    pub codex_id: CodexId,
+    pub call_id: CallId,
+    /// Memory cells which were created (read-once, access-controlled).
+    pub destructible: SmallVec<StateCell>,
+    /// Immutable memory data which were created (write-once, readable by all).
+    pub immutable: SmallVec<StateData>,
+    pub reserved: ReservedBytes<8>,
+}
+
+impl CommitEncode for Genesis {
+    type CommitmentId = Opid;
+
+    fn commit_encode(&self, e: &mut CommitEngine) {
+        e.commit_to_serialized(&*b"genesis");
+        e.commit_to_serialized(&self.codex_id);
+        e.commit_to_serialized(&self.call_id);
+        e.commit_to_merkle(&self.destructible);
+        e.commit_to_merkle(&self.immutable);
+        e.commit_to_serialized(&self.reserved);
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct Operation {
     pub contract_id: ContractId,
     pub call_id: CallId,
@@ -109,6 +136,7 @@ impl CommitEncode for Operation {
     type CommitmentId = Opid;
 
     fn commit_encode(&self, e: &mut CommitEngine) {
+        e.commit_to_serialized(&*b"operation");
         e.commit_to_serialized(&self.contract_id);
         e.commit_to_serialized(&self.call_id);
         e.commit_to_merkle(&self.destroying);
