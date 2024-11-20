@@ -99,7 +99,7 @@ pub struct RawData(#[from] SmallBlob);
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct StateData {
     pub value: StateValue,
-    pub data: RawData,
+    pub raw: Option<RawData>,
 }
 
 impl CommitEncode for StateData {
@@ -107,6 +107,9 @@ impl CommitEncode for StateData {
 
     fn commit_encode(&self, e: &mut CommitEngine) {
         e.commit_to_serialized(&self.value);
-        e.commit_to_hash(&self.data);
+        match &self.raw {
+            None => e.commit_to_serialized(&[0; 32]),
+            Some(raw) => e.commit_to_hash(raw),
+        }
     }
 }
