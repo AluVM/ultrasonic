@@ -28,7 +28,8 @@ use amplify::Bytes32;
 use commit_verify::{CommitId, ReservedBytes};
 
 use crate::{
-    CellAddr, ContractId, Instr, Operation, StateCell, StateData, StateValue, LIB_NAME_ULTRASONIC,
+    CellAddr, ContractId, Identity, Instr, Operation, StateCell, StateData, StateValue,
+    LIB_NAME_ULTRASONIC,
 };
 
 pub type CallId = u16;
@@ -45,7 +46,7 @@ pub type AccessId = u16;
 pub struct Codex {
     pub version: ReservedBytes<2>,
     pub name: TinyString,
-    pub developer: TinyString,
+    pub developer: Identity,
     pub field_order: u128,
     pub input_config: CoreConfig,
     pub verification_config: CoreConfig,

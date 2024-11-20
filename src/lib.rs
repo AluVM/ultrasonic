@@ -47,11 +47,13 @@ mod isa;
 mod contract;
 #[cfg(feature = "stl")]
 pub mod stl;
+mod util;
 
 pub use codex::{AccessId, CallError, CallId, Codex, CodexId, LibRepo, Memory, VmContext};
 pub use contract::{ContractId, ProofOfPubl};
 pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
 pub use operation::{CellAddr, Input, Operation, Opid};
 pub use state::{StateCell, StateData, StateValue};
+pub use util::Identity;
 
 pub const LIB_NAME_ULTRASONIC: &str = "UltraSONIC";
