@@ -55,5 +55,6 @@ pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
 pub use operation::{CellAddr, Genesis, Input, Operation, Opid};
 pub use state::{StateCell, StateData, StateValue};
 pub use util::Identity;
+pub use zkaluvm::fe128;
 
 pub const LIB_NAME_ULTRASONIC: &str = "UltraSONIC";
