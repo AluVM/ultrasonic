@@ -50,6 +50,24 @@ pub enum StateValue {
 }
 
 impl StateValue {
+    pub fn from<I: IntoIterator<Item = u128>>(iter: I) -> Self
+    where I::IntoIter: ExactSizeIterator {
+        let mut iter = iter.into_iter();
+        let len = iter.len();
+        let first = iter.next().map(fe128);
+        let second = iter.next().map(fe128);
+        let third = iter.next().map(fe128);
+        let fourth = iter.next().map(fe128);
+        match len {
+            0 => StateValue::None,
+            1 => StateValue::Single(first.unwrap()),
+            2 => StateValue::Double(first.unwrap(), second.unwrap()),
+            3 => StateValue::Three(first.unwrap(), second.unwrap(), third.unwrap()),
+            4 => StateValue::Four(first.unwrap(), second.unwrap(), third.unwrap(), fourth.unwrap()),
+            _ => panic!("state value can't use more than 4 elements"),
+        }
+    }
+
     pub fn get(&self, pos: u8) -> Option<fe128> {
         match (*self, pos) {
             (Self::Single(el), 0)
