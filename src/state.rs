@@ -126,7 +126,7 @@ impl CommitEncode for StateData {
     fn commit_encode(&self, e: &mut CommitEngine) {
         e.commit_to_serialized(&self.value);
         match &self.raw {
-            None => e.commit_to_serialized(&[0; 32]),
+            None => e.commit_to_option(&Option::<RawData>::None),
             Some(raw) => e.commit_to_hash(raw),
         }
     }
