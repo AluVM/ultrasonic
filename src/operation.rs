@@ -110,7 +110,7 @@ impl CommitEncode for Genesis {
     type CommitmentId = Opid;
 
     fn commit_encode(&self, e: &mut CommitEngine) {
-        e.commit_to_serialized(&*b"genesis");
+        e.commit_to_serialized(&vname!("genesis"));
         e.commit_to_serialized(&self.codex_id);
         e.commit_to_serialized(&self.call_id);
         e.commit_to_merkle(&self.destructible);
@@ -154,7 +154,7 @@ impl CommitEncode for Operation {
     type CommitmentId = Opid;
 
     fn commit_encode(&self, e: &mut CommitEngine) {
-        e.commit_to_serialized(&*b"operation");
+        e.commit_to_serialized(&vname!("operation"));
         e.commit_to_serialized(&self.contract_id);
         e.commit_to_serialized(&self.call_id);
         e.commit_to_merkle(&self.destroying);
