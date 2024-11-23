@@ -77,6 +77,10 @@ pub struct CellAddr {
     pub pos: u16,
 }
 
+impl CellAddr {
+    pub fn new(opid: Opid, pos: u16) -> Self { Self { opid, pos } }
+}
+
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[derive(CommitEncode)]
 #[commit_encode(strategy = strict, id = MerkleHash)]
