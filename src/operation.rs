@@ -27,7 +27,8 @@ use amplify::confinement::SmallVec;
 use amplify::hex::{FromHex, ToHex};
 use amplify::{hex, Bytes32, FromSliceError};
 use commit_verify::{
-    CommitEncode, CommitEngine, CommitmentId, DigestExt, MerkleHash, ReservedBytes, Sha256,
+    CommitEncode, CommitEngine, CommitId, CommitmentId, DigestExt, MerkleHash, ReservedBytes,
+    Sha256,
 };
 
 use crate::{CallId, CodexId, ContractId, StateCell, StateData, StateValue, LIB_NAME_ULTRASONIC};
@@ -133,6 +134,10 @@ impl Genesis {
     }
 }
 
+impl Genesis {
+    pub fn opid(&self) -> Opid { self.commit_id() }
+}
+
 #[derive(Clone, PartialEq, Eq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
@@ -163,4 +168,8 @@ impl CommitEncode for Operation {
         e.commit_to_merkle(&self.immutable);
         e.commit_to_serialized(&self.reserved);
     }
+}
+
+impl Operation {
+    pub fn opid(&self) -> Opid { self.commit_id() }
 }
