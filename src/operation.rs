@@ -115,6 +115,20 @@ impl CommitEncode for Genesis {
     }
 }
 
+impl Genesis {
+    pub fn to_operation(&self, contract_id: ContractId) -> Operation {
+        Operation {
+            contract_id,
+            call_id: self.call_id,
+            destroying: none!(),
+            reading: none!(),
+            destructible: self.destructible.clone(),
+            immutable: self.immutable.clone(),
+            reserved: self.reserved,
+        }
+    }
+}
+
 #[derive(Clone, PartialEq, Eq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
