@@ -47,6 +47,7 @@ pub struct Codex {
     pub version: ReservedBytes<2>,
     pub name: TinyString,
     pub developer: Identity,
+    pub timestamp: i64,
     pub field_order: u128,
     pub input_config: CoreConfig,
     pub verification_config: CoreConfig,
