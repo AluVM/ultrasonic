@@ -22,8 +22,9 @@
 // the License.
 
 use aluvm::regs::Status;
-use aluvm::{fe128, CoreConfig, CoreExt, Lib, LibId, LibSite, RegE, Vm};
+use aluvm::{fe256, CoreConfig, CoreExt, Lib, LibId, LibSite, RegE, Vm};
 use amplify::confinement::{SmallVec, TinyOrdMap, TinyString};
+use amplify::num::u256;
 use amplify::Bytes32;
 use commit_verify::{CommitId, ReservedBytes};
 
@@ -48,7 +49,7 @@ pub struct Codex {
     pub name: TinyString,
     pub developer: Identity,
     pub timestamp: i64,
-    pub field_order: u128,
+    pub field_order: u256,
     pub input_config: CoreConfig,
     pub verification_config: CoreConfig,
     pub verifiers: TinyOrdMap<CallId, LibSite>,
@@ -175,9 +176,9 @@ pub enum CallError {
     /// operation references immutable memory cell {0} which was not defined.
     NoImmutableInput(CellAddr),
     /// operation input locking conditions are unsatisfied.
-    Lock(Option<fe128>),
+    Lock(Option<fe256>),
     /// verification failure {0}
-    Script(fe128),
+    Script(fe256),
     /// verification failure (details are unspecified).
     ScriptUnspecified,
 }

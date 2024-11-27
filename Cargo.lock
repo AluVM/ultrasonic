@@ -275,9 +275,9 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.15.1"
+version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a9bfc1af68b1726ea47d3d5109de126281def866b33970e10fbab11b5dafab3"
+checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
 
 [[package]]
 name = "heck"
@@ -306,9 +306,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.164"
+version = "0.2.166"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "433bfe06b8c75da9b2e3fbea6e5329ff87748f0b144ef75306e674c3f6f7c13f"
+checksum = "c2ccc108bbc0b1331bd061864e7cd823c0cab660bbe6970e66e2c0614decde36"
 
 [[package]]
 name = "log"
@@ -500,8 +500,7 @@ dependencies = [
 [[package]]
 name = "strict_types"
 version = "2.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e208d1bd29a0f70d7ee90a91d76446b8bb7b1b8212d06e031e396d52e2fe891"
+source = "git+https://github.com/strict-types/strict-types?branch=develop#08d453c019a1963e743f4e0b85a11cad04efdaab"
 dependencies = [
  "amplify",
  "ascii-armor 0.9.0",
@@ -835,8 +834,7 @@ dependencies = [
 [[package]]
 name = "zk-aluvm"
 version = "0.12.0-beta.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "491366e2631e4b1a5eb6004f87b3fd4428c7f0eabb97d4d88df74c364728bdd5"
+source = "git+https://github.com/AluVM/zk-aluvm#3ef0fd4da628ce9e3359ae54ae8b8045de13e2a7"
 dependencies = [
  "aluvm",
  "amplify",

@@ -21,8 +21,9 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-use aluvm::{fe128, LibSite};
+use aluvm::{fe256, LibSite};
 use amplify::confinement::SmallBlob;
+use amplify::num::u256;
 use commit_verify::{CommitEncode, CommitEngine, MerkleHash, StrictHash};
 
 use crate::LIB_NAME_ULTRASONIC;
@@ -40,24 +41,24 @@ pub enum StateValue {
     #[strict_type(tag = 0x00)]
     None,
     #[strict_type(tag = 0x01)]
-    Single(fe128),
+    Single(fe256),
     #[strict_type(tag = 0x02)]
-    Double(fe128, fe128),
+    Double(fe256, fe256),
     #[strict_type(tag = 0x03)]
-    Three(fe128, fe128, fe128),
+    Three(fe256, fe256, fe256),
     #[strict_type(tag = 0x04)]
-    Four(fe128, fe128, fe128, fe128),
+    Four(fe256, fe256, fe256, fe256),
 }
 
 impl StateValue {
-    pub fn from<I: IntoIterator<Item = u128>>(iter: I) -> Self
+    pub fn from<I: IntoIterator<Item = u256>>(iter: I) -> Self
     where I::IntoIter: ExactSizeIterator {
         let mut iter = iter.into_iter();
         let len = iter.len();
-        let first = iter.next().map(fe128);
-        let second = iter.next().map(fe128);
-        let third = iter.next().map(fe128);
-        let fourth = iter.next().map(fe128);
+        let first = iter.next().map(fe256);
+        let second = iter.next().map(fe256);
+        let third = iter.next().map(fe256);
+        let fourth = iter.next().map(fe256);
         match len {
             0 => StateValue::None,
             1 => StateValue::Single(first.unwrap()),
@@ -68,7 +69,7 @@ impl StateValue {
         }
     }
 
-    pub fn get(&self, pos: u8) -> Option<fe128> {
+    pub fn get(&self, pos: u8) -> Option<fe256> {
         match (*self, pos) {
             (Self::Single(el), 0)
             | (Self::Double(el, _), 0)
@@ -98,7 +99,7 @@ impl StateValue {
 pub struct StateCell {
     pub data: StateValue,
     /// Token of authority
-    pub toa: fe128,
+    pub toa: fe256,
     pub lock: Option<LibSite>,
 }
 

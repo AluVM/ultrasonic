@@ -24,6 +24,7 @@
 use core::fmt::{self, Debug, Formatter};
 
 use aluvm::{CoreExt, GfaCore, NoExt, RegE, Register};
+use amplify::num::u256;
 
 pub const REG_IN_RO: usize = 0;
 pub const REG_IN_IM: usize = 1;
@@ -64,7 +65,7 @@ impl Debug for UsonicCore {
 
 impl CoreExt for UsonicCore {
     type Reg = RegE;
-    type Config = u128;
+    type Config = u256;
 
     fn with(config: Self::Config) -> Self {
         UsonicCore { ui: [0; 4], ue: [0; 4], gfa: GfaCore::with(config) }

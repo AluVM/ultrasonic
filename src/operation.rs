@@ -23,7 +23,7 @@
 
 use core::str::FromStr;
 
-use aluvm::fe128;
+use aluvm::fe256;
 use amplify::confinement::SmallVec;
 use amplify::hex::{FromHex, ToHex};
 use amplify::{hex, Bytes32, FromSliceError};
@@ -101,7 +101,7 @@ pub struct Input {
 pub struct Genesis {
     pub codex_id: CodexId,
     pub call_id: CallId,
-    pub nonce: fe128,
+    pub nonce: fe256,
     /// Memory cells which were created (read-once, access-controlled).
     pub destructible: SmallVec<StateCell>,
     /// Immutable memory data which were created (write-once, readable by all).
@@ -150,7 +150,7 @@ impl Genesis {
 pub struct Operation {
     pub contract_id: ContractId,
     pub call_id: CallId,
-    pub nonce: fe128,
+    pub nonce: fe256,
     /// Memory cells which were destroyed.
     pub destroying: SmallVec<Input>,
     pub reading: SmallVec<CellAddr>,
