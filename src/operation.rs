@@ -22,6 +22,7 @@
 // the License.
 
 use core::str::FromStr;
+use std::num::ParseIntError;
 
 use aluvm::fe256;
 use amplify::confinement::SmallVec;
@@ -73,7 +74,6 @@ impl Opid {
 #[commit_encode(strategy = strict, id = MerkleHash)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct CellAddr {
     pub opid: Opid,
     pub pos: u16,
@@ -81,6 +81,69 @@ pub struct CellAddr {
 
 impl CellAddr {
     pub fn new(opid: Opid, pos: u16) -> Self { Self { opid, pos } }
+}
+
+#[derive(Clone, Eq, PartialEq, Debug, Display, From, Error)]
+#[display(doc_comments)]
+pub enum ParseAddrError {
+    /// malformed string representation of cell address '{0}' lacking separator ':'
+    MalformedSeparator(String),
+
+    /// malformed output number. Details: {0}
+    #[from]
+    InvalidOut(ParseIntError),
+
+    /// malformed operation id value. Details: {0}
+    #[from]
+    InvalidOpid(hex::Error),
+}
+
+impl FromStr for CellAddr {
+    type Err = ParseAddrError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (opid, pos) = s
+            .split_once(":")
+            .ok_or_else(|| ParseAddrError::MalformedSeparator(s.to_owned()))?;
+        let opid = Opid::from_str(opid)?;
+        let pos = u16::from_str(pos)?;
+        Ok(CellAddr::new(opid, pos))
+    }
+}
+
+#[cfg(feature = "serde")]
+mod _serde {
+    use serde::de::Error;
+    use serde::ser::SerializeTuple;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    use super::*;
+
+    impl Serialize for CellAddr {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer {
+            if serializer.is_human_readable() {
+                self.to_string().serialize(serializer)
+            } else {
+                let mut ser = serializer.serialize_tuple(1)?;
+                ser.serialize_element(&self.opid)?;
+                ser.serialize_element(&self.pos)?;
+                ser.end()
+            }
+        }
+    }
+
+    impl<'de> Deserialize<'de> for CellAddr {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de> {
+            if deserializer.is_human_readable() {
+                let s = String::deserialize(deserializer)?;
+                CellAddr::from_str(&s).map_err(D::Error::custom)
+            } else {
+                <(Opid, u16)>::deserialize(deserializer).map(|(opid, pos)| CellAddr::new(opid, pos))
+            }
+        }
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
