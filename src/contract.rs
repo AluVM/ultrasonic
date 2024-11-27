@@ -58,11 +58,10 @@ impl<C: Capabilities> Contract<C> {
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct ContractMeta<C: Capabilities> {
-    pub proof_of_publ: C,
+    pub capabilities: C,
     // aligning to 16 byte edge
     #[cfg_attr(feature = "serde", serde(skip))]
     pub reserved: ReservedBytes<10>,
-    pub salt: u64,
     pub timestamp: i64,
     // ^^ above is a fixed-size contract header of 32 bytes
     pub name: ContractName,
