@@ -86,14 +86,18 @@ impl Codex {
 
             // Verify that the lock script conditions are satisfied
             if let Some(lock) = cell.lock {
+                // Put also token of authority into a register
+                vm_inputs.core.cx.set(RegE::E1, cell.toa);
+
                 // Put witness into input registers
-                for (no, reg) in [RegE::E1, RegE::E2, RegE::E3, RegE::E4]
+                for (no, reg) in [RegE::E2, RegE::E3, RegE::E4, RegE::E5]
                     .into_iter()
                     .enumerate()
                 {
-                    if let Some(el) = input.witness.get(no as u8) {
-                        vm_inputs.core.cx.set(reg, el);
-                    }
+                    let Some(el) = input.witness.get(no as u8) else {
+                        break;
+                    };
+                    vm_inputs.core.cx.set(reg, el);
                 }
                 if vm_inputs.exec(lock, &(), resolver) == Status::Fail {
                     // Read error code from output register

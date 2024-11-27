@@ -97,7 +97,8 @@ impl StateValue {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct StateCell {
     pub data: StateValue,
-    pub seal: fe128,
+    /// Token of authority
+    pub toa: fe128,
     pub lock: Option<LibSite>,
 }
 

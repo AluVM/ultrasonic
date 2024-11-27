@@ -23,6 +23,7 @@
 
 use core::str::FromStr;
 
+use aluvm::fe128;
 use amplify::confinement::SmallVec;
 use amplify::hex::{FromHex, ToHex};
 use amplify::{hex, Bytes32, FromSliceError};
@@ -100,6 +101,7 @@ pub struct Input {
 pub struct Genesis {
     pub codex_id: CodexId,
     pub call_id: CallId,
+    pub nonce: fe128,
     /// Memory cells which were created (read-once, access-controlled).
     pub destructible: SmallVec<StateCell>,
     /// Immutable memory data which were created (write-once, readable by all).
@@ -111,9 +113,11 @@ impl CommitEncode for Genesis {
     type CommitmentId = Opid;
 
     fn commit_encode(&self, e: &mut CommitEngine) {
-        e.commit_to_serialized(&vname!("genesis"));
         e.commit_to_serialized(&self.codex_id);
         e.commit_to_serialized(&self.call_id);
+        e.commit_to_serialized(&self.nonce);
+        e.commit_to_merkle(&SmallVec::<Input>::default());
+        e.commit_to_merkle(&SmallVec::<CellAddr>::default());
         e.commit_to_merkle(&self.destructible);
         e.commit_to_merkle(&self.immutable);
         e.commit_to_serialized(&self.reserved);
@@ -125,6 +129,7 @@ impl Genesis {
         Operation {
             contract_id,
             call_id: self.call_id,
+            nonce: self.nonce,
             destroying: none!(),
             reading: none!(),
             destructible: self.destructible.clone(),
@@ -145,6 +150,7 @@ impl Genesis {
 pub struct Operation {
     pub contract_id: ContractId,
     pub call_id: CallId,
+    pub nonce: fe128,
     /// Memory cells which were destroyed.
     pub destroying: SmallVec<Input>,
     pub reading: SmallVec<CellAddr>,
@@ -159,9 +165,9 @@ impl CommitEncode for Operation {
     type CommitmentId = Opid;
 
     fn commit_encode(&self, e: &mut CommitEngine) {
-        e.commit_to_serialized(&vname!("operation"));
         e.commit_to_serialized(&self.contract_id);
         e.commit_to_serialized(&self.call_id);
+        e.commit_to_serialized(&self.nonce);
         e.commit_to_merkle(&self.destroying);
         e.commit_to_merkle(&self.reading);
         e.commit_to_merkle(&self.destructible);
