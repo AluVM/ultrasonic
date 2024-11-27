@@ -26,14 +26,81 @@ use core::fmt::{Debug, Display, Formatter};
 use core::str::FromStr;
 
 use amplify::{Bytes32, Wrapper};
-use commit_verify::{CommitmentId, DigestExt, Sha256};
-use strict_encoding::{StrictDecode, StrictDumb, StrictEncode};
+use commit_verify::{CommitId, CommitmentId, DigestExt, ReservedBytes, Sha256};
+use strict_encoding::{StrictDecode, StrictDumb, StrictEncode, TypeName};
 
-use crate::LIB_NAME_ULTRASONIC;
+use crate::{Codex, Genesis, Identity, LIB_NAME_ULTRASONIC};
 
-pub trait ProofOfPubl:
+pub trait Capabilities:
     Copy + Eq + StrictDumb + StrictEncode + StrictDecode + Debug + Display + Into<[u8; 4]>
 {
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(CommitEncode)]
+#[commit_encode(strategy = strict, id = ContractId)]
+#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
+pub struct Contract<C: Capabilities> {
+    pub version: ReservedBytes<2>,
+    pub meta: ContractMeta<C>,
+    pub codex: Codex,
+    pub genesis: Genesis,
+}
+
+impl<C: Capabilities> Contract<C> {
+    pub fn contract_id(&self) -> ContractId { self.commit_id() }
+}
+
+#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
+pub struct ContractMeta<C: Capabilities> {
+    pub proof_of_publ: C,
+    // aligning to 16 byte edge
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub reserved: ReservedBytes<10>,
+    pub salt: u64,
+    pub timestamp: i64,
+    // ^^ above is a fixed-size contract header of 32 bytes
+    pub name: ContractName,
+    pub issuer: Identity,
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Display, Default)]
+#[display("~")]
+#[derive(StrictType, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC)]
+pub struct Private(ReservedBytes<4, 0xFF>);
+impl From<Private> for [u8; 4] {
+    fn from(_: Private) -> Self { [0xFF; 4] }
+}
+impl Capabilities for Private {}
+
+pub type ContractPrivate = Contract<Private>;
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Display)]
+#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC, tags = custom)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(untagged))]
+pub enum ContractName {
+    #[strict_type(tag = 0, dumb)]
+    #[display("~")]
+    Unnamed,
+
+    #[strict_type(tag = 1)]
+    #[display(inner)]
+    Named(TypeName),
+}
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Display)]
+#[display(inner)]
+pub enum ContractRef {
+    Id(ContractId),
+    Name(TypeName),
+    // Mnemonic(),
 }
 
 /// Unique contract identifier equivalent to the contract genesis commitment

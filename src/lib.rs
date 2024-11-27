@@ -50,7 +50,9 @@ pub mod stl;
 mod util;
 
 pub use codex::{AccessId, CallError, CallId, Codex, CodexId, LibRepo, Memory, VmContext};
-pub use contract::{ContractId, ProofOfPubl};
+pub use contract::{
+    Capabilities, Contract, ContractId, ContractMeta, ContractPrivate, ContractRef, Private,
+};
 pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
 pub use operation::{CellAddr, Genesis, Input, Operation, Opid};
 pub use state::{StateCell, StateData, StateValue};
