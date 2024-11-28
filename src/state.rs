@@ -26,8 +26,9 @@ use core::str::FromStr;
 
 use aluvm::{fe256, LibSite};
 use amplify::confinement::SmallBlob;
+use amplify::hex::FromHex;
 use amplify::num::u256;
-use amplify::Bytes;
+use amplify::{hex, Bytes};
 use baid64::{Baid64ParseError, DisplayBaid64, FromBaid64Str};
 use commit_verify::{CommitEncode, CommitEngine, MerkleHash, StrictHash};
 
@@ -36,7 +37,6 @@ use crate::LIB_NAME_ULTRASONIC;
 #[derive(Copy, Clone, PartialEq, Eq, Debug, From)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct AuthToken(#[from] fe256);
 
 impl From<[u8; 30]> for AuthToken {
@@ -165,17 +165,23 @@ pub struct StateCell {
     pub lock: Option<LibSite>,
 }
 
-#[derive(Wrapper, WrapperMut, Clone, PartialEq, Eq, Debug, From)]
+#[derive(Wrapper, WrapperMut, Clone, PartialEq, Eq, Debug, Display, From)]
 #[wrapper(AsSlice, BorrowSlice, Hex, RangeOps)]
 #[wrapper_mut(BorrowSliceMut, RangeMut)]
+#[display("0x{0:X}")]
 #[derive(CommitEncode)]
 #[commit_encode(strategy = strict, id = StrictHash)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
 pub struct RawData(#[from] SmallBlob);
 
-// TODO: Implement custom Display, FromStr and Serde for RawData
+impl FromStr for RawData {
+    type Err = hex::Error;
+    fn from_str(mut s: &str) -> Result<Self, Self::Err> {
+        s = s.strip_prefix("0x").unwrap_or(s);
+        Self::from_hex(s)
+    }
+}
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
@@ -194,6 +200,59 @@ impl CommitEncode for StateData {
         match &self.raw {
             None => e.commit_to_option(&Option::<RawData>::None),
             Some(raw) => e.commit_to_hash(raw),
+        }
+    }
+}
+
+mod _serde {
+    use serde::de::Error;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    use super::*;
+
+    impl Serialize for AuthToken {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer {
+            if serializer.is_human_readable() {
+                serializer.serialize_str(&self.to_string())
+            } else {
+                self.0.serialize(serializer)
+            }
+        }
+    }
+
+    impl<'de> Deserialize<'de> for AuthToken {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de> {
+            if deserializer.is_human_readable() {
+                let s = String::deserialize(deserializer)?;
+                s.parse().map_err(D::Error::custom)
+            } else {
+                fe256::deserialize(deserializer).map(Self)
+            }
+        }
+    }
+
+    impl Serialize for RawData {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer {
+            if serializer.is_human_readable() {
+                serializer.serialize_str(&self.to_string())
+            } else {
+                self.0.serialize(serializer)
+            }
+        }
+    }
+
+    impl<'de> Deserialize<'de> for RawData {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de> {
+            if deserializer.is_human_readable() {
+                let s = String::deserialize(deserializer)?;
+                s.parse().map_err(D::Error::custom)
+            } else {
+                SmallBlob::deserialize(deserializer).map(Self)
+            }
         }
     }
 }
