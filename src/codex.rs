@@ -88,7 +88,7 @@ impl Codex {
             // Verify that the lock script conditions are satisfied
             if let Some(lock) = cell.lock {
                 // Put also token of authority into a register
-                vm_inputs.core.cx.set(RegE::E1, cell.toa);
+                vm_inputs.core.cx.set(RegE::E1, cell.auth.to_fe256());
 
                 // Put witness into input registers
                 for (no, reg) in [RegE::E2, RegE::E3, RegE::E4, RegE::E5]

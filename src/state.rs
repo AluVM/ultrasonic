@@ -21,12 +21,74 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
+use core::fmt::{self, Display, Formatter};
+use core::str::FromStr;
+
 use aluvm::{fe256, LibSite};
 use amplify::confinement::SmallBlob;
 use amplify::num::u256;
+use amplify::Bytes;
+use baid64::{Baid64ParseError, DisplayBaid64, FromBaid64Str};
 use commit_verify::{CommitEncode, CommitEngine, MerkleHash, StrictHash};
 
 use crate::LIB_NAME_ULTRASONIC;
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug, From)]
+#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct AuthToken(#[from] fe256);
+
+impl From<[u8; 30]> for AuthToken {
+    fn from(value: [u8; 30]) -> Self { Self::from_byte_array(value) }
+}
+impl From<Bytes<30>> for AuthToken {
+    fn from(value: Bytes<30>) -> Self { Self::from_byte_array(value.to_byte_array()) }
+}
+
+impl AuthToken {
+    pub const fn to_fe256(&self) -> fe256 { self.0 }
+
+    pub fn from_byte_array(bytes: [u8; 30]) -> Self {
+        let mut buf = [0u8; 32];
+        buf[..30].copy_from_slice(&bytes);
+        let val = fe256::from(buf);
+        Self(val)
+    }
+
+    pub fn to_byte_array(&self) -> [u8; 30] {
+        let bytes = self.0.to_u256().to_le_bytes();
+        debug_assert_eq!(&bytes[30..], &[0, 0]);
+
+        let mut buf = [0u8; 30];
+        buf.copy_from_slice(&bytes[..30]);
+        buf
+    }
+
+    pub fn to_bytes30(&self) -> Bytes<30> {
+        let bytes = self.to_byte_array();
+        Bytes::from(bytes)
+    }
+}
+
+impl DisplayBaid64<30> for AuthToken {
+    const HRI: &'static str = "auth";
+    const CHUNKING: bool = true;
+    const CHUNK_FIRST: usize = 8;
+    const CHUNK_LEN: usize = 8;
+    const PREFIX: bool = false;
+    const EMBED_CHECKSUM: bool = true;
+    const MNEMONIC: bool = false;
+    fn to_baid64_payload(&self) -> [u8; 30] { self.to_byte_array() }
+}
+impl FromBaid64Str<30> for AuthToken {}
+impl FromStr for AuthToken {
+    type Err = Baid64ParseError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> { Self::from_baid64_str(s) }
+}
+impl Display for AuthToken {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { self.fmt_baid64(f) }
+}
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Default)]
 #[derive(StrictType, StrictEncode, StrictDecode)]
@@ -55,10 +117,10 @@ impl StateValue {
     where I::IntoIter: ExactSizeIterator {
         let mut iter = iter.into_iter();
         let len = iter.len();
-        let first = iter.next().map(fe256);
-        let second = iter.next().map(fe256);
-        let third = iter.next().map(fe256);
-        let fourth = iter.next().map(fe256);
+        let first = iter.next().map(fe256::from);
+        let second = iter.next().map(fe256::from);
+        let third = iter.next().map(fe256::from);
+        let fourth = iter.next().map(fe256::from);
         match len {
             0 => StateValue::None,
             1 => StateValue::Single(first.unwrap()),
@@ -99,7 +161,7 @@ impl StateValue {
 pub struct StateCell {
     pub data: StateValue,
     /// Token of authority
-    pub toa: fe256,
+    pub auth: AuthToken,
     pub lock: Option<LibSite>,
 }
 
@@ -112,6 +174,8 @@ pub struct StateCell {
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
 pub struct RawData(#[from] SmallBlob);
+
+// TODO: Implement custom Display, FromStr and Serde for RawData
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
@@ -131,5 +195,25 @@ impl CommitEncode for StateData {
             None => e.commit_to_option(&Option::<RawData>::None),
             Some(raw) => e.commit_to_hash(raw),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn auth_baid64() {
+        let auth = AuthToken::from_byte_array([0xAD; 30]);
+
+        let baid64 = "ra2tra2t-ra2tra2t-ra2tra2t-ra2tra2t-ra2tra2t-WsPD8w";
+        assert_eq!(baid64, auth.to_string());
+        assert_eq!(auth.to_string(), auth.to_baid64_string());
+
+        let auth2: AuthToken = baid64.parse().unwrap();
+        assert_eq!(auth, auth2);
+
+        let reconstructed = AuthToken::from_str(&baid64.replace('-', "")).unwrap();
+        assert_eq!(reconstructed, auth);
     }
 }

@@ -38,7 +38,6 @@ extern crate zkaluvm as aluvm;
 #[cfg(feature = "serde")]
 #[macro_use]
 extern crate serde;
-extern crate core;
 
 mod codex;
 mod state;
@@ -57,7 +56,7 @@ pub use contract::{
 };
 pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
 pub use operation::{CellAddr, Genesis, Input, Operation, Opid, ParseAddrError};
-pub use state::{StateCell, StateData, StateValue};
+pub use state::{StateCell, StateData, StateValue, AuthToken, RawData};
 pub use util::Identity;
 pub use zkaluvm::fe256;
 
@@ -69,7 +68,7 @@ pub const FIELD_ORDER_25519: u256 = u256::from_inner([
     0xFFFF_FFFF_FFFF_FFFF,
     0x8FFF_FFFF_FFFF_FFFF,
 ]);
-pub const FIELD_ORDER_STARK: u256 = u256::from_inner([0x1u64, 0, 0x11, 0x0800_0000_0000_0000]);
+pub const FIELD_ORDER_STARK: u256 = u256::from_inner([1, 0, 17, 0x0800_0000_0000_0000]);
 pub const FIELD_ORDER_SECP: u256 = u256::from_inner([
     0xFFFF_FFFE_FFFF_FC2E,
     0xFFFF_FFFF_FFFF_FFFF,
