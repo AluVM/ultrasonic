@@ -96,20 +96,29 @@ impl Display for AuthToken {
 #[cfg_attr(
     feature = "serde",
     derive(Serialize, Deserialize),
-    serde(untagged, rename_all = "camelCase")
+    serde(tag = "type", rename_all = "camelCase")
 )]
 pub enum StateValue {
     #[default]
     #[strict_type(tag = 0x00)]
     None,
     #[strict_type(tag = 0x01)]
-    Single(fe256),
+    Single { first: fe256 },
     #[strict_type(tag = 0x02)]
-    Double(fe256, fe256),
+    Double { first: fe256, second: fe256 },
     #[strict_type(tag = 0x03)]
-    Three(fe256, fe256, fe256),
+    Three {
+        first: fe256,
+        second: fe256,
+        third: fe256,
+    },
     #[strict_type(tag = 0x04)]
-    Four(fe256, fe256, fe256, fe256),
+    Four {
+        first: fe256,
+        second: fe256,
+        third: fe256,
+        fourth: fe256,
+    },
 }
 
 impl StateValue {
@@ -123,28 +132,37 @@ impl StateValue {
         let fourth = iter.next().map(fe256::from);
         match len {
             0 => StateValue::None,
-            1 => StateValue::Single(first.unwrap()),
-            2 => StateValue::Double(first.unwrap(), second.unwrap()),
-            3 => StateValue::Three(first.unwrap(), second.unwrap(), third.unwrap()),
-            4 => StateValue::Four(first.unwrap(), second.unwrap(), third.unwrap(), fourth.unwrap()),
+            1 => StateValue::Single { first: first.unwrap() },
+            2 => StateValue::Double { first: first.unwrap(), second: second.unwrap() },
+            3 => StateValue::Three {
+                first: first.unwrap(),
+                second: second.unwrap(),
+                third: third.unwrap(),
+            },
+            4 => StateValue::Four {
+                first: first.unwrap(),
+                second: second.unwrap(),
+                third: third.unwrap(),
+                fourth: fourth.unwrap(),
+            },
             _ => panic!("state value can't use more than 4 elements"),
         }
     }
 
     pub fn get(&self, pos: u8) -> Option<fe256> {
         match (*self, pos) {
-            (Self::Single(el), 0)
-            | (Self::Double(el, _), 0)
-            | (Self::Three(el, _, _), 0)
-            | (Self::Four(el, _, _, _), 0) => Some(el),
+            (Self::Single { first }, 0)
+            | (Self::Double { first, .. }, 0)
+            | (Self::Three { first, .. }, 0)
+            | (Self::Four { first, .. }, 0) => Some(first),
 
-            (Self::Double(_, el), 1)
-            | (Self::Three(_, el, _), 1)
-            | (Self::Four(_, el, _, _), 1) => Some(el),
+            (Self::Double { second, .. }, 1)
+            | (Self::Three { second, .. }, 1)
+            | (Self::Four { second, .. }, 1) => Some(second),
 
-            (Self::Three(_, _, el), 2) | (Self::Four(_, _, el, _), 2) => Some(el),
+            (Self::Three { third, .. }, 2) | (Self::Four { third, .. }, 2) => Some(third),
 
-            (Self::Four(_, _, _, el), 3) => Some(el),
+            (Self::Four { fourth, .. }, 3) => Some(fourth),
 
             _ => None,
         }
