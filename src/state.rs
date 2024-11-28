@@ -34,7 +34,7 @@ use commit_verify::{CommitEncode, CommitEngine, MerkleHash, StrictHash};
 
 use crate::LIB_NAME_ULTRASONIC;
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug, From)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, From)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 pub struct AuthToken(#[from] fe256);
