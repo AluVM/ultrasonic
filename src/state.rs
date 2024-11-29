@@ -222,6 +222,7 @@ impl CommitEncode for StateData {
     }
 }
 
+#[cfg(feature = "serde")]
 mod _serde {
     use serde::de::Error;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
