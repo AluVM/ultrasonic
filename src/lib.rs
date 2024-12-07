@@ -51,8 +51,7 @@ mod util;
 use amplify::num::u256;
 pub use codex::{AccessId, CallError, CallId, Codex, CodexId, LibRepo, Memory, VmContext};
 pub use contract::{
-    Capabilities, Contract, ContractId, ContractMeta, ContractName, ContractPrivate, ContractRef,
-    Private,
+    ConstU32, Contract, ContractId, ContractMeta, ContractName, ContractPrivate, ContractRef,
 };
 pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
 pub use operation::{CellAddr, Genesis, Input, Operation, Opid, ParseAddrError};

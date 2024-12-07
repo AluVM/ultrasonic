@@ -27,14 +27,40 @@ use core::str::FromStr;
 
 use amplify::{Bytes32, Wrapper};
 use commit_verify::{CommitId, CommitmentId, DigestExt, ReservedBytes, Sha256};
-use strict_encoding::{StrictDecode, StrictDumb, StrictEncode, TypeName};
+use strict_encoding::{
+    DecodeError, ReadTuple, StrictDecode, StrictDumb, StrictEncode, TypeName, TypedRead,
+};
 
 use crate::{Codex, Genesis, Identity, LIB_NAME_ULTRASONIC};
 
-pub trait Capabilities:
-    Copy + Eq + StrictDumb + StrictEncode + StrictDecode + Debug + Display + Into<[u8; 4]>
-{
+// TODO: Move to amplify
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+#[derive(StrictType, StrictEncode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(rename_all = "camelCase"))]
+pub struct ConstU32<const CONST: u32>(u32);
+
+impl<const CONST: u32> Default for ConstU32<CONST> {
+    fn default() -> Self { ConstU32(CONST) }
 }
+
+impl<const CONST: u32> ConstU32<CONST> {
+    pub fn new() -> Self { ConstU32(CONST) }
+}
+
+impl<const CONST: u32> StrictDecode for ConstU32<CONST> {
+    fn strict_decode(reader: &mut impl TypedRead) -> Result<Self, DecodeError> {
+        reader.read_tuple(|r| {
+            let val = r.read_field::<u32>()?;
+            if val != CONST {
+                return Err(DecodeError::DataIntegrityError(s!("ConstU32 mismatch")));
+            }
+            Ok(ConstU32(CONST))
+        })
+    }
+}
+
+pub type ContractPrivate = Contract<0>;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 #[derive(CommitEncode)]
@@ -42,14 +68,14 @@ pub trait Capabilities:
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
-pub struct Contract<C: Capabilities> {
+pub struct Contract<const CAPS: u32> {
     pub version: ReservedBytes<2>,
-    pub meta: ContractMeta<C>,
+    pub meta: ContractMeta<CAPS>,
     pub codex: Codex,
     pub genesis: Genesis,
 }
 
-impl<C: Capabilities> Contract<C> {
+impl<const CAPS: u32> Contract<CAPS> {
     pub fn contract_id(&self) -> ContractId { self.commit_id() }
 }
 
@@ -57,8 +83,8 @@ impl<C: Capabilities> Contract<C> {
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
-pub struct ContractMeta<C: Capabilities> {
-    pub capabilities: C,
+pub struct ContractMeta<const CAPS: u32> {
+    pub capabilities: ConstU32<CAPS>,
     // aligning to 16 byte edge
     #[cfg_attr(feature = "serde", serde(skip))]
     pub reserved: ReservedBytes<10>,
@@ -67,18 +93,6 @@ pub struct ContractMeta<C: Capabilities> {
     pub name: ContractName,
     pub issuer: Identity,
 }
-
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Display, Default)]
-#[display("~")]
-#[derive(StrictType, StrictEncode, StrictDecode)]
-#[strict_type(lib = LIB_NAME_ULTRASONIC)]
-pub struct Private(ReservedBytes<4, 0xFF>);
-impl From<Private> for [u8; 4] {
-    fn from(_: Private) -> Self { [0xFF; 4] }
-}
-impl Capabilities for Private {}
-
-pub type ContractPrivate = Contract<Private>;
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Display)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
@@ -175,6 +189,17 @@ mod _serde {
                 let bytes = <[u8; 32]>::deserialize(deserializer)?;
                 Ok(Self::from_byte_array(bytes))
             }
+        }
+    }
+
+    impl<'de, const CONST: u32> Deserialize<'de> for ConstU32<CONST> {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de> {
+            let val = u32::deserialize(deserializer)?;
+            if val != CONST {
+                return Err(D::Error::custom("Invalid constant value"));
+            }
+            Ok(ConstU32(CONST))
         }
     }
 }
