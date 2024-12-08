@@ -22,6 +22,7 @@
 // the License.
 
 use core::str::FromStr;
+use std::cmp::Ordering;
 use std::num::ParseIntError;
 
 use aluvm::fe256;
@@ -226,6 +227,13 @@ pub struct Operation {
     /// Immutable memory data which were created (write-once, readable by all).
     pub immutable: SmallVec<StateData>,
     pub reserved: ReservedBytes<8>,
+}
+
+impl PartialOrd for Operation {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { Some(self.cmp(other)) }
+}
+impl Ord for Operation {
+    fn cmp(&self, other: &Self) -> Ordering { self.opid().cmp(&other.opid()) }
 }
 
 impl CommitEncode for Operation {
