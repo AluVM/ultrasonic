@@ -49,6 +49,10 @@ pub struct Opid(
     Bytes32,
 );
 
+impl From<Opid> for [u8; 32] {
+    fn from(opid: Opid) -> Self { opid.to_byte_array() }
+}
+
 impl From<Sha256> for Opid {
     fn from(hasher: Sha256) -> Self { hasher.finish().into() }
 }
