@@ -31,7 +31,7 @@ use strict_encoding::{
     DecodeError, ReadTuple, StrictDecode, StrictDumb, StrictEncode, TypeName, TypedRead,
 };
 
-use crate::{Codex, Genesis, Identity, LIB_NAME_ULTRASONIC};
+use crate::{Codex, Genesis, Identity, Opid, LIB_NAME_ULTRASONIC};
 
 // TODO: Move to amplify
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
@@ -77,6 +77,8 @@ pub struct Contract<const CAPS: u32> {
 
 impl<const CAPS: u32> Contract<CAPS> {
     pub fn contract_id(&self) -> ContractId { self.commit_id() }
+
+    pub fn genesis_opid(&self) -> Opid { self.genesis.opid(self.contract_id()) }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
