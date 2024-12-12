@@ -208,7 +208,7 @@ impl Genesis {
 }
 
 impl Genesis {
-    pub fn opid(&self) -> Opid { self.commit_id() }
+    pub fn opid(&self, contract_id: ContractId) -> Opid { self.to_operation(contract_id).opid() }
 }
 
 #[derive(Clone, PartialEq, Eq, Debug)]
