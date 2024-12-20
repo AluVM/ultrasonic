@@ -21,14 +21,15 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
+use core::cmp::Ordering;
+use core::fmt::{self, Display, Formatter};
+use core::num::ParseIntError;
 use core::str::FromStr;
-use std::cmp::Ordering;
-use std::num::ParseIntError;
 
 use aluvm::fe256;
 use amplify::confinement::SmallVec;
-use amplify::hex::{FromHex, ToHex};
-use amplify::{hex, Bytes32, FromSliceError};
+use amplify::{Bytes32, FromSliceError};
+use baid64::{Baid64ParseError, DisplayBaid64, FromBaid64Str};
 use commit_verify::{
     CommitEncode, CommitEngine, CommitId, CommitmentId, DigestExt, MerkleHash, ReservedBytes,
     Sha256,
@@ -38,9 +39,8 @@ use crate::{CallId, CodexId, ContractId, StateCell, StateData, StateValue, LIB_N
 
 /// Unique operation (genesis, extensions & state transition) identifier
 /// equivalent to the commitment hash
-#[derive(Wrapper, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Display, From)]
+#[derive(Wrapper, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, From)]
 #[wrapper(Deref, BorrowSlice, Hex, Index, RangeOps)]
-#[display(Self::to_hex)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
@@ -62,9 +62,21 @@ impl CommitmentId for Opid {
     const TAG: &'static str = "urn:ubideco:ultrasonic:operation#2024-11-14";
 }
 
+impl DisplayBaid64 for Opid {
+    const HRI: &'static str = "usop";
+    const CHUNKING: bool = false;
+    const PREFIX: bool = false;
+    const EMBED_CHECKSUM: bool = false;
+    const MNEMONIC: bool = false;
+    fn to_baid64_payload(&self) -> [u8; 32] { self.to_byte_array() }
+}
+impl FromBaid64Str for Opid {}
 impl FromStr for Opid {
-    type Err = hex::Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> { Self::from_hex(s) }
+    type Err = Baid64ParseError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> { Self::from_baid64_str(s) }
+}
+impl Display for Opid {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { self.fmt_baid64(f) }
 }
 
 impl Opid {
@@ -88,7 +100,7 @@ impl CellAddr {
     pub fn new(opid: Opid, pos: u16) -> Self { Self { opid, pos } }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Display, From, Error)]
+#[derive(Debug, Display, From, Error)]
 #[display(doc_comments)]
 pub enum ParseAddrError {
     /// malformed string representation of cell address '{0}' lacking separator ':'
@@ -100,7 +112,7 @@ pub enum ParseAddrError {
 
     /// malformed operation id value. Details: {0}
     #[from]
-    InvalidOpid(hex::Error),
+    InvalidOpid(Baid64ParseError),
 }
 
 impl FromStr for CellAddr {
