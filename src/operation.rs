@@ -22,14 +22,12 @@
 // the License.
 
 use core::cmp::Ordering;
-use core::fmt::{self, Display, Formatter};
-use core::num::ParseIntError;
-use core::str::FromStr;
 
+#[cfg(feature = "baid64")]
+pub use _baid64::ParseAddrError;
 use aluvm::fe256;
 use amplify::confinement::SmallVec;
-use amplify::{Bytes32, FromSliceError};
-use baid64::{Baid64ParseError, DisplayBaid64, FromBaid64Str};
+use amplify::Bytes32;
 use commit_verify::{
     CommitEncode, CommitEngine, CommitId, CommitmentId, DigestExt, MerkleHash, ReservedBytes,
     Sha256,
@@ -43,7 +41,6 @@ use crate::{CallId, CodexId, ContractId, StateCell, StateData, StateValue, LIB_N
 #[wrapper(Deref, BorrowSlice, Hex, Index, RangeOps)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(transparent))]
 pub struct Opid(
     #[from]
     #[from([u8; 32])]
@@ -62,29 +59,6 @@ impl CommitmentId for Opid {
     const TAG: &'static str = "urn:ubideco:ultrasonic:operation#2024-11-14";
 }
 
-impl DisplayBaid64 for Opid {
-    const HRI: &'static str = "usop";
-    const CHUNKING: bool = false;
-    const PREFIX: bool = false;
-    const EMBED_CHECKSUM: bool = false;
-    const MNEMONIC: bool = false;
-    fn to_baid64_payload(&self) -> [u8; 32] { self.to_byte_array() }
-}
-impl FromBaid64Str for Opid {}
-impl FromStr for Opid {
-    type Err = Baid64ParseError;
-    fn from_str(s: &str) -> Result<Self, Self::Err> { Self::from_baid64_str(s) }
-}
-impl Display for Opid {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { self.fmt_baid64(f) }
-}
-
-impl Opid {
-    pub fn copy_from_slice(slice: impl AsRef<[u8]>) -> Result<Self, FromSliceError> {
-        Bytes32::copy_from_slice(slice).map(Self)
-    }
-}
-
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
 #[display("{opid}:{pos}")]
 #[derive(CommitEncode)]
@@ -100,41 +74,103 @@ impl CellAddr {
     pub fn new(opid: Opid, pos: u16) -> Self { Self { opid, pos } }
 }
 
-#[derive(Debug, Display, From, Error)]
-#[display(doc_comments)]
-pub enum ParseAddrError {
-    /// malformed string representation of cell address '{0}' lacking separator ':'
-    MalformedSeparator(String),
+mod _baid64 {
+    use core::fmt::{self, Display, Formatter};
+    use core::num::ParseIntError;
+    use core::str::FromStr;
 
-    /// malformed output number. Details: {0}
-    #[from]
-    InvalidOut(ParseIntError),
+    use amplify::FromSliceError;
+    use baid64::{Baid64ParseError, DisplayBaid64, FromBaid64Str};
 
-    /// malformed operation id value. Details: {0}
-    #[from]
-    InvalidOpid(Baid64ParseError),
-}
+    use super::*;
 
-impl FromStr for CellAddr {
-    type Err = ParseAddrError;
+    impl DisplayBaid64 for Opid {
+        const HRI: &'static str = "usop";
+        const CHUNKING: bool = false;
+        const PREFIX: bool = false;
+        const EMBED_CHECKSUM: bool = false;
+        const MNEMONIC: bool = false;
+        fn to_baid64_payload(&self) -> [u8; 32] { self.to_byte_array() }
+    }
+    impl FromBaid64Str for Opid {}
+    impl FromStr for Opid {
+        type Err = Baid64ParseError;
+        fn from_str(s: &str) -> Result<Self, Self::Err> { Self::from_baid64_str(s) }
+    }
+    impl Display for Opid {
+        fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { self.fmt_baid64(f) }
+    }
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (opid, pos) = s
-            .split_once(":")
-            .ok_or_else(|| ParseAddrError::MalformedSeparator(s.to_owned()))?;
-        let opid = Opid::from_str(opid)?;
-        let pos = u16::from_str(pos)?;
-        Ok(CellAddr::new(opid, pos))
+    impl Opid {
+        pub fn copy_from_slice(slice: impl AsRef<[u8]>) -> Result<Self, FromSliceError> {
+            Bytes32::copy_from_slice(slice).map(Self)
+        }
+    }
+
+    #[derive(Debug, Display, From, Error)]
+    #[display(doc_comments)]
+    pub enum ParseAddrError {
+        /// malformed string representation of cell address '{0}' lacking separator ':'
+        MalformedSeparator(String),
+
+        /// malformed output number. Details: {0}
+        #[from]
+        InvalidOut(ParseIntError),
+
+        /// malformed operation id value. Details: {0}
+        #[from]
+        InvalidOpid(Baid64ParseError),
+    }
+
+    impl FromStr for CellAddr {
+        type Err = ParseAddrError;
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            let (opid, pos) = s
+                .split_once(":")
+                .ok_or_else(|| ParseAddrError::MalformedSeparator(s.to_owned()))?;
+            let opid = Opid::from_str(opid)?;
+            let pos = u16::from_str(pos)?;
+            Ok(CellAddr::new(opid, pos))
+        }
     }
 }
 
 #[cfg(feature = "serde")]
 mod _serde {
+    use core::str::FromStr;
+
+    use amplify::ByteArray;
     use serde::de::Error;
     use serde::ser::SerializeTuple;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     use super::*;
+
+    // TODO: Use Base64 macro
+    impl Serialize for Opid {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer {
+            if serializer.is_human_readable() {
+                self.to_string().serialize(serializer)
+            } else {
+                self.to_byte_array().serialize(serializer)
+            }
+        }
+    }
+
+    impl<'de> Deserialize<'de> for Opid {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de> {
+            if deserializer.is_human_readable() {
+                let s = String::deserialize(deserializer)?;
+                Self::from_str(&s).map_err(D::Error::custom)
+            } else {
+                let bytes = <[u8; 32]>::deserialize(deserializer)?;
+                Ok(Self::from_byte_array(bytes))
+            }
+        }
+    }
 
     impl Serialize for CellAddr {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

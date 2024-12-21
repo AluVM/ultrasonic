@@ -54,7 +54,9 @@ pub use contract::{
     ConstU32, Contract, ContractId, ContractMeta, ContractName, ContractPrivate, ContractRef,
 };
 pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
-pub use operation::{CellAddr, Genesis, Input, Operation, Opid, ParseAddrError};
+#[cfg(feature = "baid64")]
+pub use operation::ParseAddrError;
+pub use operation::{CellAddr, Genesis, Input, Operation, Opid};
 pub use state::{AuthToken, RawData, StateCell, StateData, StateValue};
 pub use util::Identity;
 pub use zkaluvm::fe256;
