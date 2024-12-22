@@ -26,7 +26,9 @@ use core::fmt::{Debug, Display, Formatter};
 use core::str::FromStr;
 
 use amplify::{Bytes32, Wrapper};
-use commit_verify::{CommitId, CommitmentId, DigestExt, ReservedBytes, Sha256};
+use commit_verify::{
+    CommitEncode, CommitEngine, CommitId, CommitmentId, DigestExt, ReservedBytes, Sha256,
+};
 use strict_encoding::{
     DecodeError, ReadTuple, StrictDecode, StrictDumb, StrictEncode, TypeName, TypedRead,
 };
@@ -63,8 +65,6 @@ impl<const CONST: u32> StrictDecode for ConstU32<CONST> {
 pub type ContractPrivate = Contract<0>;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
-#[derive(CommitEncode)]
-#[commit_encode(strategy = strict, id = ContractId)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
@@ -73,6 +73,17 @@ pub struct Contract<const CAPS: u32> {
     pub meta: ContractMeta<CAPS>,
     pub codex: Codex,
     pub genesis: Genesis,
+}
+
+impl<const CAPS: u32> CommitEncode for Contract<CAPS> {
+    type CommitmentId = ContractId;
+
+    fn commit_encode(&self, e: &mut CommitEngine) {
+        e.commit_to_serialized(&self.version);
+        e.commit_to_serialized(&self.meta);
+        e.commit_to_serialized(&self.codex.codex_id());
+        e.commit_to_serialized(&self.genesis.commit_id());
+    }
 }
 
 impl<const CAPS: u32> Contract<CAPS> {

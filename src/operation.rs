@@ -59,6 +59,28 @@ impl CommitmentId for Opid {
     const TAG: &'static str = "urn:ubideco:ultrasonic:operation#2024-11-14";
 }
 
+#[derive(Wrapper, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, From)]
+#[wrapper(Deref, BorrowSlice, Hex, Index, RangeOps)]
+#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC)]
+pub struct GenesisId(
+    #[from]
+    #[from([u8; 32])]
+    Bytes32,
+);
+
+impl From<GenesisId> for [u8; 32] {
+    fn from(id: GenesisId) -> Self { id.to_byte_array() }
+}
+
+impl From<Sha256> for GenesisId {
+    fn from(hasher: Sha256) -> Self { hasher.finish().into() }
+}
+
+impl CommitmentId for GenesisId {
+    const TAG: &'static str = "urn:ubideco:ultrasonic:genesis#2024-11-14";
+}
+
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
 #[display("{opid}:{pos}")]
 #[derive(CommitEncode)]
@@ -233,7 +255,7 @@ pub struct Genesis {
 }
 
 impl CommitEncode for Genesis {
-    type CommitmentId = Opid;
+    type CommitmentId = GenesisId;
 
     fn commit_encode(&self, e: &mut CommitEngine) {
         e.commit_to_serialized(&self.codex_id);

@@ -1,5 +1,5 @@
 {-
-  Id: stl:Kap_vAdl-jB83HME-3knT273-xFzyG2v-HJ_OeEO-rt8xF6c#human-century-philips
+  Id: stl:Q06XmTa0-GC3fpFi-fMa516O-vVATwur-ovJBHh9-a_xYJ6c#brenda-symbol-speed
   Name: UltraSONIC
   Version: 0.13.0
   Description: Transactional execution layer with capability-based memory access for zk-AluVM
@@ -88,6 +88,9 @@ data Genesis           : codexId CodexId
                        , destructible [StateCell]
                        , immutable [StateData]
                        , reserved CommitVerify.ReservedBytes8
+
+@mnemonic(herbert-trident-buzzer)
+data GenesisId         : [Byte ^ 32]
 
 @mnemonic(smart-pioneer-nominal)
 data Identity          : Std.AsciiPrintable, [Std.AsciiPrintable ^ ..0xfff]

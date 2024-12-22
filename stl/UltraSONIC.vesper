@@ -10,7 +10,7 @@
 @@lexicon(types+commitments)
 
 
-vesper Codex:
+-- Contract codex
 
 commitment CodexId, hasher SHA256, tagged urn:ubideco:sonic:codex#2024-11-19
   serialized Codex
@@ -34,10 +34,13 @@ rec Codex
       is offset, U16
 
 
-vesper Contract:
+-- Contract
 
 commitment ContractId, hasher SHA256, tagged urn:ubideco:sonic:contract#2024-11-16
-  serialized Contract0
+  serialized ReservedBytes2
+  serialized ContractMeta0
+  serialized CodexId
+  serialized GenesisId
 
 rec Contract0
   bytes version, len 2, aka ReservedBytes2
@@ -114,7 +117,68 @@ rec Contract0
           bytes some, len 0..MAX16, option, wrapped, aka RawData, tag 1
 
 
-vesper Operation:
+-- Contract Genesis
+
+commitment Opid, hasher SHA256, tagged urn:ubideco:ultrasonic:operation#2024-11-14
+  serialized ContractId
+  serialized U16
+  serialized Fe256
+  merklized Input
+  merklized CellAddr
+  merklized StateCell
+  merklized StateData
+  serialized ReservedBytes8
+
+rec Genesis
+  bytes codexId, len 32, aka CodexId
+  is callId, U16
+  is nonce, U256, aka Fe256
+  bytes blank1, len 2, aka ReservedBytes2
+  bytes blank2, len 2, aka ReservedBytes2
+  list destructible, len 0..MAX16
+    rec StateCell
+      union data, StateValue
+        is none, Unit, tag 0
+        rec single, tag 1
+          is first, U256, aka Fe256
+        rec double, tag 2
+          is first, U256, aka Fe256
+          is second, U256, aka Fe256
+        rec three, tag 3
+          is first, U256, aka Fe256
+          is second, U256, aka Fe256
+          is third, U256, aka Fe256
+        rec four, tag 4
+          is first, U256, aka Fe256
+          is second, U256, aka Fe256
+          is third, U256, aka Fe256
+          is fourth, U256, aka Fe256
+      is auth, U256, aka AuthToken, aka Fe256
+        rec some, LibSite, option, wrapped, tag 1
+          bytes libId, len 32, aka LibId
+          is offset, U16
+  list immutable, len 0..MAX16
+    rec StateData
+      union value, StateValue
+        is none, Unit, tag 0
+        rec single, tag 1
+          is first, U256, aka Fe256
+        rec double, tag 2
+          is first, U256, aka Fe256
+          is second, U256, aka Fe256
+        rec three, tag 3
+          is first, U256, aka Fe256
+          is second, U256, aka Fe256
+          is third, U256, aka Fe256
+        rec four, tag 4
+          is first, U256, aka Fe256
+          is second, U256, aka Fe256
+          is third, U256, aka Fe256
+          is fourth, U256, aka Fe256
+        bytes some, len 0..MAX16, option, wrapped, aka RawData, tag 1
+
+
+-- Contract Operation
 
 commitment Opid, hasher SHA256, tagged urn:ubideco:ultrasonic:operation#2024-11-14
   serialized ContractId
