@@ -1,0 +1,134 @@
+{-
+  Id: stl:Kap_vAdl-jB83HME-3knT273-xFzyG2v-HJ_OeEO-rt8xF6c#human-century-philips
+  Name: UltraSONIC
+  Version: 0.13.0
+  Description: Transactional execution layer with capability-based memory access for zk-AluVM
+  Author: Dr Maxim Orlovsky <orlovsky@ubideco.org>
+  Copyright (C) 2024-2025 Laboratories for Ubiquitous Deterministic Computing (UBIDECO),
+                          Institute for Distributed and Cognitive Systems (InDCS), Switzerland.
+                          All rights reserved.
+  License: Apache-2.0
+-}
+
+@context
+typelib UltraSONIC
+
+import FiniteField#report-canal-convert
+  use Fe256#palace-mixer-visual
+
+import Std#delete-roman-hair
+  use AsciiPrintable#ultra-sunset-format
+  use Bool#oxygen-complex-duet
+  use AlphaNumLodash#percent-bingo-caesar
+  use AlphaCapsLodash#duet-hammer-labor
+
+import AluVM#reward-accent-swim
+  use LibId#germany-culture-olivia
+  use CoreConfig#ventura-ibiza-special
+  use LibSite#polo-macro-elite
+
+import StrictTypes#henry-heart-survive
+  use TypeName#edgar-carol-mystery
+
+import CommitVerify#uranium-alien-extend
+  use ReservedBytes2#florida-libra-circus
+  use ReservedBytes10#marble-prepare-arnold
+  use ReservedBytes8#rudolf-tape-adrian
+
+
+@mnemonic(western-america-patrol)
+data AuthToken         : FiniteField.Fe256
+
+@mnemonic(tahiti-tobacco-grid)
+data CellAddr          : opid Opid, pos U16
+
+@mnemonic(patron-tower-reply)
+data Codex             : version CommitVerify.ReservedBytes2
+                       , name [Unicode ^ ..0xff]
+                       , developer Identity
+                       , timestamp I64
+                       , fieldOrder U256
+                       , inputConfig AluVM.CoreConfig
+                       , verificationConfig AluVM.CoreConfig
+                       , verifiers {U16 -> ^ ..0xff AluVM.LibSite}
+                       , reserved CommitVerify.ReservedBytes8
+
+@mnemonic(cargo-season-impact)
+data CodexId           : [Byte ^ 32]
+
+@mnemonic(conduct-touch-private)
+data ConstU320         : U32
+
+@mnemonic(bingo-trick-block)
+data Contract0         : version CommitVerify.ReservedBytes2
+                       , meta ContractMeta0
+                       , codex Codex
+                       , genesis Genesis
+
+@mnemonic(uniform-welcome-papa)
+data ContractId        : [Byte ^ 32]
+
+@mnemonic(plato-pegasus-repair)
+data ContractMeta0     : capabilities ConstU320
+                       , reserved CommitVerify.ReservedBytes10
+                       , timestamp I64
+                       , name ContractName
+                       , issuer Identity
+
+@mnemonic(value-reform-lesson)
+data ContractName      : unnamed ()
+                       | named StrictTypes.TypeName
+
+@mnemonic(teacher-russian-desert)
+data Genesis           : codexId CodexId
+                       , callId U16
+                       , nonce FiniteField.Fe256
+                       , blank1 CommitVerify.ReservedBytes2
+                       , blank2 CommitVerify.ReservedBytes2
+                       , destructible [StateCell]
+                       , immutable [StateData]
+                       , reserved CommitVerify.ReservedBytes8
+
+@mnemonic(smart-pioneer-nominal)
+data Identity          : Std.AsciiPrintable, [Std.AsciiPrintable ^ ..0xfff]
+
+@mnemonic(region-gilbert-drama)
+data Input             : addr CellAddr, witness StateValue
+
+@mnemonic(virtual-judge-friday)
+data Operation         : contractId ContractId
+                       , callId U16
+                       , nonce FiniteField.Fe256
+                       , destroying [Input]
+                       , reading [CellAddr]
+                       , destructible [StateCell]
+                       , immutable [StateData]
+                       , reserved CommitVerify.ReservedBytes8
+
+@mnemonic(storm-dragon-brain)
+data Opid              : [Byte ^ 32]
+
+@mnemonic(lima-anvil-karate)
+data RawData           : [Byte]
+
+@mnemonic(libra-grille-grace)
+data StateCell         : data StateValue
+                       , auth AuthToken
+                       , lock AluVM.LibSite?
+
+@mnemonic(siren-organic-double)
+data StateData         : value StateValue, raw RawData?
+
+@mnemonic(book-antonio-alice)
+data StateValue        : none ()
+                       | single first FiniteField.Fe256
+                       | double (first FiniteField.Fe256, second FiniteField.Fe256)
+                       | three (first FiniteField.Fe256
+                       , second FiniteField.Fe256
+                       , third FiniteField.Fe256)
+                       | four (first FiniteField.Fe256
+                       , second FiniteField.Fe256
+                       , third FiniteField.Fe256
+                       , fourth FiniteField.Fe256)
+
+
