@@ -218,6 +218,13 @@ pub struct Genesis {
     pub codex_id: CodexId,
     pub call_id: CallId,
     pub nonce: fe256,
+
+    // We need blanks in order to have Genesis serialized the same way as operaiton
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub blank1: ReservedBytes<2>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    pub blank2: ReservedBytes<2>,
+
     /// Memory cells which were created (read-once, access-controlled).
     pub destructible: SmallVec<StateCell>,
     /// Immutable memory data which were created (write-once, readable by all).
