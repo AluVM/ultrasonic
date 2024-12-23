@@ -21,9 +21,7 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-use core::fmt;
-use core::fmt::{Debug, Display, Formatter};
-use core::str::FromStr;
+use core::fmt::Debug;
 
 use amplify::{Bytes32, Wrapper};
 use commit_verify::{
@@ -122,8 +120,9 @@ pub enum ContractName {
 }
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Display)]
-#[display(inner)]
 pub enum ContractRef {
+    #[cfg_attr(feature = "baid64", display(inner))]
+    #[cfg_attr(not(feature = "baid64"), display("{0:?}"))]
     Id(ContractId),
     Name(TypeName),
     // Mnemonic(),
@@ -134,14 +133,30 @@ pub enum ContractRef {
 #[wrapper(Deref, BorrowSlice, Hex, Index, RangeOps)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "baid64")),
+    derive(Serialize, Deserialize),
+    serde(transparent)
+)]
 pub struct ContractId(
     #[from]
     #[from([u8; 32])]
     Bytes32,
 );
 
+impl From<Sha256> for ContractId {
+    fn from(hasher: Sha256) -> Self { hasher.finish().into() }
+}
+
+impl CommitmentId for ContractId {
+    const TAG: &'static str = "urn:ubideco:sonic:contract#2024-11-16";
+}
+
 #[cfg(feature = "baid64")]
 mod _baid4 {
+    use core::fmt::{self, Display, Formatter};
+    use core::str::FromStr;
+
     use baid64::{Baid64ParseError, DisplayBaid64, FromBaid64Str};
 
     use super::*;
@@ -162,19 +177,13 @@ mod _baid4 {
     impl Display for ContractId {
         fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { self.fmt_baid64(f) }
     }
-
-    impl From<Sha256> for ContractId {
-        fn from(hasher: Sha256) -> Self { hasher.finish().into() }
-    }
-
-    impl CommitmentId for ContractId {
-        const TAG: &'static str = "urn:ubideco:sonic:contract#2024-11-16";
-    }
 }
 
 // TODO: Use Base64 macro
-#[cfg(feature = "serde")]
+#[cfg(all(feature = "serde", feature = "baid64"))]
 mod _serde {
+    use core::str::FromStr;
+
     use amplify::ByteArray;
     use serde::de::Error;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -204,6 +213,14 @@ mod _serde {
             }
         }
     }
+}
+
+#[cfg(feature = "serde")]
+mod _serde2 {
+    use serde::de::Error;
+    use serde::{Deserialize, Deserializer};
+
+    use super::*;
 
     impl<'de, const CONST: u32> Deserialize<'de> for ConstU32<CONST> {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>

@@ -41,6 +41,11 @@ use crate::{CallId, CodexId, ContractId, StateCell, StateData, StateValue, LIB_N
 #[wrapper(Deref, BorrowSlice, Hex, Index, RangeOps)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "baid64")),
+    derive(Serialize, Deserialize),
+    serde(transparent)
+)]
 pub struct Opid(
     #[from]
     #[from([u8; 32])]
@@ -81,12 +86,12 @@ impl CommitmentId for GenesisId {
     const TAG: &'static str = "urn:ubideco:ultrasonic:genesis#2024-11-14";
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
-#[display("{opid}:{pos}")]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 #[derive(CommitEncode)]
 #[commit_encode(strategy = strict, id = MerkleHash)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(all(feature = "serde", not(feature = "baid64")), derive(Serialize, Deserialize))]
 pub struct CellAddr {
     pub opid: Opid,
     pub pos: u16,
@@ -96,6 +101,7 @@ impl CellAddr {
     pub fn new(opid: Opid, pos: u16) -> Self { Self { opid, pos } }
 }
 
+#[cfg(feature = "baid64")]
 mod _baid64 {
     use core::fmt::{self, Display, Formatter};
     use core::num::ParseIntError;
@@ -105,6 +111,12 @@ mod _baid64 {
     use baid64::{Baid64ParseError, DisplayBaid64, FromBaid64Str};
 
     use super::*;
+
+    impl Display for CellAddr {
+        fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+            write!(f, "{}:{}", self.opid, self.pos)
+        }
+    }
 
     impl DisplayBaid64 for Opid {
         const HRI: &'static str = "usop";
@@ -158,7 +170,7 @@ mod _baid64 {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(all(feature = "serde", feature = "baid64"))]
 mod _serde {
     use core::str::FromStr;
 

@@ -21,7 +21,6 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-use core::fmt::{self, Display, Formatter};
 use core::str::FromStr;
 
 use aluvm::{fe256, LibSite};
@@ -29,7 +28,6 @@ use amplify::confinement::SmallBlob;
 use amplify::hex::FromHex;
 use amplify::num::u256;
 use amplify::{hex, Bytes};
-use baid64::{Baid64ParseError, DisplayBaid64, FromBaid64Str};
 use commit_verify::{CommitEncode, CommitEngine, MerkleHash, StrictHash};
 
 use crate::LIB_NAME_ULTRASONIC;
@@ -37,6 +35,11 @@ use crate::LIB_NAME_ULTRASONIC;
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, From)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "baid64")),
+    derive(Serialize, Deserialize),
+    serde(transparent)
+)]
 pub struct AuthToken(#[from] fe256);
 
 impl From<[u8; 30]> for AuthToken {
@@ -71,23 +74,33 @@ impl AuthToken {
     }
 }
 
-impl DisplayBaid64<30> for AuthToken {
-    const HRI: &'static str = "auth";
-    const CHUNKING: bool = true;
-    const CHUNK_FIRST: usize = 8;
-    const CHUNK_LEN: usize = 8;
-    const PREFIX: bool = false;
-    const EMBED_CHECKSUM: bool = true;
-    const MNEMONIC: bool = false;
-    fn to_baid64_payload(&self) -> [u8; 30] { self.to_byte_array() }
-}
-impl FromBaid64Str<30> for AuthToken {}
-impl FromStr for AuthToken {
-    type Err = Baid64ParseError;
-    fn from_str(s: &str) -> Result<Self, Self::Err> { Self::from_baid64_str(s) }
-}
-impl Display for AuthToken {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { self.fmt_baid64(f) }
+#[cfg(feature = "baid64")]
+mod _baid64 {
+    use core::fmt::{self, Display, Formatter};
+    use core::str::FromStr;
+
+    use baid64::{Baid64ParseError, DisplayBaid64, FromBaid64Str};
+
+    use super::*;
+
+    impl DisplayBaid64<30> for AuthToken {
+        const HRI: &'static str = "auth";
+        const CHUNKING: bool = true;
+        const CHUNK_FIRST: usize = 8;
+        const CHUNK_LEN: usize = 8;
+        const PREFIX: bool = false;
+        const EMBED_CHECKSUM: bool = true;
+        const MNEMONIC: bool = false;
+        fn to_baid64_payload(&self) -> [u8; 30] { self.to_byte_array() }
+    }
+    impl FromBaid64Str<30> for AuthToken {}
+    impl FromStr for AuthToken {
+        type Err = Baid64ParseError;
+        fn from_str(s: &str) -> Result<Self, Self::Err> { Self::from_baid64_str(s) }
+    }
+    impl Display for AuthToken {
+        fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { self.fmt_baid64(f) }
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Default)]
@@ -222,7 +235,7 @@ impl CommitEncode for StateData {
     }
 }
 
-#[cfg(feature = "serde")]
+#[cfg(all(feature = "serde", feature = "baid64"))]
 mod _serde {
     use serde::de::Error;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -251,7 +264,14 @@ mod _serde {
             }
         }
     }
+}
 
+#[cfg(feature = "serde")]
+mod _serde2 {
+    use serde::de::Error;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    use super::*;
     impl Serialize for RawData {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer {
@@ -278,10 +298,13 @@ mod _serde {
 
 #[cfg(test)]
 mod test {
+    #[cfg(feature = "baid64")]
     use super::*;
 
     #[test]
+    #[cfg(feature = "baid64")]
     fn auth_baid64() {
+        use baid64::DisplayBaid64;
         let auth = AuthToken::from_byte_array([0xAD; 30]);
 
         let baid64 = "ra2tra2t-ra2tra2t-ra2tra2t-ra2tra2t-ra2tra2t-WsPD8w";

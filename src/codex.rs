@@ -26,7 +26,7 @@ use aluvm::{fe256, CoreConfig, CoreExt, Lib, LibId, LibSite, RegE, Vm};
 use amplify::confinement::{SmallVec, TinyOrdMap, TinyString};
 use amplify::num::u256;
 use amplify::Bytes32;
-use commit_verify::{CommitId, ReservedBytes};
+use commit_verify::{CommitId, CommitmentId, DigestExt, ReservedBytes, Sha256};
 
 use crate::{
     CellAddr, ContractId, Identity, Instr, Operation, StateCell, StateData, StateValue,
@@ -163,22 +163,51 @@ pub trait LibRepo {
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Display, Error)]
 #[display(doc_comments)]
 pub enum CallError {
-    /// operation doesn't belong to the current contract {expected} (operation contract is
-    /// {found}).
+    #[cfg_attr(
+        feature = "baid64",
+        display = "operation doesn't belong to the current contract {expected} (operation \
+                   contract is {found})."
+    )]
+    #[cfg_attr(
+        not(feature = "baid64"),
+        display = "operation doesn't belong to the current contract."
+    )]
     WrongContract {
         expected: ContractId,
         found: ContractId,
     },
+
     /// operation verifier {0} is not present in the codex.
     NotFound(CallId),
-    /// operation references read-once memory cell {0} which was not defined.
+
+    #[cfg_attr(
+        feature = "baid64",
+        display = "operation references read-once memory cell {0} which was not defined."
+    )]
+    #[cfg_attr(
+        not(feature = "baid64"),
+        display = "operation references read-once memory cell {0:?} which was not defined."
+    )]
     NoReadOnceInput(CellAddr),
+
+    #[cfg_attr(
+        feature = "baid64",
+        display = "operation references immutable memory cell {0} which was not defined."
+    )]
+    #[cfg_attr(
+        not(feature = "baid64"),
+        display = "operation references immutable memory cell {0:?} which was not defined."
+    )]
+
     /// operation references immutable memory cell {0} which was not defined.
     NoImmutableInput(CellAddr),
+
     /// operation input locking conditions are unsatisfied.
     Lock(Option<fe256>),
+
     /// verification failure {0}
     Script(fe256),
+
     /// verification failure (details are unspecified).
     ScriptUnspecified,
 }
@@ -188,11 +217,24 @@ pub enum CallError {
 #[wrapper(Deref, BorrowSlice, Hex, Index, RangeOps)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(
+    all(feature = "serde", not(feature = "baid64")),
+    derive(Serialize, Deserialize),
+    serde(transparent)
+)]
 pub struct CodexId(
     #[from]
     #[from([u8; 32])]
     Bytes32,
 );
+
+impl From<Sha256> for CodexId {
+    fn from(hasher: Sha256) -> Self { hasher.finish().into() }
+}
+
+impl CommitmentId for CodexId {
+    const TAG: &'static str = "urn:ubideco:sonic:codex#2024-11-19";
+}
 
 #[cfg(feature = "baid64")]
 mod _baid4 {
@@ -200,7 +242,6 @@ mod _baid4 {
     use core::str::FromStr;
 
     use baid64::{Baid64ParseError, DisplayBaid64, FromBaid64Str};
-    use commit_verify::{CommitmentId, DigestExt, Sha256};
 
     use super::*;
 
@@ -220,18 +261,10 @@ mod _baid4 {
     impl Display for CodexId {
         fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { self.fmt_baid64(f) }
     }
-
-    impl From<Sha256> for CodexId {
-        fn from(hasher: Sha256) -> Self { hasher.finish().into() }
-    }
-
-    impl CommitmentId for CodexId {
-        const TAG: &'static str = "urn:ubideco:sonic:codex#2024-11-19";
-    }
 }
 
 // TODO: Use Base64 macro
-#[cfg(feature = "serde")]
+#[cfg(all(feature = "serde", feature = "baid64"))]
 mod _serde {
     use core::str::FromStr;
 
