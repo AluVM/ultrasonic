@@ -96,6 +96,7 @@ impl<const CAPS: u32> Contract<CAPS> {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct ContractMeta<const CAPS: u32> {
     pub capabilities: ConstU32<CAPS>,
+    pub testnet: bool,
     // aligning to 16 byte edge
     #[cfg_attr(feature = "serde", serde(skip))]
     pub reserved: ReservedBytes<10>,
