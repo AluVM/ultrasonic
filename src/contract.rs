@@ -60,20 +60,18 @@ impl<const CONST: u32> StrictDecode for ConstU32<CONST> {
     }
 }
 
-pub type ContractPrivate = Contract<0>;
-
 #[derive(Clone, Eq, PartialEq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
-pub struct Contract<const CAPS: u32> {
+pub struct Contract {
     pub version: ReservedBytes<2>,
-    pub meta: ContractMeta<CAPS>,
+    pub meta: ContractMeta,
     pub codex: Codex,
     pub genesis: Genesis,
 }
 
-impl<const CAPS: u32> CommitEncode for Contract<CAPS> {
+impl CommitEncode for Contract {
     type CommitmentId = ContractId;
 
     fn commit_encode(&self, e: &mut CommitEngine) {
@@ -84,22 +82,35 @@ impl<const CAPS: u32> CommitEncode for Contract<CAPS> {
     }
 }
 
-impl<const CAPS: u32> Contract<CAPS> {
+impl Contract {
     pub fn contract_id(&self) -> ContractId { self.commit_id() }
 
     pub fn genesis_opid(&self) -> Opid { self.genesis.opid(self.contract_id()) }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC, tags = repr, into_u8, try_from_u8)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
+#[repr(u8)]
+pub enum Consensus {
+    #[strict_type(dumb)]
+    None = 0,
+    Bitcoin = 0x10,
+    Liquid = 0x11,
+    Prime = 0x20,
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
-pub struct ContractMeta<const CAPS: u32> {
-    pub capabilities: ConstU32<CAPS>,
+pub struct ContractMeta {
     pub testnet: bool,
+    pub consensus: Consensus,
     // aligning to 16 byte edge
     #[cfg_attr(feature = "serde", serde(skip))]
-    pub reserved: ReservedBytes<10>,
+    pub reserved: ReservedBytes<14>,
     pub timestamp: i64,
     // ^^ above is a fixed-size contract header of 32 bytes
     pub name: ContractName,

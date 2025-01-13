@@ -52,7 +52,7 @@ mod util;
 use amplify::num::u256;
 pub use codex::{AccessId, CallError, CallId, Codex, CodexId, LibRepo, Memory, VmContext};
 pub use contract::{
-    ConstU32, Contract, ContractId, ContractMeta, ContractName, ContractPrivate, ContractRef,
+    Consensus, ConstU32, Contract, ContractId, ContractMeta, ContractName, ContractRef,
 };
 pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
 #[cfg(feature = "baid64")]

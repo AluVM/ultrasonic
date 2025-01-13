@@ -1,5 +1,5 @@
 {-
-  Id: stl:fKbDyvog-i14ZRKs-eyDiXAl-5qWkgiT-tlRbHHi-7Rk~Vpo#reflex-stamp-alpha
+  Id: stl:guAx~YzT-AJapVMJ-3f~maXC-mIWOBMy-I4DFFOd-eA2Wm1s#legacy-basil-broken
   Name: UltraSONIC
   Version: 0.13.0
   Description: Transactional execution layer with capability-based memory access for zk-AluVM
@@ -31,8 +31,8 @@ import StrictTypes#henry-heart-survive
   use TypeName#edgar-carol-mystery
 
 import CommitVerify#uranium-alien-extend
+  use ReservedBytes14#prize-edison-classic
   use ReservedBytes2#florida-libra-circus
-  use ReservedBytes10#marble-prepare-arnold
   use ReservedBytes8#rudolf-tape-adrian
 
 
@@ -56,22 +56,23 @@ data Codex             : version CommitVerify.ReservedBytes2
 @mnemonic(cargo-season-impact)
 data CodexId           : [Byte ^ 32]
 
-@mnemonic(conduct-touch-private)
-data ConstU320         : U32
+@mnemonic(nissan-congo-clark)
+data Consensus         : none | bitcoin#16 | liquid | prime#32
 
-@mnemonic(bingo-trick-block)
-data Contract0         : version CommitVerify.ReservedBytes2
-                       , meta ContractMeta0
+
+@mnemonic(metal-kitchen-telex)
+data Contract          : version CommitVerify.ReservedBytes2
+                       , meta ContractMeta
                        , codex Codex
                        , genesis Genesis
 
 @mnemonic(uniform-welcome-papa)
 data ContractId        : [Byte ^ 32]
 
-@mnemonic(isotope-sherman-carrot)
-data ContractMeta0     : capabilities ConstU320
-                       , testnet Std.Bool
-                       , reserved CommitVerify.ReservedBytes10
+@mnemonic(aspirin-byte-elvis)
+data ContractMeta      : testnet Std.Bool
+                       , consensus Consensus
+                       , reserved CommitVerify.ReservedBytes14
                        , timestamp I64
                        , name ContractName
                        , issuer Identity
