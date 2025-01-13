@@ -38,7 +38,6 @@ extern crate zkaluvm as aluvm;
 #[cfg(feature = "serde")]
 #[macro_use]
 extern crate serde;
-extern crate core;
 
 mod codex;
 mod state;

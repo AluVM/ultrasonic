@@ -22,6 +22,7 @@
 // the License.
 
 use core::fmt::Debug;
+use core::str::FromStr;
 
 use amplify::{Bytes32, Wrapper};
 use commit_verify::{
@@ -88,7 +89,8 @@ impl Contract {
     pub fn genesis_opid(&self) -> Opid { self.genesis.opid(self.contract_id()) }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Display)]
+#[display(lowercase)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC, tags = repr, into_u8, try_from_u8)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
@@ -99,6 +101,20 @@ pub enum Consensus {
     Bitcoin = 0x10,
     Liquid = 0x11,
     Prime = 0x20,
+}
+
+impl FromStr for Consensus {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "none" => Ok(Consensus::None),
+            "bitcoin" => Ok(Consensus::Bitcoin),
+            "liquid" => Ok(Consensus::Liquid),
+            "prime" => Ok(Consensus::Prime),
+            _ => Err(s.to_owned()),
+        }
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, Debug)]
