@@ -84,11 +84,11 @@ mod _baid64 {
     use super::*;
 
     impl DisplayBaid64<30> for AuthToken {
-        const HRI: &'static str = "auth";
+        const HRI: &'static str = "at";
         const CHUNKING: bool = true;
         const CHUNK_FIRST: usize = 8;
         const CHUNK_LEN: usize = 8;
-        const PREFIX: bool = false;
+        const PREFIX: bool = true;
         const EMBED_CHECKSUM: bool = true;
         const MNEMONIC: bool = false;
         fn to_baid64_payload(&self) -> [u8; 30] { self.to_byte_array() }
@@ -307,7 +307,7 @@ mod test {
         use baid64::DisplayBaid64;
         let auth = AuthToken::from_byte_array([0xAD; 30]);
 
-        let baid64 = "ra2tra2t-ra2tra2t-ra2tra2t-ra2tra2t-ra2tra2t-WsPD8w";
+        let baid64 = "at:ra2tra2t-ra2tra2t-ra2tra2t-ra2tra2t-ra2tra2t-HURE_w";
         assert_eq!(baid64, auth.to_string());
         assert_eq!(auth.to_string(), auth.to_baid64_string());
 
