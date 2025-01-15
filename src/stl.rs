@@ -28,11 +28,11 @@ use strict_types::stl::{std_stl, strict_types_stl};
 use strict_types::typelib::LibBuilder;
 use strict_types::{CompileError, TypeLib};
 
-use crate::{ContractId, ContractPrivate, GenesisId, Operation, Opid, LIB_NAME_ULTRASONIC};
+use crate::{Contract, ContractId, GenesisId, Operation, Opid, LIB_NAME_ULTRASONIC};
 
 /// Strict types id for the library providing data types for RGB consensus.
 pub const LIB_ID_ULTRASONIC: &str =
-    "stl:fKbDyvog-i14ZRKs-eyDiXAl-5qWkgiT-tlRbHHi-7Rk~Vpo#reflex-stamp-alpha";
+    "stl:guAx~YzT-AJapVMJ-3f~maXC-mIWOBMy-I4DFFOd-eA2Wm1s#legacy-basil-broken";
 
 fn _usonic_stl() -> Result<TypeLib, CompileError> {
     LibBuilder::new(libname!(LIB_NAME_ULTRASONIC), tiny_bset! {
@@ -46,7 +46,7 @@ fn _usonic_stl() -> Result<TypeLib, CompileError> {
     .transpile::<GenesisId>()
     .transpile::<Operation>()
     .transpile::<ContractId>()
-    .transpile::<ContractPrivate>()
+    .transpile::<Contract>()
     .compile()
 }
 
