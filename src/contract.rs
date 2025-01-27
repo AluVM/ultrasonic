@@ -147,15 +147,6 @@ pub enum ContractName {
     Named(TypeName),
 }
 
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Display)]
-pub enum ContractRef {
-    #[cfg_attr(feature = "baid64", display(inner))]
-    #[cfg_attr(not(feature = "baid64"), display("{0:?}"))]
-    Id(ContractId),
-    Name(TypeName),
-    // Mnemonic(),
-}
-
 /// Unique contract identifier equivalent to the contract genesis commitment
 #[derive(Wrapper, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, From)]
 #[wrapper(Deref, BorrowSlice, Hex, Index, RangeOps)]
