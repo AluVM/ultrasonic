@@ -21,6 +21,7 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
+use core::cmp::Ordering;
 use core::str::FromStr;
 
 use aluvm::{fe256, LibSite};
@@ -41,6 +42,17 @@ use crate::LIB_NAME_ULTRASONIC;
     serde(transparent)
 )]
 pub struct AuthToken(#[from] fe256);
+
+// Types in ultrasonic must not be ordered, since zk-STARK proofs are really inefficient in applying
+// ordering to field elements. However, upstream we need to put `AuthToken` into `BTreeMap`, thus we
+// need `Ord` implementation for pure rust reasons. It must not be used anywhere in the consensus
+// layer.
+impl PartialOrd for AuthToken {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { Some(self.cmp(other)) }
+}
+impl Ord for AuthToken {
+    fn cmp(&self, other: &Self) -> Ordering { self.0.to_u256().cmp(&other.0.to_u256()) }
+}
 
 impl From<[u8; 30]> for AuthToken {
     fn from(value: [u8; 30]) -> Self { Self::from_byte_array(value) }
