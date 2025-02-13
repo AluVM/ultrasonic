@@ -111,10 +111,10 @@ impl Codex {
         }
 
         let mut immutable_input = SmallVec::new();
-        for input in &operation.destroying {
+        for addr in &operation.reading {
             let data = memory
-                .immutable(input.addr)
-                .ok_or(CallError::NoImmutableInput(input.addr))?;
+                .immutable(*addr)
+                .ok_or(CallError::NoImmutableInput(*addr))?;
             let _ = immutable_input.push(data);
         }
 
@@ -198,7 +198,6 @@ pub enum CallError {
         not(feature = "baid64"),
         display = "operation references immutable memory cell {0:?} which was not defined."
     )]
-
     /// operation references immutable memory cell {0} which was not defined.
     NoImmutableInput(CellAddr),
 
