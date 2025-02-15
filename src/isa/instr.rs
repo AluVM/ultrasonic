@@ -72,19 +72,19 @@ pub enum UsonicInstr<Id: SiteId> {
     #[display("nxo.im  {0}")]
     NxOIm(Site<Id>),
 
-    /// Load next field element from the current input read-only memory cell to `E1` register,
+    /// Load next field element from the current input read-only memory cell to `EA` register,
     #[display("ldi.ro  EA")]
     LdIRo,
 
-    /// Load next field element from the current input immutable memory cell to `E2` register,
+    /// Load next field element from the current input immutable memory cell to `EB` register,
     #[display("ldi.im  EB")]
     LdIIm,
 
-    /// Load next field element from the current input read-only memory cell to `E3` register,
+    /// Load next field element from the current input read-only memory cell to `EC` register,
     #[display("ldo.ro  EC")]
     LdORo,
 
-    /// Load next field element from the current input read-only memory cell to `E4` register,
+    /// Load next field element from the current input read-only memory cell to `ED` register,
     #[display("ldo.im  ED")]
     LdOIm,
 }
