@@ -23,9 +23,9 @@
 
 use std::ops::RangeInclusive;
 
+use aluvm::alu::{Site, SiteId};
 use aluvm::gfa::FieldInstr;
 use aluvm::isa::{Bytecode, BytecodeRead, BytecodeWrite, CodeEofError, CtrlInstr, ReservedInstr};
-use aluvm::{Site, SiteId};
 
 use super::UsonicInstr;
 use crate::Instr;

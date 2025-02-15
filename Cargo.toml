@@ -1,6 +1,6 @@
 [package]
 name = "ultrasonic"
-version = "0.12.0-beta.4"
+version = "0.12.0-beta.5"
 authors = ["Dr Maxim Orlovsky <orlovsky@ubideco.org>"]
 description = "Transactional execution layer with capability-based memory access for zk-AluVM"
 repository = "https://github.com/AluVM/ultrasonic"
@@ -25,9 +25,9 @@ crate-type = ["dylib", "rlib"]
 amplify = { version = "~4.8.0", default-features = false, features = ["derive", "hex"] }
 baid64 = { version = "~0.4.1", optional = true }
 strict_encoding = { version = "~2.8.1", default-features = false, features = ["derive"] }
-strict_types = { version = "~2.8.1", optional = true }
-zk-aluvm = "~0.12.0-beta.4"
-commit_verify = { version = "~0.12.0-beta.4", features = ["derive"] }
+strict_types = { version = "~2.8.2", optional = true }
+zk-aluvm = "~0.12.0-beta.5"
+commit_verify = { version = "~0.12.0-beta.5", features = ["derive"] }
 serde = { version = "1", features = ["derive"], optional = true }
 
 [features]

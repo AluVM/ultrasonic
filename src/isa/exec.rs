@@ -23,8 +23,9 @@
 
 use std::collections::BTreeSet;
 
+use aluvm::alu::{Core, CoreExt, ExecStep, Site, SiteId};
 use aluvm::isa::Instruction;
-use aluvm::{Core, CoreExt, ExecStep, RegE, Site, SiteId};
+use aluvm::RegE;
 
 use super::{UsonicCore, UsonicInstr, REG_IN_IM, REG_IN_RO, REG_OUT_IM, REG_OUT_RO};
 use crate::{Instr, VmContext, ISA_ULTRASONIC};

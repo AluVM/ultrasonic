@@ -21,8 +21,9 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-use aluvm::regs::Status;
-use aluvm::{fe256, CoreConfig, CoreExt, Lib, LibId, LibSite, RegE, Vm};
+use aluvm::alu::regs::Status;
+use aluvm::alu::{CoreConfig, CoreExt, Lib, LibId, LibSite, Vm};
+use aluvm::{fe256, RegE};
 use amplify::confinement::{SmallVec, TinyOrdMap, TinyString};
 use amplify::num::u256;
 use amplify::Bytes32;

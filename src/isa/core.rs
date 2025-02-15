@@ -23,7 +23,8 @@
 
 use core::fmt::{self, Debug, Formatter};
 
-use aluvm::{CoreExt, GfaCore, NoExt, RegE, Register};
+use aluvm::alu::{CoreExt, NoExt, Register};
+use aluvm::{GfaCore, RegE};
 use amplify::num::u256;
 
 pub const REG_IN_RO: usize = 0;

@@ -24,7 +24,8 @@
 use core::cmp::Ordering;
 use core::str::FromStr;
 
-use aluvm::{fe256, LibSite};
+use aluvm::alu::LibSite;
+use aluvm::fe256;
 use amplify::confinement::SmallBlob;
 use amplify::hex::FromHex;
 use amplify::num::u256;

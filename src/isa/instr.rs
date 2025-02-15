@@ -21,9 +21,9 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
+use aluvm::alu::{Site, SiteId};
 use aluvm::gfa::FieldInstr;
 use aluvm::isa::{CtrlInstr, ReservedInstr};
-use aluvm::{Site, SiteId};
 
 pub const ISA_ULTRASONIC: &str = "USONIC";
 

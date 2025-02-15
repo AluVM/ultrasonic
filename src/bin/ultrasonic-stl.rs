@@ -30,7 +30,7 @@ use strict_types::stl::{std_stl, strict_types_stl};
 use strict_types::{parse_args, SystemBuilder};
 use ultrasonic::stl::usonic_stl;
 use ultrasonic::{Codex, Contract, Operation};
-use zkaluvm::stl::aluvm_stl;
+use zkaluvm::alu::stl::aluvm_stl;
 use zkaluvm::zkstl::finite_field_stl;
 
 fn main() {

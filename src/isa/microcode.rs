@@ -21,7 +21,8 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-use aluvm::{CoreExt, ExecStep, RegE, Site, SiteId};
+use aluvm::alu::{CoreExt, ExecStep, Site, SiteId};
+use aluvm::RegE;
 use amplify::num::u4;
 
 use crate::{UsonicCore, VmContext};

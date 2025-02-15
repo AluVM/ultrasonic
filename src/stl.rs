@@ -21,7 +21,7 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-pub use aluvm::stl::aluvm_stl;
+pub use aluvm::alu::stl::aluvm_stl;
 pub use aluvm::zkstl::{finite_field_stl, LIB_ID_FINITE_FIELD};
 use commit_verify::stl::commit_verify_stl;
 use strict_types::stl::{std_stl, strict_types_stl};
