@@ -34,6 +34,8 @@ serde = { version = "1", features = ["derive"], optional = true }
 default = ["chf-sha256", "baid64"]
 all = ["stl", "baid64", "serde", "chf-sha256"]
 
+std = []
+
 chf-sha256 = []
 
 stl = ["strict_types", "commit_verify/stl", "zk-aluvm/stl"]
@@ -54,3 +56,7 @@ wasm-bindgen-test = "0.3"
 
 [package.metadata.docs.rs]
 features = ["all"]
+
+[patch.crates-io]
+aluvm = { git = "https://github.com/AluVM/aluvm", branch = "master" }
+zk-aluvm = { git = "https://github.com/AluVM/zk-aluvm", branch = "master" }

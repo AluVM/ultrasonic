@@ -33,7 +33,7 @@ extern crate amplify;
 extern crate strict_encoding;
 #[macro_use]
 extern crate commit_verify;
-extern crate zkaluvm as aluvm;
+pub extern crate zkaluvm as aluvm;
 
 #[cfg(feature = "serde")]
 #[macro_use]

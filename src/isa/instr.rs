@@ -46,6 +46,17 @@ pub enum Instr<Id: SiteId> {
     Reserved(ReservedInstr),
 }
 
+impl<Id: SiteId> From<aluvm::gfa::Instr<Id>> for Instr<Id> {
+    fn from(instr: aluvm::gfa::Instr<Id>) -> Self {
+        match instr {
+            aluvm::gfa::Instr::Ctrl(ctrl) => Self::Ctrl(ctrl),
+            aluvm::gfa::Instr::Gfa(gfa) => Self::Gfa(gfa),
+            aluvm::gfa::Instr::Reserved(resrv) => Self::Reserved(resrv),
+            _ => unreachable!(),
+        }
+    }
+}
+
 /// The instruction set uses iterator semantics and not random access semantic to correspond to the
 /// RISC type of the machine and not to add assumptions about abilities to access the operation
 /// state in a random way. Operation state is always iterated, such that not a single state

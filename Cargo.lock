@@ -5,8 +5,7 @@ version = 3
 [[package]]
 name = "aluvm"
 version = "0.12.0-beta.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e5c29f34577f43613078668c1fca4390d111958956ccff32397a3723c893b0f"
+source = "git+https://github.com/AluVM/aluvm?branch=master#4271bedd40711f085e9ac3b405d2cfac27d2dd77"
 dependencies = [
  "amplify",
  "ascii-armor",
@@ -805,8 +804,7 @@ dependencies = [
 [[package]]
 name = "zk-aluvm"
 version = "0.12.0-beta.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0b17bd7c20d85fd2ce336eb4b2975f5aab2bd5cd8d493eff04a881bd7a9e45b"
+source = "git+https://github.com/AluVM/zk-aluvm?branch=master#02765936c17a5d8a9bcc7296968ddd258d043896"
 dependencies = [
  "aluvm",
  "amplify",
