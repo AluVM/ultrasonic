@@ -30,7 +30,7 @@ use aluvm::RegE;
 use super::{UsonicCore, UsonicInstr, REG_IN_IM, REG_IN_RO, REG_OUT_IM, REG_OUT_RO};
 use crate::{Instr, VmContext, ISA_ULTRASONIC};
 
-impl<Id: SiteId> Instruction<Id> for UsonicInstr<Id> {
+impl<Id: SiteId> Instruction<Id> for UsonicInstr {
     const ISA_EXT: &'static [&'static str] = &[ISA_ULTRASONIC];
     type Core = UsonicCore;
     type Context<'ctx> = VmContext<'ctx>;
@@ -41,20 +41,14 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr<Id> {
 
     fn op_data_bytes(&self) -> u16 {
         match *self {
-            UsonicInstr::NxIRo(_)
-            | UsonicInstr::NxIIm(_)
-            | UsonicInstr::NxORo(_)
-            | UsonicInstr::NxOIm(_) => 2,
+            UsonicInstr::NxIRo | UsonicInstr::NxIIm | UsonicInstr::NxORo | UsonicInstr::NxOIm => 0,
             UsonicInstr::LdIRo | UsonicInstr::LdIIm | UsonicInstr::LdORo | UsonicInstr::LdOIm => 0,
         }
     }
 
     fn ext_data_bytes(&self) -> u16 {
         match *self {
-            UsonicInstr::NxIRo(_)
-            | UsonicInstr::NxIIm(_)
-            | UsonicInstr::NxORo(_)
-            | UsonicInstr::NxOIm(_) => 32,
+            UsonicInstr::NxIRo | UsonicInstr::NxIIm | UsonicInstr::NxORo | UsonicInstr::NxOIm => 0,
             UsonicInstr::LdIRo | UsonicInstr::LdIIm | UsonicInstr::LdORo | UsonicInstr::LdOIm => 0,
         }
     }
@@ -66,10 +60,26 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr<Id> {
         context: &Self::Context<'_>,
     ) -> ExecStep<Site<Id>> {
         match *self {
-            UsonicInstr::NxIRo(jmp) => core.cx.next(jmp, REG_IN_RO, context),
-            UsonicInstr::NxIIm(jmp) => core.cx.next(jmp, REG_IN_IM, context),
-            UsonicInstr::NxORo(jmp) => core.cx.next(jmp, REG_OUT_RO, context),
-            UsonicInstr::NxOIm(jmp) => core.cx.next(jmp, REG_OUT_IM, context),
+            UsonicInstr::NxIRo => {
+                let res = core.cx.next(REG_IN_RO, context);
+                core.set_co(res);
+                ExecStep::Next
+            }
+            UsonicInstr::NxIIm => {
+                let res = core.cx.next(REG_IN_IM, context);
+                core.set_co(res);
+                ExecStep::Next
+            }
+            UsonicInstr::NxORo => {
+                let res = core.cx.next(REG_OUT_RO, context);
+                core.set_co(res);
+                ExecStep::Next
+            }
+            UsonicInstr::NxOIm => {
+                let res = core.cx.next(REG_OUT_IM, context);
+                core.set_co(res);
+                ExecStep::Next
+            }
             UsonicInstr::LdIRo => core.cx.load(REG_IN_RO, context),
             UsonicInstr::LdIIm => core.cx.load(REG_IN_IM, context),
             UsonicInstr::LdORo => core.cx.load(REG_OUT_RO, context),
@@ -87,7 +97,7 @@ impl<Id: SiteId> Instruction<Id> for Instr<Id> {
         match self {
             Instr::Ctrl(_) => none!(),
             Instr::Gfa(instr) => Instruction::<Id>::src_regs(instr),
-            Instr::Usonic(instr) => instr.src_regs(),
+            Instr::Usonic(instr) => Instruction::<Id>::src_regs(instr),
             Instr::Reserved(_) => none!(),
         }
     }
@@ -96,7 +106,7 @@ impl<Id: SiteId> Instruction<Id> for Instr<Id> {
         match self {
             Instr::Ctrl(_) => none!(),
             Instr::Gfa(instr) => Instruction::<Id>::dst_regs(instr),
-            Instr::Usonic(instr) => instr.src_regs(),
+            Instr::Usonic(instr) => Instruction::<Id>::src_regs(instr),
             Instr::Reserved(_) => none!(),
         }
     }
@@ -105,7 +115,7 @@ impl<Id: SiteId> Instruction<Id> for Instr<Id> {
         match self {
             Instr::Ctrl(instr) => instr.op_data_bytes(),
             Instr::Gfa(instr) => Instruction::<Id>::op_data_bytes(instr),
-            Instr::Usonic(instr) => instr.op_data_bytes(),
+            Instr::Usonic(instr) => Instruction::<Id>::op_data_bytes(instr),
             Instr::Reserved(_) => none!(),
         }
     }
@@ -114,7 +124,7 @@ impl<Id: SiteId> Instruction<Id> for Instr<Id> {
         match self {
             Instr::Ctrl(instr) => instr.ext_data_bytes(),
             Instr::Gfa(instr) => Instruction::<Id>::ext_data_bytes(instr),
-            Instr::Usonic(instr) => instr.ext_data_bytes(),
+            Instr::Usonic(instr) => Instruction::<Id>::ext_data_bytes(instr),
             Instr::Reserved(_) => none!(),
         }
     }

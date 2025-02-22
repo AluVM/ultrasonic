@@ -23,14 +23,14 @@
 
 use std::ops::RangeInclusive;
 
-use aluvm::alu::{Site, SiteId};
+use aluvm::alu::SiteId;
 use aluvm::gfa::FieldInstr;
 use aluvm::isa::{Bytecode, BytecodeRead, BytecodeWrite, CodeEofError, CtrlInstr, ReservedInstr};
 
 use super::UsonicInstr;
 use crate::Instr;
 
-impl<Id: SiteId> UsonicInstr<Id> {
+impl UsonicInstr {
     const START: u8 = 128;
     const END: u8 = Self::START + Self::LDOIM;
 
@@ -45,16 +45,16 @@ impl<Id: SiteId> UsonicInstr<Id> {
     const LDOIM: u8 = 7;
 }
 
-impl<Id: SiteId> Bytecode<Id> for UsonicInstr<Id> {
+impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
     fn op_range() -> RangeInclusive<u8> { Self::START..=Self::END }
 
     fn opcode_byte(&self) -> u8 {
         Self::START
             + match *self {
-                UsonicInstr::NxIRo(_) => Self::NXIRO,
-                UsonicInstr::NxIIm(_) => Self::NXIIM,
-                UsonicInstr::NxORo(_) => Self::NXORO,
-                UsonicInstr::NxOIm(_) => Self::NTOIM,
+                UsonicInstr::NxIRo => Self::NXIRO,
+                UsonicInstr::NxIIm => Self::NXIIM,
+                UsonicInstr::NxORo => Self::NXORO,
+                UsonicInstr::NxOIm => Self::NTOIM,
                 UsonicInstr::LdIRo => Self::LDIRO,
                 UsonicInstr::LdIIm => Self::LDIIM,
                 UsonicInstr::LdORo => Self::LDORO,
@@ -62,15 +62,11 @@ impl<Id: SiteId> Bytecode<Id> for UsonicInstr<Id> {
             }
     }
 
-    fn encode_operands<W>(&self, writer: &mut W) -> Result<(), W::Error>
+    fn encode_operands<W>(&self, _writer: &mut W) -> Result<(), W::Error>
     where W: BytecodeWrite<Id> {
         match *self {
-            UsonicInstr::NxIRo(site)
-            | UsonicInstr::NxIIm(site)
-            | UsonicInstr::NxORo(site)
-            | UsonicInstr::NxOIm(site) => {
-                writer.write_ref(site.prog_id)?;
-                writer.write_word(site.offset)
+            UsonicInstr::NxIRo | UsonicInstr::NxIIm | UsonicInstr::NxORo | UsonicInstr::NxOIm => {
+                Ok(())
             }
             UsonicInstr::LdIRo | UsonicInstr::LdIIm | UsonicInstr::LdORo | UsonicInstr::LdOIm => {
                 Ok(())
@@ -78,32 +74,16 @@ impl<Id: SiteId> Bytecode<Id> for UsonicInstr<Id> {
         }
     }
 
-    fn decode_operands<R>(reader: &mut R, opcode: u8) -> Result<Self, CodeEofError>
+    fn decode_operands<R>(_reader: &mut R, opcode: u8) -> Result<Self, CodeEofError>
     where
         Self: Sized,
         R: BytecodeRead<Id>,
     {
         Ok(match opcode - Self::START {
-            Self::NXIRO => {
-                let id = reader.read_ref()?;
-                let offset = reader.read_word()?;
-                UsonicInstr::NxIRo(Site::new(id, offset))
-            }
-            Self::NXIIM => {
-                let id = reader.read_ref()?;
-                let offset = reader.read_word()?;
-                UsonicInstr::NxIIm(Site::new(id, offset))
-            }
-            Self::NXORO => {
-                let id = reader.read_ref()?;
-                let offset = reader.read_word()?;
-                UsonicInstr::NxORo(Site::new(id, offset))
-            }
-            Self::NTOIM => {
-                let id = reader.read_ref()?;
-                let offset = reader.read_word()?;
-                UsonicInstr::NxOIm(Site::new(id, offset))
-            }
+            Self::NXIRO => UsonicInstr::NxIRo,
+            Self::NXIIM => UsonicInstr::NxIIm,
+            Self::NXORO => UsonicInstr::NxORo,
+            Self::NTOIM => UsonicInstr::NxOIm,
             Self::LDIRO => UsonicInstr::LdIRo,
             Self::LDIIM => UsonicInstr::LdIIm,
             Self::LDORO => UsonicInstr::LdORo,
@@ -120,7 +100,7 @@ impl<Id: SiteId> Bytecode<Id> for Instr<Id> {
         match self {
             Instr::Ctrl(instr) => instr.opcode_byte(),
             Instr::Gfa(instr) => Bytecode::<Id>::opcode_byte(instr),
-            Instr::Usonic(instr) => instr.opcode_byte(),
+            Instr::Usonic(instr) => Bytecode::<Id>::opcode_byte(instr),
             Instr::Reserved(instr) => Bytecode::<Id>::opcode_byte(instr),
         }
     }
@@ -147,8 +127,8 @@ impl<Id: SiteId> Bytecode<Id> for Instr<Id> {
             op if <FieldInstr as Bytecode<Id>>::op_range().contains(&op) => {
                 FieldInstr::decode_operands(reader, op).map(Self::Gfa)
             }
-            op if UsonicInstr::<Id>::op_range().contains(&op) => {
-                UsonicInstr::<Id>::decode_operands(reader, op).map(Self::Usonic)
+            op if <UsonicInstr as Bytecode<Id>>::op_range().contains(&op) => {
+                UsonicInstr::decode_operands(reader, op).map(Self::Usonic)
             }
             _ => ReservedInstr::decode_operands(reader, opcode).map(Self::Reserved),
         }

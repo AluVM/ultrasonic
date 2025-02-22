@@ -21,7 +21,7 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-use aluvm::alu::{Site, SiteId};
+use aluvm::alu::SiteId;
 use aluvm::gfa::FieldInstr;
 use aluvm::isa::{CtrlInstr, ReservedInstr};
 
@@ -39,7 +39,7 @@ pub enum Instr<Id: SiteId> {
     Gfa(FieldInstr),
 
     #[from]
-    Usonic(UsonicInstr<Id>),
+    Usonic(UsonicInstr),
 
     /// Reserved instruction for future use in core `ALU` ISAs.
     #[from]
@@ -64,38 +64,38 @@ impl<Id: SiteId> From<aluvm::gfa::Instr<Id>> for Instr<Id> {
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display)]
 #[display(inner)]
 #[non_exhaustive]
-pub enum UsonicInstr<Id: SiteId> {
-    /// Jump to process the next read-only memory cell in the contract state listed in the
+pub enum UsonicInstr {
+    /// Jump to process the next read-once memory cell in the contract state listed in the
     /// operation input.
-    #[display("nxi.ro  {0}")]
-    NxIRo(Site<Id>),
+    #[display("nxti    :readonce")]
+    NxIRo,
 
     /// Jump to process the next immutable memory cell in the contract state listed in the
     /// operation input.
-    #[display("nxi.im  {0}")]
-    NxIIm(Site<Id>),
+    #[display("nxti    :immutable")]
+    NxIIm,
 
-    /// Jump to process the next read-only memory cell defined by the operation.
-    #[display("nxo.ro  {0}")]
-    NxORo(Site<Id>),
+    /// Jump to process the next read-once memory cell defined by the operation.
+    #[display("nxto    :readonce")]
+    NxORo,
 
     /// Jump to process the next immutable memory cell defined by the operation.
-    #[display("nxo.im  {0}")]
-    NxOIm(Site<Id>),
+    #[display("nxto    :immutable")]
+    NxOIm,
 
-    /// Load next field element from the current input read-only memory cell to `EA` register,
-    #[display("ldi.ro  EA")]
+    /// Load next field element from the current input read-once memory cell to `EA` register,
+    #[display("ldi     EA, :readonce")]
     LdIRo,
 
     /// Load next field element from the current input immutable memory cell to `EB` register,
-    #[display("ldi.im  EB")]
+    #[display("ldi     EB, :immutable")]
     LdIIm,
 
-    /// Load next field element from the current input read-only memory cell to `EC` register,
-    #[display("ldo.ro  EC")]
+    /// Load next field element from the current output read-once memory cell to `EC` register,
+    #[display("ldo     EC, :readonce")]
     LdORo,
 
-    /// Load next field element from the current input read-only memory cell to `ED` register,
-    #[display("ldo.im  ED")]
+    /// Load next field element from the current output immutable memory cell to `ED` register,
+    #[display("ldo     ED, :immutable")]
     LdOIm,
 }

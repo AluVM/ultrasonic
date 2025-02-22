@@ -28,18 +28,8 @@ use amplify::num::u4;
 use crate::{UsonicCore, VmContext};
 
 impl UsonicCore {
-    pub fn next<Id: SiteId>(
-        &mut self,
-        jmp: Site<Id>,
-        reg: usize,
-        context: &VmContext,
-    ) -> ExecStep<Site<Id>> {
-        if !context.read_once_input.len() <= self.ui[reg] as usize {
-            return ExecStep::Next;
-        };
-        self.ui[reg] += 1;
-        self.ue[reg] = 0;
-        ExecStep::Call(jmp)
+    pub fn next(&mut self, reg: usize, context: &VmContext) -> bool {
+        context.read_once_input.len() <= self.ui[reg] as usize
     }
 
     pub fn load<Id: SiteId>(&mut self, reg: usize, context: &VmContext) -> ExecStep<Site<Id>> {
