@@ -34,6 +34,12 @@
 ///     nop                 ;
 ///     chk                 ;
 ///     test    E1          ;
+///     nxti    :readonce   ;
+///     not     CO          ;
+///     jif     CO, +2      ;
+///     put     CK, :fail   ;
+///     chk                 ;
+///     ldi     EA,:readonce;
 ///     clr     EA          ;
 ///     mov     E2, 0       ;
 ///     mov     EB, 20      ;
@@ -75,6 +81,32 @@ macro_rules! uvasm {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! instr {
+    (nxti :readonce) => {
+        $crate::UsonicInstr::NxIRo.into()
+    };
+    (nxti :immutable) => {
+        $crate::UsonicInstr::NxIIm.into()
+    };
+    (nxto :readonce) => {
+        $crate::UsonicInstr::NxORo.into()
+    };
+    (nxto :immutable) => {
+        $crate::UsonicInstr::NxOIm.into()
+    };
+
+    (ldi EA, :readonce) => {
+        $crate::UsonicInstr::LdIRo.into()
+    };
+    (ldi EB, :immutable) => {
+        $crate::UsonicInstr::LdIIm.into()
+    };
+    (ldo EC, :readonce) => {
+        $crate::UsonicInstr::LdORo.into()
+    };
+    (ldo ED, :immutable) => {
+        $crate::UsonicInstr::LdOIm.into()
+    };
+
     { $($tt:tt)+ } => {
         $crate::aluvm::instr! { $( $tt )+ }
     };
