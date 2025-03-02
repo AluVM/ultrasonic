@@ -21,7 +21,7 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-use aluvm::alu::{CoreExt, ExecStep, Site, SiteId};
+use aluvm::alu::CoreExt;
 use aluvm::RegE;
 
 use crate::{IoCat, UsonicCore, VmContext};
@@ -33,15 +33,21 @@ impl UsonicCore {
     }
 
     /// Loads next [`StateValue`] (basing on iterator position from `UI` indexes) of a given
-    /// category into the `EA`-`ED` registers.
-    pub fn load<Id: SiteId>(&mut self, cat: IoCat, context: &VmContext) -> ExecStep<Site<Id>> {
-        let Some(data) = context.read_once_input.get(self.ui[cat.index()] as usize) else {
-            return ExecStep::FailHalt;
-        };
+    /// category into the `EA`-`ED` registers, increasing `UI` iterator count.
+    pub fn load(&mut self, cat: IoCat, context: &VmContext) -> bool {
+        let data = context
+            .read_once_input
+            .get(self.ui[cat.index()] as usize)
+            .copied();
+        let co = data.is_some();
+        let data = data.unwrap_or_default();
         self.gfa.put(RegE::EA, data.get(0));
         self.gfa.put(RegE::EB, data.get(1));
         self.gfa.put(RegE::EC, data.get(2));
         self.gfa.put(RegE::ED, data.get(3));
-        ExecStep::Next
+        if co {
+            self.ui[cat.index()] += 1;
+        }
+        co
     }
 }
