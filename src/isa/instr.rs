@@ -65,41 +65,51 @@ impl<Id: SiteId> From<aluvm::gfa::Instr<Id>> for Instr<Id> {
 #[display(inner)]
 #[non_exhaustive]
 pub enum UsonicInstr {
-    /// Jump to process the next read-once memory cell in the contract state listed in the
-    /// operation input.
-    #[display("nxti    :readonce")]
-    NxIRo,
+    /// Checks whether there is a next destructible memory cell in the contract state listed in the
+    /// operation input and sets `CO` register accordingly.
+    #[display("cknxi   :destructible")]
+    CkNxIRo,
 
-    /// Jump to process the next immutable memory cell in the contract state listed in the
-    /// operation input.
-    #[display("nxti    :immutable")]
-    NxIIm,
+    /// Checks whether there is a next immutable memory cell in the contract state listed in the
+    /// operation input and sets `CO` register accordingly.
+    #[display("cknxi   :immutable")]
+    CkNxIAo,
 
-    /// Jump to process the next read-once memory cell defined by the operation.
-    #[display("nxto    :readonce")]
-    NxORo,
+    /// Checks whether there is a next destructible memory cell defined by the operation and sets
+    /// `CO` register accordingly.
+    #[display("cknxo   :destructible")]
+    CkNxORo,
 
-    /// Jump to process the next immutable memory cell defined by the operation.
-    #[display("nxto    :immutable")]
-    NxOIm,
+    /// Checks whether there is a next immutable memory cell defined by the operation and sets `CO`
+    /// register accordingly.
+    #[display("cknxo   :immutable")]
+    CkNxOAo,
 
-    /// Load next [`StateValue`] from the current input read-once memory cell to `EA`-`ED`
+    /// Load next [`StateValue`] from the current input destructible memory cell to `EA`-`ED`
     /// registers.
-    #[display("ldi     :readonce")]
+    ///
+    /// If the next state value is absent, sets `CO` to a failed state. Otherwise, resets `CO`.
+    #[display("ldi     :destructible")]
     LdIRo,
 
     /// Load next [`StateValue`] from the current input immutable memory cell to `EA`-`ED`
     /// registers.
+    ///
+    /// If the next state value is absent, sets `CO` to a failed state. Otherwise, resets `CO`.
     #[display("ldi     :immutable")]
-    LdIIm,
+    LdIAo,
 
-    /// Load next [`StateValue`] from the current output read-once memory cell to `EA`-`ED`
+    /// Load next [`StateValue`] from the current output destructible memory cell to `EA`-`ED`
     /// registers.
-    #[display("ldo     :readonce")]
+    ///
+    /// If the next state value is absent, sets `CO` to a failed state. Otherwise, resets `CO`.
+    #[display("ldo     :destructible")]
     LdORo,
 
     /// Load next [`StateValue`] from the current output immutable memory cell to `EA`-`ED`
     /// registers.
+    ///
+    /// If the next state value is absent, sets `CO` to a failed state. Otherwise, resets `CO`.
     #[display("ldo     :immutable")]
-    LdOIm,
+    LdOAo,
 }

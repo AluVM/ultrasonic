@@ -32,17 +32,17 @@ use crate::Instr;
 
 impl UsonicInstr {
     const START: u8 = 128;
-    const END: u8 = Self::START + Self::LDOIM;
+    const END: u8 = Self::START + Self::LDOAO;
 
-    const NXIRO: u8 = 0;
-    const NXIIM: u8 = 1;
-    const NXORO: u8 = 2;
-    const NTOIM: u8 = 3;
+    const CKNXIRO: u8 = 0;
+    const CKNXIAO: u8 = 1;
+    const CKNXORO: u8 = 2;
+    const CKNXOAO: u8 = 3;
 
     const LDIRO: u8 = 4;
-    const LDIIM: u8 = 5;
+    const LDIAO: u8 = 5;
     const LDORO: u8 = 6;
-    const LDOIM: u8 = 7;
+    const LDOAO: u8 = 7;
 }
 
 impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
@@ -51,24 +51,25 @@ impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
     fn opcode_byte(&self) -> u8 {
         Self::START
             + match *self {
-                UsonicInstr::NxIRo => Self::NXIRO,
-                UsonicInstr::NxIIm => Self::NXIIM,
-                UsonicInstr::NxORo => Self::NXORO,
-                UsonicInstr::NxOIm => Self::NTOIM,
+                UsonicInstr::CkNxIRo => Self::CKNXIRO,
+                UsonicInstr::CkNxIAo => Self::CKNXIAO,
+                UsonicInstr::CkNxORo => Self::CKNXORO,
+                UsonicInstr::CkNxOAo => Self::CKNXOAO,
                 UsonicInstr::LdIRo => Self::LDIRO,
-                UsonicInstr::LdIIm => Self::LDIIM,
+                UsonicInstr::LdIAo => Self::LDIAO,
                 UsonicInstr::LdORo => Self::LDORO,
-                UsonicInstr::LdOIm => Self::LDOIM,
+                UsonicInstr::LdOAo => Self::LDOAO,
             }
     }
 
     fn encode_operands<W>(&self, _writer: &mut W) -> Result<(), W::Error>
     where W: BytecodeWrite<Id> {
         match *self {
-            UsonicInstr::NxIRo | UsonicInstr::NxIIm | UsonicInstr::NxORo | UsonicInstr::NxOIm => {
-                Ok(())
-            }
-            UsonicInstr::LdIRo | UsonicInstr::LdIIm | UsonicInstr::LdORo | UsonicInstr::LdOIm => {
+            UsonicInstr::CkNxIRo
+            | UsonicInstr::CkNxIAo
+            | UsonicInstr::CkNxORo
+            | UsonicInstr::CkNxOAo => Ok(()),
+            UsonicInstr::LdIRo | UsonicInstr::LdIAo | UsonicInstr::LdORo | UsonicInstr::LdOAo => {
                 Ok(())
             }
         }
@@ -80,14 +81,14 @@ impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
         R: BytecodeRead<Id>,
     {
         Ok(match opcode - Self::START {
-            Self::NXIRO => UsonicInstr::NxIRo,
-            Self::NXIIM => UsonicInstr::NxIIm,
-            Self::NXORO => UsonicInstr::NxORo,
-            Self::NTOIM => UsonicInstr::NxOIm,
+            Self::CKNXIRO => UsonicInstr::CkNxIRo,
+            Self::CKNXIAO => UsonicInstr::CkNxIAo,
+            Self::CKNXORO => UsonicInstr::CkNxORo,
+            Self::CKNXOAO => UsonicInstr::CkNxOAo,
             Self::LDIRO => UsonicInstr::LdIRo,
-            Self::LDIIM => UsonicInstr::LdIIm,
+            Self::LDIAO => UsonicInstr::LdIAo,
             Self::LDORO => UsonicInstr::LdORo,
-            Self::LDOIM => UsonicInstr::LdOIm,
+            Self::LDOAO => UsonicInstr::LdOAo,
             _ => unreachable!(),
         })
     }

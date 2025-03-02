@@ -42,15 +42,21 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
 
     fn op_data_bytes(&self) -> u16 {
         match *self {
-            UsonicInstr::NxIRo | UsonicInstr::NxIIm | UsonicInstr::NxORo | UsonicInstr::NxOIm => 0,
-            UsonicInstr::LdIRo | UsonicInstr::LdIIm | UsonicInstr::LdORo | UsonicInstr::LdOIm => 0,
+            UsonicInstr::CkNxIRo
+            | UsonicInstr::CkNxIAo
+            | UsonicInstr::CkNxORo
+            | UsonicInstr::CkNxOAo => 0,
+            UsonicInstr::LdIRo | UsonicInstr::LdIAo | UsonicInstr::LdORo | UsonicInstr::LdOAo => 0,
         }
     }
 
     fn ext_data_bytes(&self) -> u16 {
         match *self {
-            UsonicInstr::NxIRo | UsonicInstr::NxIIm | UsonicInstr::NxORo | UsonicInstr::NxOIm => 0,
-            UsonicInstr::LdIRo | UsonicInstr::LdIIm | UsonicInstr::LdORo | UsonicInstr::LdOIm => 0,
+            UsonicInstr::CkNxIRo
+            | UsonicInstr::CkNxIAo
+            | UsonicInstr::CkNxORo
+            | UsonicInstr::CkNxOAo => 0,
+            UsonicInstr::LdIRo | UsonicInstr::LdIAo | UsonicInstr::LdORo | UsonicInstr::LdOAo => 0,
         }
     }
 
@@ -61,30 +67,30 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
         context: &Self::Context<'_>,
     ) -> ExecStep<Site<Id>> {
         match *self {
-            UsonicInstr::NxIRo => {
+            UsonicInstr::CkNxIRo => {
                 let res = core.cx.has_next(IoCat::IN_RO, context);
                 core.set_co(if res { Status::Ok } else { Status::Fail });
                 ExecStep::Next
             }
-            UsonicInstr::NxIIm => {
+            UsonicInstr::CkNxIAo => {
                 let res = core.cx.has_next(IoCat::IN_AO, context);
                 core.set_co(if res { Status::Ok } else { Status::Fail });
                 ExecStep::Next
             }
-            UsonicInstr::NxORo => {
+            UsonicInstr::CkNxORo => {
                 let res = core.cx.has_next(IoCat::OUT_RO, context);
                 core.set_co(if res { Status::Ok } else { Status::Fail });
                 ExecStep::Next
             }
-            UsonicInstr::NxOIm => {
+            UsonicInstr::CkNxOAo => {
                 let res = core.cx.has_next(IoCat::OUT_AO, context);
                 core.set_co(if res { Status::Ok } else { Status::Fail });
                 ExecStep::Next
             }
             UsonicInstr::LdIRo => core.cx.load(IoCat::IN_RO, context),
-            UsonicInstr::LdIIm => core.cx.load(IoCat::IN_AO, context),
+            UsonicInstr::LdIAo => core.cx.load(IoCat::IN_AO, context),
             UsonicInstr::LdORo => core.cx.load(IoCat::OUT_RO, context),
-            UsonicInstr::LdOIm => core.cx.load(IoCat::OUT_AO, context),
+            UsonicInstr::LdOAo => core.cx.load(IoCat::OUT_AO, context),
         }
     }
 }

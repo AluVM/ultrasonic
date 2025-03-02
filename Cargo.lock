@@ -804,7 +804,7 @@ dependencies = [
 [[package]]
 name = "zk-aluvm"
 version = "0.12.0-beta.5"
-source = "git+https://github.com/AluVM/zk-aluvm?branch=master#4b760a6a9e751755c40ecf34e873892a2fe55fd3"
+source = "git+https://github.com/AluVM/zk-aluvm?branch=master#7f2d91c5e3efe04a3f09a9f991cdc502a4be828e"
 dependencies = [
  "aluvm",
  "amplify",

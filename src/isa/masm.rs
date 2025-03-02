@@ -31,23 +31,23 @@
 /// use zkaluvm::alu::{Lib, LibId, LibSite, Vm};
 ///
 /// let code = uasm! {
-///     nop                 ;
-///     chk                 ;
-///     test    E1          ;
-///     nxti    :readonce   ;
-///     not     CO          ;
-///     jif     CO, +2      ;
-///     put     CK, :fail   ;
-///     chk                 ;
-///     ldi     :readonce   ;
-///     clr     EA          ;
-///     mov     E2, 0       ;
-///     mov     EB, 20      ;
-///     mov     E1, E2      ;
-///     eq      E1, E2      ;
-///     neg     EA, EH      ;
-///     add     EA, EH      ;
-///     mul     EA, EH      ;
+///     nop                  ;
+///     chk     CK           ;
+///     test    E1           ;
+///     cknxi   :destructible;
+///     not     CO           ;
+///     jif     CO, +2       ;
+///     mov     CO, CK       ;
+///     chk     CO           ;
+///     ldi     :immutable   ;
+///     clr     EA           ;
+///     mov     E2, 0        ;
+///     mov     EB, 20       ;
+///     mov     E1, E2       ;
+///     eq      E1, E2       ;
+///     neg     EA, EH       ;
+///     add     EA, EH       ;
+///     mul     EA, EH       ;
 /// };
 ///
 /// let lib = Lib::assemble::<Instr<LibId>>(&code).unwrap();
@@ -81,30 +81,30 @@ macro_rules! uasm {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! instr {
-    (nxti :readonce) => {
-        $crate::UsonicInstr::NxIRo.into()
+    (cknxi :destructible) => {
+        $crate::UsonicInstr::CkNxIRo.into()
     };
-    (nxti :immutable) => {
-        $crate::UsonicInstr::NxIIm.into()
+    (cknxi :immutable) => {
+        $crate::UsonicInstr::CkNxIAo.into()
     };
-    (nxto :readonce) => {
-        $crate::UsonicInstr::NxORo.into()
+    (cknxo :destructible) => {
+        $crate::UsonicInstr::CkNxORo.into()
     };
-    (nxto :immutable) => {
-        $crate::UsonicInstr::NxOIm.into()
+    (cknxo :immutable) => {
+        $crate::UsonicInstr::CkNxOAo.into()
     };
 
-    (ldi :readonce) => {
+    (ldi :destructible) => {
         $crate::UsonicInstr::LdIRo.into()
     };
     (ldi :immutable) => {
-        $crate::UsonicInstr::LdIIm.into()
+        $crate::UsonicInstr::LdIAo.into()
     };
-    (ldo :readonce) => {
+    (ldo :destructible) => {
         $crate::UsonicInstr::LdORo.into()
     };
     (ldo :immutable) => {
-        $crate::UsonicInstr::LdOIm.into()
+        $crate::UsonicInstr::LdOAo.into()
     };
 
     { $($tt:tt)+ } => {
