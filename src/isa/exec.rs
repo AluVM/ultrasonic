@@ -23,6 +23,7 @@
 
 use std::collections::BTreeSet;
 
+use aluvm::alu::regs::Status;
 use aluvm::alu::{Core, CoreExt, ExecStep, Site, SiteId};
 use aluvm::isa::Instruction;
 use aluvm::RegE;
@@ -62,22 +63,22 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
         match *self {
             UsonicInstr::NxIRo => {
                 let res = core.cx.has_next(IoCat::IN_RO, context);
-                core.set_co(res);
+                core.set_co(if res { Status::Ok } else { Status::Fail });
                 ExecStep::Next
             }
             UsonicInstr::NxIIm => {
                 let res = core.cx.has_next(IoCat::IN_AO, context);
-                core.set_co(res);
+                core.set_co(if res { Status::Ok } else { Status::Fail });
                 ExecStep::Next
             }
             UsonicInstr::NxORo => {
                 let res = core.cx.has_next(IoCat::OUT_RO, context);
-                core.set_co(res);
+                core.set_co(if res { Status::Ok } else { Status::Fail });
                 ExecStep::Next
             }
             UsonicInstr::NxOIm => {
                 let res = core.cx.has_next(IoCat::OUT_AO, context);
-                core.set_co(res);
+                core.set_co(if res { Status::Ok } else { Status::Fail });
                 ExecStep::Next
             }
             UsonicInstr::LdIRo => core.cx.load(IoCat::IN_RO, context),
