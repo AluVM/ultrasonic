@@ -34,7 +34,7 @@ serde = { version = "1", features = ["derive"], optional = true }
 default = ["chf-sha256", "baid64"]
 all = ["stl", "baid64", "serde", "chf-sha256"]
 
-std = []
+std = ["zk-aluvm/std"]
 
 chf-sha256 = []
 
