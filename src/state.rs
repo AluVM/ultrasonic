@@ -23,6 +23,7 @@
 
 use core::cmp::Ordering;
 use core::str::FromStr;
+use std::vec;
 
 use aluvm::alu::LibSite;
 use aluvm::fe256;
@@ -133,13 +134,13 @@ pub enum StateValue {
     #[strict_type(tag = 0x02)]
     Double { first: fe256, second: fe256 },
     #[strict_type(tag = 0x03)]
-    Three {
+    Triple {
         first: fe256,
         second: fe256,
         third: fe256,
     },
     #[strict_type(tag = 0x04)]
-    Four {
+    Quadripple {
         first: fe256,
         second: fe256,
         third: fe256,
@@ -160,12 +161,12 @@ impl StateValue {
             0 => StateValue::None,
             1 => StateValue::Single { first: first.unwrap() },
             2 => StateValue::Double { first: first.unwrap(), second: second.unwrap() },
-            3 => StateValue::Three {
+            3 => StateValue::Triple {
                 first: first.unwrap(),
                 second: second.unwrap(),
                 third: third.unwrap(),
             },
-            4 => StateValue::Four {
+            4 => StateValue::Quadripple {
                 first: first.unwrap(),
                 second: second.unwrap(),
                 third: third.unwrap(),
@@ -175,23 +176,39 @@ impl StateValue {
         }
     }
 
-    pub fn get(&self, pos: u8) -> Option<fe256> {
+    pub const fn get(&self, pos: u8) -> Option<fe256> {
         match (*self, pos) {
             (Self::Single { first }, 0)
             | (Self::Double { first, .. }, 0)
-            | (Self::Three { first, .. }, 0)
-            | (Self::Four { first, .. }, 0) => Some(first),
+            | (Self::Triple { first, .. }, 0)
+            | (Self::Quadripple { first, .. }, 0) => Some(first),
 
             (Self::Double { second, .. }, 1)
-            | (Self::Three { second, .. }, 1)
-            | (Self::Four { second, .. }, 1) => Some(second),
+            | (Self::Triple { second, .. }, 1)
+            | (Self::Quadripple { second, .. }, 1) => Some(second),
 
-            (Self::Three { third, .. }, 2) | (Self::Four { third, .. }, 2) => Some(third),
+            (Self::Triple { third, .. }, 2) | (Self::Quadripple { third, .. }, 2) => Some(third),
 
-            (Self::Four { fourth, .. }, 3) => Some(fourth),
+            (Self::Quadripple { fourth, .. }, 3) => Some(fourth),
 
             _ => None,
         }
+    }
+}
+
+impl IntoIterator for StateValue {
+    type Item = fe256;
+    type IntoIter = vec::IntoIter<fe256>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        let vec = match self {
+            Self::None => vec![],
+            Self::Single { first } => vec![first],
+            Self::Double { first, second } => vec![first, second],
+            Self::Triple { first, second, third } => vec![first, second, third],
+            Self::Quadripple { first, second, third, fourth } => vec![first, second, third, fourth],
+        };
+        vec.into_iter()
     }
 }
 

@@ -83,19 +83,23 @@ pub enum UsonicInstr {
     #[display("nxto    :immutable")]
     NxOIm,
 
-    /// Load next field element from the current input read-once memory cell to `EA` register,
-    #[display("ldi     EA, :readonce")]
+    /// Load next [`StateValue`] from the current input read-once memory cell to `EA`-`ED`
+    /// registers.
+    #[display("ldi     :readonce")]
     LdIRo,
 
-    /// Load next field element from the current input immutable memory cell to `EB` register,
-    #[display("ldi     EB, :immutable")]
+    /// Load next [`StateValue`] from the current input immutable memory cell to `EA`-`ED`
+    /// registers.
+    #[display("ldi     :immutable")]
     LdIIm,
 
-    /// Load next field element from the current output read-once memory cell to `EC` register,
-    #[display("ldo     EC, :readonce")]
+    /// Load next [`StateValue`] from the current output read-once memory cell to `EA`-`ED`
+    /// registers.
+    #[display("ldo     :readonce")]
     LdORo,
 
-    /// Load next field element from the current output immutable memory cell to `ED` register,
-    #[display("ldo     ED, :immutable")]
+    /// Load next [`StateValue`] from the current output immutable memory cell to `EA`-`ED`
+    /// registers.
+    #[display("ldo     :immutable")]
     LdOIm,
 }

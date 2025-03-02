@@ -23,26 +23,25 @@
 
 use aluvm::alu::{CoreExt, ExecStep, Site, SiteId};
 use aluvm::RegE;
-use amplify::num::u4;
 
-use crate::{UsonicCore, VmContext};
+use crate::{IoCat, UsonicCore, VmContext};
 
 impl UsonicCore {
-    pub fn next(&mut self, reg: usize, context: &VmContext) -> bool {
-        context.read_once_input.len() <= self.ui[reg] as usize
+    /// Checks that there is more state values remain in the given category.
+    pub fn has_next(&mut self, cat: IoCat, context: &VmContext) -> bool {
+        context.read_once_input.len() <= self.ui[cat.index()] as usize
     }
 
-    pub fn load<Id: SiteId>(&mut self, reg: usize, context: &VmContext) -> ExecStep<Site<Id>> {
-        let Some(data) = context.read_once_input.get(self.ui[reg] as usize) else {
+    /// Loads next [`StateValue`] (basing on iterator position from `UI` indexes) of a given
+    /// category into the `EA`-`ED` registers.
+    pub fn load<Id: SiteId>(&mut self, cat: IoCat, context: &VmContext) -> ExecStep<Site<Id>> {
+        let Some(data) = context.read_once_input.get(self.ui[cat.index()] as usize) else {
             return ExecStep::FailHalt;
         };
-        let e = RegE::from(u4::with(4 + reg as u8));
-        if let Some(el) = data.get(self.ue[reg]) {
-            self.gfa.set(e, el);
-            self.ue[reg] += 1;
-        } else {
-            self.gfa.clr(e);
-        }
+        self.gfa.put(RegE::EA, data.get(0));
+        self.gfa.put(RegE::EB, data.get(1));
+        self.gfa.put(RegE::EC, data.get(2));
+        self.gfa.put(RegE::ED, data.get(3));
         ExecStep::Next
     }
 }

@@ -29,6 +29,6 @@ mod microcode;
 #[macro_use]
 mod masm;
 
-pub use core::{UsonicCore, REG_IN_IM, REG_IN_RO, REG_OUT_IM, REG_OUT_RO};
+pub use core::{IoCat, UsonicCore};
 
 pub use instr::{Instr, UsonicInstr, ISA_ULTRASONIC};

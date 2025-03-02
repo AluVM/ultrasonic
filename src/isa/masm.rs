@@ -39,7 +39,7 @@
 ///     jif     CO, +2      ;
 ///     put     CK, :fail   ;
 ///     chk                 ;
-///     ldi     EA,:readonce;
+///     ldi     :readonce   ;
 ///     clr     EA          ;
 ///     mov     E2, 0       ;
 ///     mov     EB, 20      ;
@@ -94,16 +94,16 @@ macro_rules! instr {
         $crate::UsonicInstr::NxOIm.into()
     };
 
-    (ldi EA, :readonce) => {
+    (ldi :readonce) => {
         $crate::UsonicInstr::LdIRo.into()
     };
-    (ldi EB, :immutable) => {
+    (ldi :immutable) => {
         $crate::UsonicInstr::LdIIm.into()
     };
-    (ldo EC, :readonce) => {
+    (ldo :readonce) => {
         $crate::UsonicInstr::LdORo.into()
     };
-    (ldo ED, :immutable) => {
+    (ldo :immutable) => {
         $crate::UsonicInstr::LdOIm.into()
     };
 

@@ -51,7 +51,7 @@ mod util;
 use amplify::num::u256;
 pub use codex::{AccessId, CallError, CallId, Codex, CodexId, LibRepo, Memory, VmContext};
 pub use contract::{Consensus, ConstU32, Contract, ContractId, ContractMeta, ContractName};
-pub use isa::{Instr, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
+pub use isa::{Instr, IoCat, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
 #[cfg(feature = "baid64")]
 pub use operation::ParseAddrError;
 pub use operation::{CellAddr, Genesis, GenesisId, Input, Operation, Opid};

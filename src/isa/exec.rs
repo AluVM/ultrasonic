@@ -27,8 +27,8 @@ use aluvm::alu::{Core, CoreExt, ExecStep, Site, SiteId};
 use aluvm::isa::Instruction;
 use aluvm::RegE;
 
-use super::{UsonicCore, UsonicInstr, REG_IN_IM, REG_IN_RO, REG_OUT_IM, REG_OUT_RO};
-use crate::{Instr, VmContext, ISA_ULTRASONIC};
+use super::{UsonicCore, UsonicInstr};
+use crate::{Instr, IoCat, VmContext, ISA_ULTRASONIC};
 
 impl<Id: SiteId> Instruction<Id> for UsonicInstr {
     const ISA_EXT: &'static [&'static str] = &[ISA_ULTRASONIC];
@@ -61,29 +61,29 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
     ) -> ExecStep<Site<Id>> {
         match *self {
             UsonicInstr::NxIRo => {
-                let res = core.cx.next(REG_IN_RO, context);
+                let res = core.cx.has_next(IoCat::IN_RO, context);
                 core.set_co(res);
                 ExecStep::Next
             }
             UsonicInstr::NxIIm => {
-                let res = core.cx.next(REG_IN_IM, context);
+                let res = core.cx.has_next(IoCat::IN_AO, context);
                 core.set_co(res);
                 ExecStep::Next
             }
             UsonicInstr::NxORo => {
-                let res = core.cx.next(REG_OUT_RO, context);
+                let res = core.cx.has_next(IoCat::OUT_RO, context);
                 core.set_co(res);
                 ExecStep::Next
             }
             UsonicInstr::NxOIm => {
-                let res = core.cx.next(REG_OUT_IM, context);
+                let res = core.cx.has_next(IoCat::OUT_AO, context);
                 core.set_co(res);
                 ExecStep::Next
             }
-            UsonicInstr::LdIRo => core.cx.load(REG_IN_RO, context),
-            UsonicInstr::LdIIm => core.cx.load(REG_IN_IM, context),
-            UsonicInstr::LdORo => core.cx.load(REG_OUT_RO, context),
-            UsonicInstr::LdOIm => core.cx.load(REG_OUT_IM, context),
+            UsonicInstr::LdIRo => core.cx.load(IoCat::IN_RO, context),
+            UsonicInstr::LdIIm => core.cx.load(IoCat::IN_AO, context),
+            UsonicInstr::LdORo => core.cx.load(IoCat::OUT_RO, context),
+            UsonicInstr::LdOIm => core.cx.load(IoCat::OUT_AO, context),
         }
     }
 }

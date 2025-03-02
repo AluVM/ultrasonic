@@ -27,17 +27,48 @@ use aluvm::alu::{CoreExt, NoExt, Register};
 use aluvm::{GfaCore, RegE};
 use amplify::num::u256;
 
-pub const REG_IN_RO: usize = 0;
-pub const REG_IN_IM: usize = 1;
-pub const REG_OUT_RO: usize = 2;
-pub const REG_OUT_IM: usize = 3;
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Display)]
+enum Io {
+    #[display(":in")]
+    Input,
+    #[display(":out")]
+    Output,
+}
+
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Display)]
+enum Mem {
+    #[display(":readonce")]
+    ReadOnce,
+    #[display(":immutable")]
+    AppendOnly,
+}
+
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+pub struct IoCat {
+    io: Io,
+    mem: Mem,
+}
+
+impl IoCat {
+    pub const IN_RO: Self = Self { io: Io::Input, mem: Mem::ReadOnce };
+    pub const IN_AO: Self = Self { io: Io::Input, mem: Mem::AppendOnly };
+    pub const OUT_RO: Self = Self { io: Io::Output, mem: Mem::ReadOnce };
+    pub const OUT_AO: Self = Self { io: Io::Output, mem: Mem::AppendOnly };
+
+    pub const fn index(&self) -> usize {
+        match (self.io, self.mem) {
+            (Io::Input, Mem::ReadOnce) => 0,
+            (Io::Input, Mem::AppendOnly) => 1,
+            (Io::Output, Mem::ReadOnce) => 2,
+            (Io::Output, Mem::AppendOnly) => 3,
+        }
+    }
+}
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct UsonicCore {
-    /// Iterator counters
+    /// State value iterator positions
     pub(super) ui: [u16; 4],
-    /// Field element offsets
-    pub(super) ue: [u8; 4],
 
     pub(super) gfa: GfaCore,
 }
@@ -52,14 +83,10 @@ impl Debug for UsonicCore {
 
         writeln!(f)?;
         writeln!(f, "{sect}U-regs:{reset}")?;
-        write!(f, "{reg}UI1{reset} {val}{}{reset}  ", self.ui[REG_IN_RO])?;
-        write!(f, "{reg}UI2{reset} {val}{}{reset}  ", self.ui[REG_IN_IM])?;
-        write!(f, "{reg}UI3{reset} {val}{}{reset}  ", self.ui[REG_OUT_RO])?;
-        writeln!(f, "{reg}UI4{reset} {val}{}{reset}  ", self.ui[REG_OUT_IM])?;
-        write!(f, "{reg}UE1{reset} {val}{}{reset}  ", self.ue[REG_IN_RO])?;
-        write!(f, "{reg}UE2{reset} {val}{}{reset}  ", self.ue[REG_IN_IM])?;
-        write!(f, "{reg}UE3{reset} {val}{}{reset}  ", self.ue[REG_OUT_RO])?;
-        writeln!(f, "{reg}UE4{reset} {val}{}{reset}  ", self.ue[REG_OUT_IM])?;
+        write!(f, "{reg}UI1{reset} {val}{}{reset}  ", self.ui[IoCat::IN_RO.index()])?;
+        write!(f, "{reg}UI2{reset} {val}{}{reset}  ", self.ui[IoCat::IN_AO.index()])?;
+        write!(f, "{reg}UI3{reset} {val}{}{reset}  ", self.ui[IoCat::OUT_RO.index()])?;
+        writeln!(f, "{reg}UI4{reset} {val}{}{reset}  ", self.ui[IoCat::OUT_AO.index()])?;
         writeln!(f)
     }
 }
@@ -68,28 +95,19 @@ impl CoreExt for UsonicCore {
     type Reg = RegE;
     type Config = u256;
 
-    fn with(config: Self::Config) -> Self {
-        UsonicCore { ui: [0; 4], ue: [0; 4], gfa: GfaCore::with(config) }
-    }
+    fn with(config: Self::Config) -> Self { UsonicCore { ui: [0; 4], gfa: GfaCore::with(config) } }
 
     fn get(&self, reg: Self::Reg) -> Option<<Self::Reg as Register>::Value> { self.gfa.get(reg) }
 
-    fn clr(&mut self, reg: Self::Reg) -> Option<<Self::Reg as Register>::Value> {
-        self.gfa.clr(reg)
-    }
+    fn clr(&mut self, reg: Self::Reg) { self.gfa.clr(reg) }
 
-    fn set(
-        &mut self,
-        reg: Self::Reg,
-        val: <Self::Reg as Register>::Value,
-    ) -> Option<<Self::Reg as Register>::Value> {
-        self.gfa.set(reg, val)
+    fn put(&mut self, reg: Self::Reg, val: Option<<Self::Reg as Register>::Value>) {
+        self.gfa.put(reg, val)
     }
 
     fn reset(&mut self) {
         self.gfa.reset();
         self.ui = [0; 4];
-        self.ue = [0; 4];
     }
 }
 
