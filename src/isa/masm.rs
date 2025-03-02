@@ -26,11 +26,11 @@
 /// # Example
 ///
 /// ```
-/// use ultrasonic::{uvasm, Instr, VmContext};
+/// use ultrasonic::{uasm, Instr, VmContext};
 /// use zkaluvm::alu::regs::Status;
 /// use zkaluvm::alu::{Lib, LibId, LibSite, Vm};
 ///
-/// let code = uvasm! {
+/// let code = uasm! {
 ///     nop                 ;
 ///     chk                 ;
 ///     test    E1          ;
@@ -64,7 +64,7 @@
 /// }
 /// ```
 #[macro_export]
-macro_rules! uvasm {
+macro_rules! uasm {
     ($( $tt:tt )+) => {{
         use $crate::instr;
         #[cfg(not(feature = "std"))]
