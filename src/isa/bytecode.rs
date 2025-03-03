@@ -62,6 +62,8 @@ impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
             }
     }
 
+    fn code_byte_len(&self) -> u16 { 1 }
+
     fn encode_operands<W>(&self, _writer: &mut W) -> Result<(), W::Error>
     where W: BytecodeWrite<Id> {
         match *self {
@@ -103,6 +105,15 @@ impl<Id: SiteId> Bytecode<Id> for Instr<Id> {
             Instr::Gfa(instr) => Bytecode::<Id>::opcode_byte(instr),
             Instr::Usonic(instr) => Bytecode::<Id>::opcode_byte(instr),
             Instr::Reserved(instr) => Bytecode::<Id>::opcode_byte(instr),
+        }
+    }
+
+    fn code_byte_len(&self) -> u16 {
+        match self {
+            Instr::Ctrl(instr) => instr.code_byte_len(),
+            Instr::Gfa(instr) => Bytecode::<Id>::code_byte_len(instr),
+            Instr::Usonic(instr) => Bytecode::<Id>::code_byte_len(instr),
+            Instr::Reserved(instr) => Bytecode::<Id>::code_byte_len(instr),
         }
     }
 
