@@ -148,15 +148,35 @@ pub enum StateValue {
     },
 }
 
-impl StateValue {
-    pub fn from<I: IntoIterator<Item = u256>>(iter: I) -> Self
-    where I::IntoIter: ExactSizeIterator {
+impl FromIterator<u256> for StateValue {
+    fn from_iter<T: IntoIterator<Item = u256>>(iter: T) -> Self {
+        Self::from_iter(iter.into_iter().map(fe256::from))
+    }
+}
+
+impl FromIterator<fe256> for StateValue {
+    fn from_iter<T: IntoIterator<Item = fe256>>(iter: T) -> Self {
         let mut iter = iter.into_iter();
-        let len = iter.len();
-        let first = iter.next().map(fe256::from);
-        let second = iter.next().map(fe256::from);
-        let third = iter.next().map(fe256::from);
-        let fourth = iter.next().map(fe256::from);
+        let first = iter.next();
+        let second = iter.next();
+        let third = iter.next();
+        let fourth = iter.next();
+        assert!(
+            iter.next().is_none(),
+            "the provided iterator for StateValue construction must not contain more than 4 \
+             elements"
+        );
+        let len = if fourth.is_some() {
+            4
+        } else if third.is_some() {
+            3
+        } else if second.is_some() {
+            2
+        } else if first.is_some() {
+            1
+        } else {
+            0
+        };
         match len {
             0 => StateValue::None,
             1 => StateValue::Single { first: first.unwrap() },
@@ -174,6 +194,12 @@ impl StateValue {
             },
             _ => panic!("state value can't use more than 4 elements"),
         }
+    }
+}
+
+impl StateValue {
+    pub fn new(ty: impl Into<fe256>, val: impl Into<fe256>) -> Self {
+        StateValue::Double { first: ty.into(), second: val.into() }
     }
 
     pub const fn get(&self, pos: u8) -> Option<fe256> {
