@@ -24,8 +24,7 @@
 use core::fmt::{self, Debug, Formatter};
 
 use aluvm::alu::{CoreExt, NoExt, Register, Supercore};
-use aluvm::{GfaCore, RegE};
-use amplify::num::u256;
+use aluvm::{GfaConfig, GfaCore, RegE};
 
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Display)]
 enum Io {
@@ -93,7 +92,7 @@ impl Debug for UsonicCore {
 
 impl CoreExt for UsonicCore {
     type Reg = RegE;
-    type Config = u256;
+    type Config = GfaConfig;
 
     fn with(config: Self::Config) -> Self { UsonicCore { ui: [0; 4], gfa: GfaCore::with(config) } }
 

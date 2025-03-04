@@ -23,7 +23,7 @@
 
 use aluvm::alu::regs::Status;
 use aluvm::alu::{CoreConfig, CoreExt, Lib, LibId, LibSite, Vm};
-use aluvm::{fe256, RegE};
+use aluvm::{fe256, GfaConfig, RegE};
 use amplify::confinement::{SmallVec, TinyOrdMap, TinyString};
 use amplify::num::u256;
 use amplify::Bytes32;
@@ -78,8 +78,9 @@ impl Codex {
         }
 
         // Phase one: get inputs, verify access conditions
-        let mut vm_inputs =
-            Vm::<aluvm::gfa::Instr<LibId>>::with(self.input_config, self.field_order);
+        let mut vm_inputs = Vm::<aluvm::gfa::Instr<LibId>>::with(self.input_config, GfaConfig {
+            field_order: self.field_order,
+        });
         let mut read_once_input = SmallVec::new();
         for input in &operation.destroying {
             let cell = memory
@@ -130,7 +131,9 @@ impl Codex {
             read_once_output: operation.destructible.as_slice(),
             immutable_output: operation.immutable.as_slice(),
         };
-        let mut vm_main = Vm::<Instr<LibId>>::with(self.verification_config, self.field_order);
+        let mut vm_main = Vm::<Instr<LibId>>::with(self.verification_config, GfaConfig {
+            field_order: self.field_order,
+        });
         match vm_main.exec(*entry_point, &context, resolver) {
             Status::Ok => Ok(()),
             Status::Fail => {

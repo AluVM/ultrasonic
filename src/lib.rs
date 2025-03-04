@@ -48,7 +48,6 @@ mod contract;
 pub mod stl;
 mod util;
 
-use amplify::num::u256;
 pub use codex::{AccessId, CallError, CallId, Codex, CodexId, LibRepo, Memory, VmContext};
 pub use contract::{Consensus, ConstU32, Contract, ContractId, ContractMeta, ContractName};
 pub use isa::{Instr, IoCat, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
@@ -60,17 +59,3 @@ pub use util::Identity;
 pub use zkaluvm::fe256;
 
 pub const LIB_NAME_ULTRASONIC: &str = "UltraSONIC";
-
-pub const FIELD_ORDER_25519: u256 = u256::from_inner([
-    0xFFFF_FFFF_FFFF_FFEC,
-    0xFFFF_FFFF_FFFF_FFFF,
-    0xFFFF_FFFF_FFFF_FFFF,
-    0x8FFF_FFFF_FFFF_FFFF,
-]);
-pub const FIELD_ORDER_STARK: u256 = u256::from_inner([1, 0, 17, 0x0800_0000_0000_0000]);
-pub const FIELD_ORDER_SECP: u256 = u256::from_inner([
-    0xFFFF_FFFE_FFFF_FC2E,
-    0xFFFF_FFFF_FFFF_FFFF,
-    0xFFFF_FFFF_FFFF_FFFF,
-    0xFFFF_FFFF_FFFF_FFFF,
-]);
