@@ -24,7 +24,7 @@
 use std::collections::BTreeSet;
 
 use aluvm::alu::regs::Status;
-use aluvm::alu::{Core, CoreExt, ExecStep, Site, SiteId};
+use aluvm::alu::{Core, CoreExt, ExecStep, Site, SiteId, Supercore};
 use aluvm::isa::Instruction;
 use aluvm::RegE;
 
@@ -152,22 +152,22 @@ impl<Id: SiteId> Instruction<Id> for Instr<Id> {
     ) -> ExecStep<Site<Id>> {
         match self {
             Instr::Ctrl(instr) => {
-                let mut subcore = Core::from(core.clone());
+                let mut subcore = core.subcore();
                 let step = instr.exec(site, &mut subcore, &mut ());
-                *core = subcore.extend(core.cx.clone());
+                core.merge_subcore(subcore);
                 step
             }
             Instr::Gfa(instr) => {
-                let mut subcore = Core::from(core.clone());
+                let mut subcore = core.subcore();
                 let step = instr.exec(site, &mut subcore, &mut ());
-                *core = subcore.extend(core.cx.clone());
+                core.merge_subcore(subcore);
                 step
             }
             Instr::Usonic(instr) => Instruction::<Id>::exec(instr, site, core, context),
             Instr::Reserved(instr) => {
-                let mut subcore = Core::from(core.clone());
+                let mut subcore = core.subcore();
                 let step = instr.exec(site, &mut subcore, &mut ());
-                *core = subcore.extend(core.cx.clone());
+                core.merge_subcore(subcore);
                 step
             }
         }

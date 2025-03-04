@@ -5,7 +5,7 @@ version = 3
 [[package]]
 name = "aluvm"
 version = "0.12.0-beta.5"
-source = "git+https://github.com/AluVM/aluvm?branch=master#8a39154d84146027c4c3ff26692f0d0a8cb18a2d"
+source = "git+https://github.com/AluVM/aluvm?branch=master#635f6e9076ace25a65dc97a0a82b6c14646b2fb0"
 dependencies = [
  "amplify",
  "ascii-armor",
@@ -379,9 +379,9 @@ dependencies = [
 
 [[package]]
 name = "rustversion"
-version = "1.0.19"
+version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7c45b9784283f1b2e7fb61b42047c2fd678ef0960d4f6f1eba131594cc369d4"
+checksum = "eded382c5f5f786b989652c49544c4877d9f015cc22e145a5ea8ea66c2921cd2"
 
 [[package]]
 name = "same-file"
@@ -557,9 +557,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.17"
+version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00e2473a93778eb0bad35909dff6a10d28e63f792f16ed15e404fca9d5eeedbe"
+checksum = "5a5f39404a5da50712a4c1eecf25e90dd62b613502b7e925fd4e4d19b5c96512"
 
 [[package]]
 name = "version_check"
@@ -804,7 +804,7 @@ dependencies = [
 [[package]]
 name = "zk-aluvm"
 version = "0.12.0-beta.5"
-source = "git+https://github.com/AluVM/zk-aluvm?branch=master#2a3a4b866eb1c5365ea1aefc81e30ec1f07201d9"
+source = "git+https://github.com/AluVM/zk-aluvm?branch=master#38a3670da6a7d228a64ca864c83a09354a6f06bf"
 dependencies = [
  "aluvm",
  "amplify",

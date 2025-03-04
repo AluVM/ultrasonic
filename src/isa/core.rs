@@ -23,7 +23,7 @@
 
 use core::fmt::{self, Debug, Formatter};
 
-use aluvm::alu::{CoreExt, NoExt, Register};
+use aluvm::alu::{CoreExt, NoExt, Register, Supercore};
 use aluvm::{GfaCore, RegE};
 use amplify::num::u256;
 
@@ -111,10 +111,14 @@ impl CoreExt for UsonicCore {
     }
 }
 
-impl From<UsonicCore> for GfaCore {
-    fn from(core: UsonicCore) -> Self { core.gfa }
+impl Supercore<GfaCore> for UsonicCore {
+    fn subcore(&self) -> GfaCore { self.gfa }
+
+    fn merge_subcore(&mut self, subcore: GfaCore) { self.gfa = subcore; }
 }
 
-impl From<UsonicCore> for NoExt {
-    fn from(_: UsonicCore) -> Self { NoExt }
+impl Supercore<NoExt> for UsonicCore {
+    fn subcore(&self) -> NoExt { NoExt }
+
+    fn merge_subcore(&mut self, _subcore: NoExt) {}
 }
