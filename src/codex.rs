@@ -30,7 +30,7 @@ use amplify::Bytes32;
 use commit_verify::{CommitId, CommitmentId, DigestExt, ReservedBytes, Sha256};
 
 use crate::{
-    CellAddr, ContractId, Identity, Instr, Operation, StateCell, StateData, StateValue,
+    CellAddr, ContractId, Identity, Instr, IoCat, Operation, StateCell, StateData, StateValue,
     LIB_NAME_ULTRASONIC,
 };
 
@@ -155,6 +155,23 @@ pub struct VmContext<'ctx> {
     pub immutable_input: &'ctx [StateValue],
     pub read_once_output: &'ctx [StateCell],
     pub immutable_output: &'ctx [StateData],
+}
+
+impl VmContext<'_> {
+    pub fn state_value(&self, cat: IoCat, index: u16) -> Option<StateValue> {
+        match cat {
+            IoCat::IN_RO => self.read_once_input.get(index as usize).copied(),
+            IoCat::IN_AO => self.immutable_input.get(index as usize).copied(),
+            IoCat::OUT_RO => self
+                .read_once_output
+                .get(index as usize)
+                .map(|cell| cell.data),
+            IoCat::OUT_AO => self
+                .immutable_output
+                .get(index as usize)
+                .map(|cell| cell.value),
+        }
+    }
 }
 
 pub trait LibRepo {

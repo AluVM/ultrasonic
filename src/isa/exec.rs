@@ -71,10 +71,10 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
         context: &Self::Context<'_>,
     ) -> ExecStep<Site<Id>> {
         let res = match *self {
-            UsonicInstr::CkNxIRo => core.cx.has_next(IoCat::IN_RO, context),
-            UsonicInstr::CkNxIAo => core.cx.has_next(IoCat::IN_AO, context),
-            UsonicInstr::CkNxORo => core.cx.has_next(IoCat::OUT_RO, context),
-            UsonicInstr::CkNxOAo => core.cx.has_next(IoCat::OUT_AO, context),
+            UsonicInstr::CkNxIRo => core.cx.has_data(IoCat::IN_RO, context),
+            UsonicInstr::CkNxIAo => core.cx.has_data(IoCat::IN_AO, context),
+            UsonicInstr::CkNxORo => core.cx.has_data(IoCat::OUT_RO, context),
+            UsonicInstr::CkNxOAo => core.cx.has_data(IoCat::OUT_AO, context),
             UsonicInstr::LdIRo => core.cx.load(IoCat::IN_RO, context),
             UsonicInstr::LdIAo => core.cx.load(IoCat::IN_AO, context),
             UsonicInstr::LdORo => core.cx.load(IoCat::OUT_RO, context),

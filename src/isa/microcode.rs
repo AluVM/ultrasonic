@@ -28,17 +28,15 @@ use crate::{IoCat, UsonicCore, VmContext};
 
 impl UsonicCore {
     /// Checks that there is more state values remain in the given category.
-    pub fn has_next(&mut self, cat: IoCat, context: &VmContext) -> bool {
-        context.read_once_input.len() <= self.ui[cat.index()] as usize
+    pub fn has_data(&mut self, cat: IoCat, context: &VmContext) -> bool {
+        let data = context.state_value(cat, self.ui[cat.index()]);
+        data.is_some()
     }
 
     /// Loads next [`StateValue`] (basing on iterator position from `UI` indexes) of a given
     /// category into the `EA`-`ED` registers, increasing `UI` iterator count.
     pub fn load(&mut self, cat: IoCat, context: &VmContext) -> bool {
-        let data = context
-            .read_once_input
-            .get(self.ui[cat.index()] as usize)
-            .copied();
+        let data = context.state_value(cat, self.ui[cat.index()]);
         let co = data.is_some();
         let data = data.unwrap_or_default();
         self.gfa.put(RegE::EA, data.get(0));
