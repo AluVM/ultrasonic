@@ -265,6 +265,14 @@ impl CommitEncode for StateData {
     }
 }
 
+impl StateData {
+    pub fn new(value: impl Into<StateValue>) -> Self { Self { value: value.into(), raw: None } }
+
+    pub fn with(value: impl Into<StateValue>, raw: impl Into<RawData>) -> Self {
+        Self { value: value.into(), raw: Some(raw.into()) }
+    }
+}
+
 #[cfg(all(feature = "serde", feature = "baid64"))]
 mod _serde {
     use serde::de::Error;
