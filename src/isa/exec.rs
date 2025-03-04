@@ -42,7 +42,17 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
 
     fn src_regs(&self) -> BTreeSet<RegE> { none!() }
 
-    fn dst_regs(&self) -> BTreeSet<RegE> { none!() }
+    fn dst_regs(&self) -> BTreeSet<RegE> {
+        match *self {
+            UsonicInstr::CkNxIRo
+            | UsonicInstr::CkNxIAo
+            | UsonicInstr::CkNxORo
+            | UsonicInstr::CkNxOAo => none!(),
+            UsonicInstr::LdIRo | UsonicInstr::LdIAo | UsonicInstr::LdORo | UsonicInstr::LdOAo => {
+                bset![RegE::EA, RegE::EB, RegE::EC, RegE::ED]
+            }
+        }
+    }
 
     fn op_data_bytes(&self) -> u16 {
         match *self {
