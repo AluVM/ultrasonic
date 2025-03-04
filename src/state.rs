@@ -292,10 +292,12 @@ impl CommitEncode for StateData {
 }
 
 impl StateData {
-    pub fn new(value: impl Into<StateValue>) -> Self { Self { value: value.into(), raw: None } }
+    pub fn new(ty: impl Into<fe256>, val: impl Into<fe256>) -> Self {
+        Self { value: StateValue::new(ty, val), raw: None }
+    }
 
-    pub fn with(value: impl Into<StateValue>, raw: impl Into<RawData>) -> Self {
-        Self { value: value.into(), raw: Some(raw.into()) }
+    pub fn with_raw(ty: impl Into<fe256>, val: impl Into<fe256>, raw: impl Into<RawData>) -> Self {
+        Self { value: StateValue::new(ty, val), raw: Some(raw.into()) }
     }
 }
 
