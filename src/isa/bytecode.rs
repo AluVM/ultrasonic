@@ -32,7 +32,7 @@ use crate::Instr;
 
 impl UsonicInstr {
     const START: u8 = 128;
-    const END: u8 = Self::START + Self::LDOAO;
+    const END: u8 = Self::START + Self::RSTOAO;
 
     const CKNXIRO: u8 = 0;
     const CKNXIAO: u8 = 1;
@@ -43,6 +43,11 @@ impl UsonicInstr {
     const LDIAO: u8 = 5;
     const LDORO: u8 = 6;
     const LDOAO: u8 = 7;
+
+    const RSTIRO: u8 = 8;
+    const RSTIAO: u8 = 9;
+    const RSTORO: u8 = 10;
+    const RSTOAO: u8 = 11;
 }
 
 impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
@@ -59,6 +64,10 @@ impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
                 UsonicInstr::LdIAo => Self::LDIAO,
                 UsonicInstr::LdORo => Self::LDORO,
                 UsonicInstr::LdOAo => Self::LDOAO,
+                UsonicInstr::RstIRo => Self::RSTIRO,
+                UsonicInstr::RstIAo => Self::RSTIAO,
+                UsonicInstr::RstORo => Self::RSTORO,
+                UsonicInstr::RstOAo => Self::RSTOAO,
             }
     }
 
@@ -74,6 +83,10 @@ impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
             UsonicInstr::LdIRo | UsonicInstr::LdIAo | UsonicInstr::LdORo | UsonicInstr::LdOAo => {
                 Ok(())
             }
+            UsonicInstr::RstIRo
+            | UsonicInstr::RstIAo
+            | UsonicInstr::RstORo
+            | UsonicInstr::RstOAo => Ok(()),
         }
     }
 
@@ -91,6 +104,10 @@ impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
             Self::LDIAO => UsonicInstr::LdIAo,
             Self::LDORO => UsonicInstr::LdORo,
             Self::LDOAO => UsonicInstr::LdOAo,
+            Self::RSTIRO => UsonicInstr::RstIRo,
+            Self::RSTIAO => UsonicInstr::RstIAo,
+            Self::RSTORO => UsonicInstr::RstORo,
+            Self::RSTOAO => UsonicInstr::RstOAo,
             _ => unreachable!(),
         })
     }

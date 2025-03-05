@@ -107,6 +107,19 @@ macro_rules! instr {
         $crate::UsonicInstr::LdOAo.into()
     };
 
+    (rsti :destructible) => {
+        $crate::UsonicInstr::RstIRo.into()
+    };
+    (rsti :immutable) => {
+        $crate::UsonicInstr::RstIAo.into()
+    };
+    (rsto :destructible) => {
+        $crate::UsonicInstr::RstORo.into()
+    };
+    (rsto :immutable) => {
+        $crate::UsonicInstr::RstOAo.into()
+    };
+
     { $($tt:tt)+ } => {
         $crate::aluvm::instr! { $( $tt )+ }
     };

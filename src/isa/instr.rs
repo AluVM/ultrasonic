@@ -112,4 +112,32 @@ pub enum UsonicInstr {
     /// If the next state value is absent, sets `CO` to a failed state. Otherwise, resets `CO`.
     #[display("ldo     :immutable")]
     LdOAo,
+
+    /// Resets iterator over input destructible memory cells by setting corresponding `UI` value to
+    /// zero.
+    ///
+    /// Does not affect the value of `CO` or `CK` registers.
+    #[display("rsti    :destructible")]
+    RstIRo,
+
+    /// Resets iterator over input immutable memory cells by setting corresponding `UI` value to
+    /// zero.
+    ///
+    /// Does not affect the value of `CO` or `CK` registers.
+    #[display("rsti    :immutable")]
+    RstIAo,
+
+    /// Resets iterator over output destructible memory cells by setting corresponding `UI` value
+    /// to zero.
+    ///
+    /// Does not affect the value of `CO` or `CK` registers.
+    #[display("rsto    :destructible")]
+    RstORo,
+
+    /// Resets iterator over output immutable memory cells by setting corresponding `UI` value to
+    /// zero.
+    ///
+    /// Does not affect the value of `CO` or `CK` registers.
+    #[display("rsto    :immutable")]
+    RstOAo,
 }

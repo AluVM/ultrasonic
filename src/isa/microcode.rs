@@ -48,4 +48,6 @@ impl UsonicCore {
         }
         co
     }
+
+    pub fn reset(&mut self, cat: IoCat) { self.ui[cat.index()] = 0; }
 }

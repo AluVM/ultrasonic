@@ -51,6 +51,10 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
             UsonicInstr::LdIRo | UsonicInstr::LdIAo | UsonicInstr::LdORo | UsonicInstr::LdOAo => {
                 bset![RegE::EA, RegE::EB, RegE::EC, RegE::ED]
             }
+            UsonicInstr::RstIRo
+            | UsonicInstr::RstIAo
+            | UsonicInstr::RstORo
+            | UsonicInstr::RstOAo => none!(),
         }
     }
 
@@ -61,6 +65,10 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
             | UsonicInstr::CkNxORo
             | UsonicInstr::CkNxOAo => 0,
             UsonicInstr::LdIRo | UsonicInstr::LdIAo | UsonicInstr::LdORo | UsonicInstr::LdOAo => 0,
+            UsonicInstr::RstIRo
+            | UsonicInstr::RstIAo
+            | UsonicInstr::RstORo
+            | UsonicInstr::RstOAo => 0,
         }
     }
 
@@ -71,6 +79,10 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
             | UsonicInstr::CkNxORo
             | UsonicInstr::CkNxOAo => 0,
             UsonicInstr::LdIRo | UsonicInstr::LdIAo | UsonicInstr::LdORo | UsonicInstr::LdOAo => 0,
+            UsonicInstr::RstIRo
+            | UsonicInstr::RstIAo
+            | UsonicInstr::RstORo
+            | UsonicInstr::RstOAo => 0,
         }
     }
 
@@ -89,6 +101,22 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
             UsonicInstr::LdIAo => core.cx.load(IoCat::IN_AO, context),
             UsonicInstr::LdORo => core.cx.load(IoCat::OUT_RO, context),
             UsonicInstr::LdOAo => core.cx.load(IoCat::OUT_AO, context),
+            UsonicInstr::RstIRo => {
+                core.cx.reset(IoCat::IN_RO);
+                return ExecStep::Next;
+            }
+            UsonicInstr::RstIAo => {
+                core.cx.reset(IoCat::IN_AO);
+                return ExecStep::Next;
+            }
+            UsonicInstr::RstORo => {
+                core.cx.reset(IoCat::OUT_RO);
+                return ExecStep::Next;
+            }
+            UsonicInstr::RstOAo => {
+                core.cx.reset(IoCat::OUT_AO);
+                return ExecStep::Next;
+            }
         };
         core.set_co(if res { Status::Ok } else { Status::Fail });
         ExecStep::Next
