@@ -5,7 +5,7 @@ version = 3
 [[package]]
 name = "aluvm"
 version = "0.12.0-beta.5"
-source = "git+https://github.com/AluVM/aluvm?branch=master#7e5742be2ac8da4a73498f612153c43c2b129a6b"
+source = "git+https://github.com/AluVM/aluvm?branch=master#35620d32f45e0b7b52a82ad9697f3bb002b02451"
 dependencies = [
  "amplify",
  "ascii-armor",
@@ -804,7 +804,7 @@ dependencies = [
 [[package]]
 name = "zk-aluvm"
 version = "0.12.0-beta.5"
-source = "git+https://github.com/AluVM/zk-aluvm?branch=master#a0d74186cba468129c0f7d475c91598b4c6639a6"
+source = "git+https://github.com/AluVM/zk-aluvm?branch=master#5d627f8389337665adeeae2b42c35b0d7e6e7f02"
 dependencies = [
  "aluvm",
  "amplify",

@@ -36,9 +36,11 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
     type Core = UsonicCore;
     type Context<'ctx> = VmContext<'ctx>;
 
-    fn is_local_goto_target(&self) -> bool { false }
+    fn is_goto_target(&self) -> bool { false }
 
     fn local_goto_pos(&mut self) -> Option<&mut u16> { None }
+
+    fn remote_goto_pos(&mut self) -> Option<&mut Site<Id>> { None }
 
     fn src_regs(&self) -> BTreeSet<RegE> { none!() }
 
@@ -128,12 +130,12 @@ impl<Id: SiteId> Instruction<Id> for Instr<Id> {
     type Core = UsonicCore;
     type Context<'ctx> = VmContext<'ctx>;
 
-    fn is_local_goto_target(&self) -> bool {
+    fn is_goto_target(&self) -> bool {
         match self {
-            Instr::Ctrl(instr) => instr.is_local_goto_target(),
-            Instr::Gfa(instr) => Instruction::<Id>::is_local_goto_target(instr),
-            Instr::Usonic(instr) => Instruction::<Id>::is_local_goto_target(instr),
-            Instr::Reserved(instr) => Instruction::<Id>::is_local_goto_target(instr),
+            Instr::Ctrl(instr) => instr.is_goto_target(),
+            Instr::Gfa(instr) => Instruction::<Id>::is_goto_target(instr),
+            Instr::Usonic(instr) => Instruction::<Id>::is_goto_target(instr),
+            Instr::Reserved(instr) => Instruction::<Id>::is_goto_target(instr),
         }
     }
 
@@ -143,6 +145,15 @@ impl<Id: SiteId> Instruction<Id> for Instr<Id> {
             Instr::Gfa(instr) => Instruction::<Id>::local_goto_pos(instr),
             Instr::Usonic(instr) => Instruction::<Id>::local_goto_pos(instr),
             Instr::Reserved(instr) => Instruction::<Id>::local_goto_pos(instr),
+        }
+    }
+
+    fn remote_goto_pos(&mut self) -> Option<&mut Site<Id>> {
+        match self {
+            Instr::Ctrl(instr) => instr.remote_goto_pos(),
+            Instr::Gfa(instr) => Instruction::<Id>::remote_goto_pos(instr),
+            Instr::Usonic(instr) => Instruction::<Id>::remote_goto_pos(instr),
+            Instr::Reserved(instr) => Instruction::<Id>::remote_goto_pos(instr),
         }
     }
 
