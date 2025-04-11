@@ -343,3 +343,25 @@ impl CommitEncode for Operation {
 impl Operation {
     pub fn opid(&self) -> Opid { self.commit_id() }
 }
+
+#[derive(Clone, Eq, Debug)]
+pub struct VerifiedOperation(Opid, Operation);
+
+impl PartialEq for VerifiedOperation {
+    fn eq(&self, other: &Self) -> bool { self.0 == other.0 }
+}
+impl PartialOrd for VerifiedOperation {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { Some(self.cmp(other)) }
+}
+impl Ord for VerifiedOperation {
+    fn cmp(&self, other: &Self) -> Ordering { self.0.cmp(&other.0) }
+}
+
+impl VerifiedOperation {
+    #[doc(hidden)]
+    pub(crate) fn new_unchecked(opid: Opid, operation: Operation) -> Self { Self(opid, operation) }
+
+    pub fn opid(&self) -> Opid { self.0 }
+    pub fn as_operation(&self) -> &Operation { &self.1 }
+    pub fn into_operation(self) -> Operation { self.1 }
+}

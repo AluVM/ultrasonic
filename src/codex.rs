@@ -31,7 +31,7 @@ use commit_verify::{CommitId, CommitmentId, DigestExt, ReservedBytes, Sha256};
 
 use crate::{
     CellAddr, ContractId, Identity, Instr, IoCat, Operation, StateCell, StateData, StateValue,
-    LIB_NAME_ULTRASONIC,
+    VerifiedOperation, LIB_NAME_ULTRASONIC,
 };
 
 pub type CallId = u16;
@@ -64,10 +64,10 @@ impl Codex {
     pub fn verify(
         &self,
         contract_id: ContractId,
-        operation: &Operation,
+        operation: Operation,
         memory: &impl Memory,
         repo: &impl LibRepo,
-    ) -> Result<(), CallError> {
+    ) -> Result<VerifiedOperation, CallError> {
         let resolver = |lib_id: LibId| repo.get_lib(lib_id);
 
         if operation.contract_id != contract_id {
@@ -135,7 +135,7 @@ impl Codex {
             field_order: self.field_order,
         });
         match vm_main.exec(*entry_point, &context, resolver) {
-            Status::Ok => Ok(()),
+            Status::Ok => Ok(VerifiedOperation::new_unchecked(operation.opid(), operation)),
             Status::Fail => {
                 if let Some(err_code) = vm_main.core.cx.get(RegE::E1) {
                     Err(CallError::Script(err_code))
