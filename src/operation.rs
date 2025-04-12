@@ -27,7 +27,7 @@ use core::cmp::Ordering;
 pub use _baid64::ParseAddrError;
 use aluvm::fe256;
 use amplify::confinement::SmallVec;
-use amplify::Bytes32;
+use amplify::{ByteArray, Bytes32};
 use commit_verify::{
     CommitEncode, CommitEngine, CommitId, CommitmentId, DigestExt, MerkleHash, ReservedBytes,
     Sha256,
@@ -99,6 +99,23 @@ pub struct CellAddr {
 
 impl CellAddr {
     pub fn new(opid: Opid, pos: u16) -> Self { Self { opid, pos } }
+}
+
+impl From<[u8; 34]> for CellAddr {
+    fn from(value: [u8; 34]) -> Self {
+        let opid = Opid::from_slice_unsafe(&value[..32]);
+        let pos = u16::from_le_bytes(value[32..34].try_into().unwrap());
+        Self::new(opid, pos)
+    }
+}
+
+impl From<CellAddr> for [u8; 34] {
+    fn from(value: CellAddr) -> Self {
+        let mut bytes = [0u8; 34];
+        bytes[..32].copy_from_slice(&value.opid.to_byte_array());
+        bytes[32..34].copy_from_slice(&value.pos.to_le_bytes());
+        bytes
+    }
 }
 
 #[cfg(feature = "baid64")]
