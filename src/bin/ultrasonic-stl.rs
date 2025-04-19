@@ -29,7 +29,7 @@ use commit_verify::CommitmentLayout;
 use strict_types::stl::{std_stl, strict_types_stl};
 use strict_types::{parse_args, SystemBuilder};
 use ultrasonic::stl::usonic_stl;
-use ultrasonic::{Codex, Contract, Operation};
+use ultrasonic::{Codex, Issue, Operation};
 use zkaluvm::alu::stl::aluvm_stl;
 use zkaluvm::zkstl::finite_field_stl;
 
@@ -93,16 +93,16 @@ fn main() {
     )
     .unwrap();
 
-    writeln!(file, "\n-- Contract codex\n").unwrap();
+    writeln!(file, "\n-- Contract Codex\n").unwrap();
     let layout = Codex::commitment_layout();
     writeln!(file, "{layout}").unwrap();
     let tt = sys.type_tree("UltraSONIC.Codex").unwrap();
     writeln!(file, "{tt}").unwrap();
 
-    writeln!(file, "\n-- Contract\n").unwrap();
-    let layout = Contract::commitment_layout();
+    writeln!(file, "\n-- Contract Issue\n").unwrap();
+    let layout = Issue::commitment_layout();
     writeln!(file, "{layout}").unwrap();
-    let tt = sys.type_tree("UltraSONIC.Contract").unwrap();
+    let tt = sys.type_tree("UltraSONIC.Issue").unwrap();
     writeln!(file, "{tt}").unwrap();
 
     writeln!(file, "\n-- Contract Genesis\n").unwrap();

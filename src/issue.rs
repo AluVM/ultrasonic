@@ -65,14 +65,14 @@ impl<const CONST: u32> StrictDecode for ConstU32<CONST> {
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
-pub struct Contract {
+pub struct Issue {
     pub version: ReservedBytes<2>,
     pub meta: ContractMeta,
     pub codex: Codex,
     pub genesis: Genesis,
 }
 
-impl CommitEncode for Contract {
+impl CommitEncode for Issue {
     type CommitmentId = ContractId;
 
     fn commit_encode(&self, e: &mut CommitEngine) {
@@ -83,7 +83,7 @@ impl CommitEncode for Contract {
     }
 }
 
-impl Contract {
+impl Issue {
     pub fn contract_id(&self) -> ContractId { self.commit_id() }
 
     pub fn genesis_opid(&self) -> Opid { self.genesis.opid(self.contract_id()) }

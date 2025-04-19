@@ -10,7 +10,7 @@
 @@lexicon(types+commitments)
 
 
--- Contract codex
+-- Contract Codex
 
 commitment CodexId, hasher SHA256, tagged urn:ubideco:sonic:codex#2024-11-19
   serialized Codex
@@ -34,7 +34,7 @@ rec Codex
       is offset, U16
 
 
--- Contract
+-- Contract Issue
 
 commitment ContractId, hasher SHA256, tagged urn:ubideco:sonic:contract#2024-11-16
   serialized ReservedBytes2
@@ -42,7 +42,7 @@ commitment ContractId, hasher SHA256, tagged urn:ubideco:sonic:contract#2024-11-
   serialized CodexId
   serialized GenesisId
 
-rec Contract
+rec Issue
   bytes version, len 2, aka ReservedBytes2
   rec meta, ContractMeta
     enum testnet, Bool, false 0, true 1
@@ -84,11 +84,11 @@ rec Contract
           rec double, tag 2
             is first, U256, aka Fe256
             is second, U256, aka Fe256
-          rec three, tag 3
+          rec triple, tag 3
             is first, U256, aka Fe256
             is second, U256, aka Fe256
             is third, U256, aka Fe256
-          rec four, tag 4
+          rec quadripple, tag 4
             is first, U256, aka Fe256
             is second, U256, aka Fe256
             is third, U256, aka Fe256
@@ -106,11 +106,11 @@ rec Contract
           rec double, tag 2
             is first, U256, aka Fe256
             is second, U256, aka Fe256
-          rec three, tag 3
+          rec triple, tag 3
             is first, U256, aka Fe256
             is second, U256, aka Fe256
             is third, U256, aka Fe256
-          rec four, tag 4
+          rec quadripple, tag 4
             is first, U256, aka Fe256
             is second, U256, aka Fe256
             is third, U256, aka Fe256
@@ -145,11 +145,11 @@ rec Genesis
         rec double, tag 2
           is first, U256, aka Fe256
           is second, U256, aka Fe256
-        rec three, tag 3
+        rec triple, tag 3
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
-        rec four, tag 4
+        rec quadripple, tag 4
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
@@ -167,11 +167,11 @@ rec Genesis
         rec double, tag 2
           is first, U256, aka Fe256
           is second, U256, aka Fe256
-        rec three, tag 3
+        rec triple, tag 3
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
-        rec four, tag 4
+        rec quadripple, tag 4
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
@@ -207,11 +207,11 @@ rec Operation
         rec double, tag 2
           is first, U256, aka Fe256
           is second, U256, aka Fe256
-        rec three, tag 3
+        rec triple, tag 3
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
-        rec four, tag 4
+        rec quadripple, tag 4
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
@@ -229,11 +229,11 @@ rec Operation
         rec double, tag 2
           is first, U256, aka Fe256
           is second, U256, aka Fe256
-        rec three, tag 3
+        rec triple, tag 3
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
-        rec four, tag 4
+        rec quadripple, tag 4
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
@@ -251,11 +251,11 @@ rec Operation
         rec double, tag 2
           is first, U256, aka Fe256
           is second, U256, aka Fe256
-        rec three, tag 3
+        rec triple, tag 3
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
-        rec four, tag 4
+        rec quadripple, tag 4
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256

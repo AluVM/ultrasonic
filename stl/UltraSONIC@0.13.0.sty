@@ -1,5 +1,5 @@
 {-
-  Id: stl:guAx~YzT-AJapVMJ-3f~maXC-mIWOBMy-I4DFFOd-eA2Wm1s#legacy-basil-broken
+  Id: stl:D11dmSqJ-C2OLaK5-hgCpJr3-ulhfGET-HxPzDx8-KbMPf6Y#nurse-decimal-legal
   Name: UltraSONIC
   Version: 0.13.0
   Description: Transactional execution layer with capability-based memory access for zk-AluVM
@@ -60,12 +60,6 @@ data CodexId           : [Byte ^ 32]
 data Consensus         : none | bitcoin#16 | liquid | prime#32
 
 
-@mnemonic(metal-kitchen-telex)
-data Contract          : version CommitVerify.ReservedBytes2
-                       , meta ContractMeta
-                       , codex Codex
-                       , genesis Genesis
-
 @mnemonic(uniform-welcome-papa)
 data ContractId        : [Byte ^ 32]
 
@@ -100,6 +94,12 @@ data Identity          : Std.AsciiPrintable, [Std.AsciiPrintable ^ ..0xfff]
 @mnemonic(region-gilbert-drama)
 data Input             : addr CellAddr, witness StateValue
 
+@mnemonic(avenue-wonder-newton)
+data Issue             : version CommitVerify.ReservedBytes2
+                       , meta ContractMeta
+                       , codex Codex
+                       , genesis Genesis
+
 @mnemonic(virtual-judge-friday)
 data Operation         : contractId ContractId
                        , callId U16
@@ -124,14 +124,14 @@ data StateCell         : data StateValue
 @mnemonic(siren-organic-double)
 data StateData         : value StateValue, raw RawData?
 
-@mnemonic(book-antonio-alice)
+@mnemonic(bamboo-morgan-edition)
 data StateValue        : none ()
                        | single first FiniteField.Fe256
                        | double (first FiniteField.Fe256, second FiniteField.Fe256)
-                       | three (first FiniteField.Fe256
+                       | triple (first FiniteField.Fe256
                        , second FiniteField.Fe256
                        , third FiniteField.Fe256)
-                       | four (first FiniteField.Fe256
+                       | quadripple (first FiniteField.Fe256
                        , second FiniteField.Fe256
                        , third FiniteField.Fe256
                        , fourth FiniteField.Fe256)
