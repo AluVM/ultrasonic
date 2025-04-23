@@ -40,7 +40,7 @@ fn main() {
     lib.serialize(
         format,
         dir.as_ref(),
-        "0.13.0",
+        "0.12.0",
         Some(
             "
   Description: Transactional execution layer with capability-based memory access for zk-AluVM

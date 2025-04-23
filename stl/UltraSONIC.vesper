@@ -32,6 +32,7 @@ rec Codex
     rec value, LibSite
       bytes libId, len 32, aka LibId
       is offset, U16
+  bytes reserved, len 8, aka ReservedBytes8
 
 
 -- Contract Issue
@@ -47,6 +48,7 @@ rec Issue
   rec meta, ContractMeta
     enum testnet, Bool, false 0, true 1
     enum consensus, Consensus, none 0, bitcoin 16, liquid 17, prime 32
+    bytes reserved, len 14, aka ReservedBytes14
     is timestamp, I64
     union name, ContractName
       is unnamed, Unit, tag 0
@@ -69,6 +71,7 @@ rec Issue
       rec value, LibSite
         bytes libId, len 32, aka LibId
         is offset, U16
+    bytes reserved, len 8, aka ReservedBytes8
   rec genesis, Genesis
     bytes codexId, len 32, aka CodexId
     is callId, U16
@@ -116,6 +119,7 @@ rec Issue
             is third, U256, aka Fe256
             is fourth, U256, aka Fe256
           bytes some, len 0..MAX16, option, wrapped, aka RawData, tag 1
+    bytes reserved, len 8, aka ReservedBytes8
 
 
 -- Contract Genesis
@@ -177,6 +181,7 @@ rec Genesis
           is third, U256, aka Fe256
           is fourth, U256, aka Fe256
         bytes some, len 0..MAX16, option, wrapped, aka RawData, tag 1
+  bytes reserved, len 8, aka ReservedBytes8
 
 
 -- Contract Operation
@@ -261,4 +266,5 @@ rec Operation
           is third, U256, aka Fe256
           is fourth, U256, aka Fe256
         bytes some, len 0..MAX16, option, wrapped, aka RawData, tag 1
+  bytes reserved, len 8, aka ReservedBytes8
 

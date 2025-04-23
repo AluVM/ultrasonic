@@ -32,16 +32,16 @@ use crate::{ContractId, GenesisId, Issue, Operation, Opid, LIB_NAME_ULTRASONIC};
 
 /// Strict types id for the library providing data types for RGB consensus.
 pub const LIB_ID_ULTRASONIC: &str =
-    "stl:D11dmSqJ-C2OLaK5-hgCpJr3-ulhfGET-HxPzDx8-KbMPf6Y#nurse-decimal-legal";
+    "stl:Tn2be5a_-uOQjX_K-IIf7jd~-v9Twmsn-ubRl~Xe-y0GmYz8#viva-armor-diagram";
 
 fn _usonic_stl() -> Result<TypeLib, CompileError> {
-    LibBuilder::new(libname!(LIB_NAME_ULTRASONIC), tiny_bset! {
-        std_stl().to_dependency(),
-        strict_types_stl().to_dependency(),
-        commit_verify_stl().to_dependency(),
-        aluvm_stl().to_dependency(),
-        finite_field_stl().to_dependency(),
-    })
+    LibBuilder::with(libname!(LIB_NAME_ULTRASONIC), [
+        std_stl().to_dependency_types(),
+        strict_types_stl().to_dependency_types(),
+        commit_verify_stl().to_dependency_types(),
+        aluvm_stl().to_dependency_types(),
+        finite_field_stl().to_dependency_types(),
+    ])
     .transpile::<Opid>()
     .transpile::<GenesisId>()
     .transpile::<Operation>()
