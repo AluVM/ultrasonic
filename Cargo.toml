@@ -1,6 +1,6 @@
 [package]
 name = "ultrasonic"
-version = "0.12.0-beta.5"
+version = "0.12.0-beta.6"
 authors = ["Dr Maxim Orlovsky <orlovsky@ubideco.org>"]
 description = "Transactional execution layer with capability-based memory access for zk-AluVM"
 repository = "https://github.com/AluVM/ultrasonic"
@@ -26,8 +26,8 @@ amplify = { version = "~4.8.1", default-features = false, features = ["derive", 
 baid64 = { version = "~0.4.1", optional = true }
 strict_encoding = { version = "~2.8.2", default-features = false, features = ["derive"] }
 strict_types = { version = "~2.8.3", optional = true }
-zk-aluvm = "~0.12.0-beta.5"
-commit_verify = { version = "~0.12.0-beta.5", features = ["derive"] }
+zk-aluvm = "~0.12.0-beta.6"
+commit_verify = { version = "~0.12.0-beta.6", features = ["derive"] }
 serde = { version = "1", features = ["derive"], optional = true }
 
 [features]
@@ -56,8 +56,3 @@ wasm-bindgen-test = "0.3"
 
 [package.metadata.docs.rs]
 features = ["all"]
-
-[patch.crates-io]
-commit_verify = { git = "https://github.com/LNP-BP/client_side_validation", branch = "v0.12" }
-aluvm = { git = "https://github.com/AluVM/aluvm", branch = "master" }
-zk-aluvm = { git = "https://github.com/AluVM/zk-aluvm", branch = "master" }
