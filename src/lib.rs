@@ -50,7 +50,7 @@ mod util;
 
 pub use codex::{AccessId, CallError, CallId, Codex, CodexId, LibRepo, Memory, VmContext};
 pub use isa::{Instr, IoCat, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
-pub use issue::{Consensus, ConstU32, ContractId, ContractMeta, ContractName, Issue};
+pub use issue::{Consensus, ContractId, ContractMeta, ContractName, Issue};
 #[cfg(feature = "baid64")]
 pub use operation::ParseAddrError;
 pub use operation::{CellAddr, Genesis, GenesisId, Input, Operation, Opid, VerifiedOperation};

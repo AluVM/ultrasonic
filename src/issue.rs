@@ -28,38 +28,9 @@ use amplify::{Bytes32, Wrapper};
 use commit_verify::{
     CommitEncode, CommitEngine, CommitId, CommitmentId, DigestExt, ReservedBytes, Sha256,
 };
-use strict_encoding::{
-    DecodeError, ReadTuple, StrictDecode, StrictDumb, StrictEncode, TypeName, TypedRead,
-};
+use strict_encoding::{StrictDecode, StrictDumb, StrictEncode, TypeName};
 
 use crate::{Codex, Genesis, Identity, Opid, LIB_NAME_ULTRASONIC};
-
-// TODO: Move to amplify
-#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
-#[derive(StrictType, StrictEncode)]
-#[strict_type(lib = LIB_NAME_ULTRASONIC)]
-#[cfg_attr(feature = "serde", derive(Serialize), serde(rename_all = "camelCase"))]
-pub struct ConstU32<const CONST: u32>(u32);
-
-impl<const CONST: u32> Default for ConstU32<CONST> {
-    fn default() -> Self { ConstU32(CONST) }
-}
-
-impl<const CONST: u32> ConstU32<CONST> {
-    pub fn new() -> Self { ConstU32(CONST) }
-}
-
-impl<const CONST: u32> StrictDecode for ConstU32<CONST> {
-    fn strict_decode(reader: &mut impl TypedRead) -> Result<Self, DecodeError> {
-        reader.read_tuple(|r| {
-            let val = r.read_field::<u32>()?;
-            if val != CONST {
-                return Err(DecodeError::DataIntegrityError(s!("ConstU32 mismatch")));
-            }
-            Ok(ConstU32(CONST))
-        })
-    }
-}
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
@@ -230,25 +201,6 @@ mod _serde {
                 let bytes = <[u8; 32]>::deserialize(deserializer)?;
                 Ok(Self::from_byte_array(bytes))
             }
-        }
-    }
-}
-
-#[cfg(feature = "serde")]
-mod _serde2 {
-    use serde::de::Error;
-    use serde::{Deserialize, Deserializer};
-
-    use super::*;
-
-    impl<'de, const CONST: u32> Deserialize<'de> for ConstU32<CONST> {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de> {
-            let val = u32::deserialize(deserializer)?;
-            if val != CONST {
-                return Err(D::Error::custom("Invalid constant value"));
-            }
-            Ok(ConstU32(CONST))
         }
     }
 }
