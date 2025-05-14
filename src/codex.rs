@@ -318,3 +318,54 @@ mod _serde {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use core::str::FromStr;
+
+    use amplify::ByteArray;
+    use commit_verify::Digest;
+
+    use super::*;
+
+    #[test]
+    fn codex_id_display() {
+        let id = CodexId::from_byte_array(Sha256::digest(b"test"));
+        assert_eq!(
+            format!("{id}"),
+            "n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg#berlin-river-delta"
+        );
+        assert_eq!(
+            format!("{id:-}"),
+            "codex:n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg#berlin-river-delta"
+        );
+        assert_eq!(format!("{id:#}"), "n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg");
+    }
+
+    #[test]
+    fn codex_id_from_str() {
+        let id = CodexId::from_byte_array(Sha256::digest(b"test"));
+        assert_eq!(
+            CodexId::from_str(
+                "n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg#berlin-river-delta"
+            )
+            .unwrap(),
+            id
+        );
+        assert_eq!(
+            CodexId::from_str(
+                "codex:n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg#berlin-river-delta"
+            )
+            .unwrap(),
+            id
+        );
+        assert_eq!(
+            CodexId::from_str("codex:n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg").unwrap(),
+            id
+        );
+        assert_eq!(
+            CodexId::from_str("n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg").unwrap(),
+            id
+        );
+    }
+}
