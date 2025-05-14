@@ -204,3 +204,50 @@ mod _serde {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use amplify::ByteArray;
+    use commit_verify::Digest;
+
+    use super::*;
+
+    #[test]
+    fn contract_id_display() {
+        let id = ContractId::from_byte_array(Sha256::digest(b"test"));
+        assert_eq!(format!("{id}"), "contract:n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg");
+        assert_eq!(format!("{id:-}"), "n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg");
+        assert_eq!(
+            format!("{id:#}"),
+            "contract:n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg#fractal-fashion-capsule"
+        );
+    }
+
+    #[test]
+    fn contract_id_from_str() {
+        let id = ContractId::from_byte_array(Sha256::digest(b"test"));
+        assert_eq!(
+            ContractId::from_str("contract:n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg")
+                .unwrap(),
+            id
+        );
+        assert_eq!(
+            ContractId::from_str("n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg").unwrap(),
+            id
+        );
+        assert_eq!(
+            ContractId::from_str(
+                "n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg#fractal-fashion-capsule"
+            )
+            .unwrap(),
+            id
+        );
+        assert_eq!(
+            ContractId::from_str(
+                "contract:n4bQgYhM-fWWaL_q-gxVrQFa-O~TxsrC-4Is0V1s-FbDwCgg#fractal-fashion-capsule"
+            )
+            .unwrap(),
+            id
+        );
+    }
+}
