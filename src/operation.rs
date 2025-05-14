@@ -382,3 +382,41 @@ impl VerifiedOperation {
     pub fn as_operation(&self) -> &Operation { &self.1 }
     pub fn into_operation(self) -> Operation { self.1 }
 }
+
+#[cfg(test)]
+mod test {
+    use core::str::FromStr;
+
+    use amplify::ByteArray;
+    use commit_verify::Digest;
+
+    use super::*;
+
+    #[test]
+    fn opid_display() {
+        let id = Opid::from_byte_array(Sha256::digest(b"test"));
+        assert_eq!(format!("{id}"), "n4bQgYhMfWWaL_qgxVrQFaO~TxsrC4Is0V1sFbDwCgg");
+        assert_eq!(format!("{id:-}"), "usop:n4bQgYhMfWWaL_qgxVrQFaO~TxsrC4Is0V1sFbDwCgg");
+        assert_eq!(
+            format!("{id:#}"),
+            "n4bQgYhMfWWaL_qgxVrQFaO~TxsrC4Is0V1sFbDwCgg#nova-impact-simon"
+        );
+    }
+
+    #[test]
+    fn opid_from_str() {
+        let id = Opid::from_byte_array(Sha256::digest(b"test"));
+        assert_eq!(Opid::from_str("n4bQgYhMfWWaL_qgxVrQFaO~TxsrC4Is0V1sFbDwCgg").unwrap(), id);
+        assert_eq!(Opid::from_str("usop:n4bQgYhMfWWaL_qgxVrQFaO~TxsrC4Is0V1sFbDwCgg").unwrap(), id);
+        assert_eq!(
+            Opid::from_str("n4bQgYhMfWWaL_qgxVrQFaO~TxsrC4Is0V1sFbDwCgg#nova-impact-simon")
+                .unwrap(),
+            id
+        );
+        assert_eq!(
+            Opid::from_str("usop:n4bQgYhMfWWaL_qgxVrQFaO~TxsrC4Is0V1sFbDwCgg#nova-impact-simon")
+                .unwrap(),
+            id
+        );
+    }
+}
