@@ -55,7 +55,8 @@ pub extern crate zkaluvm as aluvm;
 extern crate serde;
 
 #[macro_use]
-mod deser;
+#[cfg(feature = "serde")]
+mod macros;
 mod codex;
 mod state;
 mod operation;

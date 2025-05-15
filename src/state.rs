@@ -380,7 +380,7 @@ mod test {
     use super::*;
 
     #[test]
-    #[cfg(feature = "baid64")]
+    #[cfg(all(feature = "serde", feature = "baid64"))]
     fn auth_baid64() {
         use baid64::DisplayBaid64;
         let auth = AuthToken::from_byte_array([0xAD; 30]);
@@ -397,7 +397,7 @@ mod test {
     }
 
     #[test]
-    #[cfg(feature = "baid64")]
+    #[cfg(all(feature = "serde", feature = "baid64"))]
     fn auth_serde() {
         let val = AuthToken::strict_dumb();
         test_serde_wrapper!(val, "at:AAAAAAAA-AAAAAAAA-AAAAAAAA-AAAAAAAA-AAAAAAAA-1EFBiQ", &[
@@ -407,6 +407,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "serde")]
     fn raw_data_serde() {
         let val = RawData::strict_dumb();
         test_serde_wrapper!(val, "0x", &[0, 0, 0, 0, 0, 0, 0, 0]);

@@ -259,7 +259,7 @@ mod test {
     }
 
     #[test]
-    #[cfg(feature = "baid64")]
+    #[cfg(all(feature = "serde", feature = "baid64"))]
     fn contract_id_serde() {
         let val = ContractId::strict_dumb();
         test_serde_wrapper!(val, "contract:AAAAAAAA-AAAAAAA-AAAAAAA-AAAAAAA-AAAAAAA-AAAAAAA", &[

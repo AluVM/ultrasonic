@@ -452,13 +452,31 @@ mod test {
     }
 
     #[test]
-    #[cfg(feature = "baid64")]
+    #[cfg(all(feature = "serde", feature = "baid64"))]
     fn opid_serde() {
         let val = Opid::strict_dumb();
         test_serde_wrapper!(val, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", &[
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0
         ]);
+    }
+
+    #[test]
+    #[cfg(all(feature = "serde", feature = "baid64"))]
+    fn cell_addr_serde() {
+        use serde_test::{assert_tokens, Configure, Token};
+        let val = CellAddr::strict_dumb();
+        assert_eq!(bincode::serialize(&val).unwrap(), &[
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0
+        ]);
+        assert_eq!(
+            bincode::serialize(&val).unwrap(),
+            bincode::serialize(&(val.opid, val.pos)).unwrap()
+        );
+        assert_tokens(&val.readable(), &[Token::Str(
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:0",
+        )]);
     }
 
     #[test]
