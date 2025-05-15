@@ -540,11 +540,19 @@ mod test {
         repo: Lib,
         modify: impl FnOnce(&mut Codex, &mut Operation, &mut DumbMemory),
     ) {
+        test_stand_repo(repo.lib_id(), repo, modify)
+    }
+
+    fn test_stand_repo(
+        lib_id: LibId,
+        repo: impl LibRepo,
+        modify: impl FnOnce(&mut Codex, &mut Operation, &mut DumbMemory),
+    ) {
         let mut codex = Codex::strict_dumb();
         codex.field_order = FIELD_ORDER_SECP;
         codex.verification_config = CoreConfig { halt: true, complexity_lim: Some(10_000_000) };
         codex.input_config = CoreConfig { halt: true, complexity_lim: Some(10_000_000) };
-        codex.verifiers = tiny_bmap! { 0 => LibSite::new(repo.lib_id(), 0) };
+        codex.verifiers = tiny_bmap! { 0 => LibSite::new(lib_id, 0) };
 
         let contract_id = ContractId::from_byte_array(Sha256::digest(b"test"));
         let mut operation = Operation::strict_dumb();
@@ -709,5 +717,49 @@ mod test {
     )]
     fn verify_script_failure_code() {
         test_stand_script(lib_failure_one(), |_codex, _operation, _memory| {});
+    }
+
+    #[test]
+    #[should_panic(expected = "NotFound(0)")]
+    fn verify_no_verifier() {
+        test_stand_script(lib_success(), |codex, _operation, _memory| {
+            codex.verifiers.clear();
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "ScriptUnspecified")]
+    fn verify_lib_absent() {
+        test_stand_script(lib_success(), |codex, _operation, _memory| {
+            codex
+                .verifiers
+                .insert(0, LibSite::new(lib_failure_one().lib_id(), 0))
+                .unwrap();
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "ScriptUnspecified")]
+    fn verify_lib_wrong_pos() {
+        test_stand_script(lib_success(), |codex, _operation, _memory| {
+            codex
+                .verifiers
+                .insert(0, LibSite::new(lib_success().lib_id(), 1))
+                .unwrap();
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "The library returned by the `LibRepo` provided for the contract \
+                               operation verification doesn't match the requested library id. \
+                               This error indicates that the software using the consensus \
+                               verification is invalid or compromised.")]
+    fn verify_wrong_lib_id() {
+        struct InvalidRepo(Lib);
+        impl LibRepo for InvalidRepo {
+            fn get_lib(&self, _lib_id: LibId) -> Option<&Lib> { Some(&self.0) }
+        }
+        let repo = InvalidRepo(lib_failure_one());
+        test_stand_repo(lib_success().lib_id(), repo, |_codex, _operation, _memory| {});
     }
 }
