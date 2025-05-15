@@ -448,4 +448,62 @@ mod test {
         let reconstructed = AuthToken::from_str(&baid64.replace('-', "")).unwrap();
         assert_eq!(reconstructed, auth);
     }
+
+    #[test]
+    fn state_value() {
+        let val = StateValue::None;
+        assert_eq!(val, StateValue::from_iter([] as [u256; 0]));
+        assert_eq!(val.get(0), None);
+        assert_eq!(val.get(1), None);
+        assert_eq!(val.get(2), None);
+        assert_eq!(val.get(3), None);
+        assert_eq!(val.get(4), None);
+        assert_eq!(val.into_iter().collect::<Vec<_>>(), vec![]);
+
+        let first = fe256::from(0xDEADBEEFu32);
+        let val = StateValue::Single { first };
+        assert_eq!(val, StateValue::from_iter([first]));
+        assert_eq!(val.get(0), Some(first));
+        assert_eq!(val.get(1), None);
+        assert_eq!(val.get(2), None);
+        assert_eq!(val.get(3), None);
+        assert_eq!(val.get(4), None);
+        assert_eq!(val.into_iter().collect::<Vec<_>>(), vec![first]);
+
+        let first = fe256::from(0xDEADBEEFu32);
+        let second = fe256::from(0xBEADCAFEu32);
+        let val = StateValue::Double { first, second };
+        assert_eq!(val, StateValue::from_iter([first, second]));
+        assert_eq!(val.get(0), Some(first));
+        assert_eq!(val.get(1), Some(second));
+        assert_eq!(val.get(2), None);
+        assert_eq!(val.get(3), None);
+        assert_eq!(val.get(4), None);
+        assert_eq!(val.into_iter().collect::<Vec<_>>(), vec![first, second]);
+
+        let first = fe256::from(0xDEADBEEFu32);
+        let second = fe256::from(0xBEADCAFEu32);
+        let third = fe256::from(0xBEEDFACEu32);
+        let val = StateValue::Triple { first, second, third };
+        assert_eq!(val, StateValue::from_iter([first, second, third]));
+        assert_eq!(val.get(0), Some(first));
+        assert_eq!(val.get(1), Some(second));
+        assert_eq!(val.get(2), Some(third));
+        assert_eq!(val.get(3), None);
+        assert_eq!(val.get(4), None);
+        assert_eq!(val.into_iter().collect::<Vec<_>>(), vec![first, second, third]);
+
+        let first = fe256::from(0xDEADBEEFu32);
+        let second = fe256::from(0xBEADCAFEu32);
+        let third = fe256::from(0xBEEDFACEu32);
+        let fourth = fe256::from(0xFEEDDEEDu32);
+        let val = StateValue::Quadripple { first, second, third, fourth };
+        assert_eq!(val, StateValue::from_iter([first, second, third, fourth]));
+        assert_eq!(val.get(0), Some(first));
+        assert_eq!(val.get(1), Some(second));
+        assert_eq!(val.get(2), Some(third));
+        assert_eq!(val.get(3), Some(fourth));
+        assert_eq!(val.get(4), None);
+        assert_eq!(val.into_iter().collect::<Vec<_>>(), vec![first, second, third, fourth]);
+    }
 }

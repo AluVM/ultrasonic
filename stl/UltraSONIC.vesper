@@ -40,10 +40,7 @@ commitment ContractId, hasher SHA256, tagged urn:ubideco:sonic:contract#2024-11-
   serialized ReservedBytes1
   serialized ContractMeta
   serialized CodexId
-  serialized U16
-  serialized Fe256
-  merklized StateCell
-  merklized StateData
+  serialized Opid
 
 rec Issue
   bytes version, len 1, aka ReservedBytes1
