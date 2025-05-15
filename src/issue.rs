@@ -24,7 +24,7 @@
 use core::fmt::Debug;
 use core::str::FromStr;
 
-use amplify::{Bytes32, Wrapper};
+use amplify::{ByteArray, Bytes32, Wrapper};
 use commit_verify::{
     CommitEncode, CommitEngine, CommitId, CommitmentId, DigestExt, ReservedBytes, Sha256,
 };
@@ -32,14 +32,19 @@ use strict_encoding::{StrictDecode, StrictDumb, StrictEncode, TypeName};
 
 use crate::{Codex, Genesis, Identity, Opid, LIB_NAME_ULTRASONIC};
 
+/// Information on the issue of the contract.
 #[derive(Clone, Eq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct Issue {
+    /// Version of the contract.
     pub version: ReservedBytes<1>,
+    /// Contract metadata.
     pub meta: ContractMeta,
+    /// The codex under which the contract is issued and against which it must be validated.
     pub codex: Codex,
+    /// Genesis operation.
     pub genesis: Genesis,
 }
 
@@ -54,19 +59,26 @@ impl CommitEncode for Issue {
         e.commit_to_serialized(&self.version);
         e.commit_to_serialized(&self.meta);
         e.commit_to_serialized(&self.codex.codex_id());
-        e.commit_to_serialized(&self.genesis.call_id);
-        e.commit_to_serialized(&self.genesis.nonce);
-        e.commit_to_merkle(&self.genesis.destructible_out);
-        e.commit_to_merkle(&self.genesis.immutable_out);
+        e.commit_to_serialized(&self.genesis.opid(ContractId::from_byte_array([0xFFu8; 32])));
     }
 }
 
 impl Issue {
+    /// Computes contract id.
+    ///
+    /// Contract id is a commitment to the contract issue information, which includes contract
+    /// metadata, codex, and genesis operation.
+    #[inline]
     pub fn contract_id(&self) -> ContractId { self.commit_id() }
 
+    /// Computes the operation id of the genesis operation.
+    ///
+    /// Equals to the [`Genesis::opid`] called with [`Self::contract_id`] as an argument.
+    #[inline]
     pub fn genesis_opid(&self) -> Opid { self.genesis.opid(self.contract_id()) }
 }
 
+/// Consensus (layer 1) which is used by a contract.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Display)]
 #[display(lowercase)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
@@ -74,10 +86,20 @@ impl Issue {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 #[repr(u8)]
 pub enum Consensus {
+    /// No consensus is used.
+    ///
+    /// This means the contract data are not final and depend on the external consensus between
+    /// the contract parties.
     #[strict_type(dumb)]
     None = 0,
+
+    /// Bitcoin PoW consensus.
     Bitcoin = 0x10,
+
+    /// Liquid federation consensus.
     Liquid = 0x11,
+
+    /// Prime consensus.
     Prime = 0x20,
 }
 
@@ -95,31 +117,42 @@ impl FromStr for Consensus {
     }
 }
 
+/// Metadata about the contract.
 #[derive(Clone, Eq, PartialEq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct ContractMeta {
+    /// Indicated whether the contract is a test contract.
     pub testnet: bool,
+    /// Consensus layer used by the contract.
     pub consensus: Consensus,
-    // aligning to 16 byte edge
+    /// Reserved bytes, providing alignment to the 16-byte edge
     #[cfg_attr(feature = "serde", serde(skip))]
     pub reserved: ReservedBytes<14>,
+    /// Timestamp of the moment the contract is issued
     pub timestamp: i64,
     // ^^ above is a fixed-size contract header of 32 bytes
+    /// A name of the contract.
     pub name: ContractName,
+    /// An identity of the contract issuer.
+    ///
+    /// If no identity is given, should be set to `ssi:anonymous` ([`Identity::default`]).
     pub issuer: Identity,
 }
 
+/// Contract name.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Display)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC, tags = custom)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(untagged))]
 pub enum ContractName {
+    /// The contract is unnamed.
     #[strict_type(tag = 0, dumb)]
     #[display("~")]
     Unnamed,
 
+    /// The contract has a specific name.
     #[strict_type(tag = 1)]
     #[display(inner)]
     Named(TypeName),
