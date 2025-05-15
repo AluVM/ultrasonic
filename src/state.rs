@@ -67,6 +67,9 @@ use crate::LIB_NAME_ULTRASONIC;
 )]
 pub struct AuthToken(#[from] fe256);
 
+#[cfg(all(feature = "serde", feature = "baid64"))]
+impl_serde_wrapper!(AuthToken, fe256);
+
 // Types in ultrasonic must not be ordered, since zk-STARK proofs are really inefficient in applying
 // ordering to field elements. However, upstream we need to put `AuthToken` into `BTreeMap`, thus we
 // need `Ord` implementation for pure rust reasons. It must not be used anywhere in the consensus
@@ -313,6 +316,9 @@ pub struct StateCell {
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 pub struct RawData(#[from] SmallBlob);
 
+#[cfg(feature = "serde")]
+impl_serde_wrapper!(RawData, SmallBlob);
+
 impl FromStr for RawData {
     type Err = hex::Error;
     fn from_str(mut s: &str) -> Result<Self, Self::Err> {
@@ -366,69 +372,10 @@ impl StateData {
     }
 }
 
-#[cfg(all(feature = "serde", feature = "baid64"))]
-mod _serde {
-    use serde::de::Error;
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-    use super::*;
-
-    impl Serialize for AuthToken {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer {
-            if serializer.is_human_readable() {
-                serializer.serialize_str(&self.to_string())
-            } else {
-                self.0.serialize(serializer)
-            }
-        }
-    }
-
-    impl<'de> Deserialize<'de> for AuthToken {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de> {
-            if deserializer.is_human_readable() {
-                let s = String::deserialize(deserializer)?;
-                s.parse().map_err(D::Error::custom)
-            } else {
-                fe256::deserialize(deserializer).map(Self)
-            }
-        }
-    }
-}
-
-#[cfg(feature = "serde")]
-mod _serde2 {
-    use serde::de::Error;
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-    use super::*;
-    impl Serialize for RawData {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer {
-            if serializer.is_human_readable() {
-                serializer.serialize_str(&self.to_string())
-            } else {
-                self.0.serialize(serializer)
-            }
-        }
-    }
-
-    impl<'de> Deserialize<'de> for RawData {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de> {
-            if deserializer.is_human_readable() {
-                let s = String::deserialize(deserializer)?;
-                s.parse().map_err(D::Error::custom)
-            } else {
-                SmallBlob::deserialize(deserializer).map(Self)
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod test {
+    use strict_encoding::StrictDumb;
+
     #[cfg(feature = "baid64")]
     use super::*;
 
@@ -447,6 +394,22 @@ mod test {
 
         let reconstructed = AuthToken::from_str(&baid64.replace('-', "")).unwrap();
         assert_eq!(reconstructed, auth);
+    }
+
+    #[test]
+    #[cfg(feature = "baid64")]
+    fn auth_serde() {
+        let val = AuthToken::strict_dumb();
+        test_serde_wrapper!(val, "at:AAAAAAAA-AAAAAAAA-AAAAAAAA-AAAAAAAA-AAAAAAAA-1EFBiQ", &[
+            32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ]);
+    }
+
+    #[test]
+    fn raw_data_serde() {
+        let val = RawData::strict_dumb();
+        test_serde_wrapper!(val, "0x", &[0, 0, 0, 0, 0, 0, 0, 0]);
     }
 
     #[test]

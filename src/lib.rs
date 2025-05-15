@@ -54,6 +54,8 @@ pub extern crate zkaluvm as aluvm;
 #[macro_use]
 extern crate serde;
 
+#[macro_use]
+mod deser;
 mod codex;
 mod state;
 mod operation;

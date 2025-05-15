@@ -352,6 +352,9 @@ pub struct CodexId(
     Bytes32,
 );
 
+#[cfg(all(feature = "serde", feature = "baid64"))]
+impl_serde_wrapper!(CodexId, Bytes32);
+
 impl From<Sha256> for CodexId {
     fn from(hasher: Sha256) -> Self { hasher.finish().into() }
 }
@@ -384,42 +387,6 @@ mod _baid4 {
     }
     impl Display for CodexId {
         fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result { self.fmt_baid64(f) }
-    }
-}
-
-// TODO: Use Base64 macro
-#[cfg(all(feature = "serde", feature = "baid64"))]
-mod _serde {
-    use core::str::FromStr;
-
-    use amplify::ByteArray;
-    use serde::de::Error;
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-    use super::*;
-
-    impl Serialize for CodexId {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer {
-            if serializer.is_human_readable() {
-                self.to_string().serialize(serializer)
-            } else {
-                self.to_byte_array().serialize(serializer)
-            }
-        }
-    }
-
-    impl<'de> Deserialize<'de> for CodexId {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de> {
-            if deserializer.is_human_readable() {
-                let s = String::deserialize(deserializer)?;
-                Self::from_str(&s).map_err(D::Error::custom)
-            } else {
-                let bytes = <[u8; 32]>::deserialize(deserializer)?;
-                Ok(Self::from_byte_array(bytes))
-            }
-        }
     }
 }
 

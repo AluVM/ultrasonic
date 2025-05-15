@@ -52,6 +52,9 @@ pub struct Opid(
     Bytes32,
 );
 
+#[cfg(all(feature = "serde", feature = "baid64"))]
+impl_serde_wrapper!(Opid, Bytes32);
+
 impl From<Opid> for [u8; 32] {
     fn from(opid: Opid) -> Self { opid.to_byte_array() }
 }
@@ -183,37 +186,11 @@ mod _baid64 {
 mod _serde {
     use core::str::FromStr;
 
-    use amplify::ByteArray;
     use serde::de::Error;
     use serde::ser::SerializeTuple;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     use super::*;
-
-    // TODO: Use Base64 macro
-    impl Serialize for Opid {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer {
-            if serializer.is_human_readable() {
-                self.to_string().serialize(serializer)
-            } else {
-                self.to_byte_array().serialize(serializer)
-            }
-        }
-    }
-
-    impl<'de> Deserialize<'de> for Opid {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de> {
-            if deserializer.is_human_readable() {
-                let s = String::deserialize(deserializer)?;
-                Self::from_str(&s).map_err(D::Error::custom)
-            } else {
-                let bytes = <[u8; 32]>::deserialize(deserializer)?;
-                Ok(Self::from_byte_array(bytes))
-            }
-        }
-    }
 
     impl Serialize for CellAddr {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -472,6 +449,16 @@ mod test {
                 .unwrap(),
             id
         );
+    }
+
+    #[test]
+    #[cfg(feature = "baid64")]
+    fn opid_serde() {
+        let val = Opid::strict_dumb();
+        test_serde_wrapper!(val, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", &[
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0
+        ]);
     }
 
     #[test]
