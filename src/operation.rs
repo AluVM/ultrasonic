@@ -317,7 +317,7 @@ impl Genesis {
     pub fn opid(&self, contract_id: ContractId) -> Opid { self.to_operation(contract_id).opid() }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, Eq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
@@ -340,6 +340,9 @@ impl PartialOrd for Operation {
 }
 impl Ord for Operation {
     fn cmp(&self, other: &Self) -> Ordering { self.opid().cmp(&other.opid()) }
+}
+impl PartialEq for Operation {
+    fn eq(&self, other: &Self) -> bool { self.opid() == other.opid() }
 }
 
 impl CommitEncode for Operation {
