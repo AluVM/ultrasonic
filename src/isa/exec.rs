@@ -247,3 +247,130 @@ impl<Id: SiteId> Instruction<Id> for Instr<Id> {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use aluvm::alu::{CoreConfig, Lib, LibId, LibSite, Vm};
+    use aluvm::{fe256, GfaConfig, FIELD_ORDER_SECP};
+
+    use super::*;
+    use crate::uasm;
+
+    #[test]
+    fn exec() {
+        const CHECK: u16 = 77;
+        const VALUE: u32 = 1234567890u32;
+        let code = uasm! {
+            // We check we have at least one element of state
+            cknxi   :destructible;
+            chk     CO;
+            cknxi   :immutable;
+            chk     CO;
+            cknxo   :destructible;
+            chk     CO;
+            cknxo   :immutable;
+            chk     CO;
+
+            //Ensure the check is idempotent
+            cknxi   :destructible;
+            chk     CO;
+            cknxi   :immutable;
+            chk     CO;
+            cknxo   :destructible;
+            chk     CO;
+            cknxo   :immutable;
+            chk     CO;
+
+            // We load the first element of state
+            ldi     :destructible;
+            call    :CHECK;
+            ldi     :immutable;
+            call    :CHECK;
+            ldo     :destructible;
+            call    :CHECK;
+            ldo     :immutable;
+            call    :CHECK;
+
+            // We reset the counter
+            rsti    :destructible;
+            rsti    :immutable;
+            rsto    :destructible;
+            rsto    :immutable;
+
+            // We load the first element of state once more
+            ldi     :destructible;
+            call    :CHECK;
+            ldi     :immutable;
+            call    :CHECK;
+            ldo     :destructible;
+            call    :CHECK;
+            ldo     :immutable;
+            call    :CHECK;
+
+            // Now we make sure that there is no second argument
+            cknxi   :destructible;
+            not     CO;
+            chk     CO;
+            cknxi   :immutable;
+            not     CO;
+            chk     CO;
+            cknxo   :destructible;
+            not     CO;
+            chk     CO;
+            cknxo   :immutable;
+            not     CO;
+            chk     CO;
+
+            // As well as we can't load the second argument
+            ldi     :destructible;
+            not     CO;
+            chk     CO;
+            ldi     :immutable;
+            not     CO;
+            chk     CO;
+            ldo     :destructible;
+            not     CO;
+            chk     CO;
+            ldo     :immutable;
+            not     CO;
+            chk     CO;
+            stop;
+
+           .routine :CHECK;
+            mov     E2, :VALUE;
+            chk     CO;
+            eq      EA, E2;
+            chk     CO;
+            test    EB;
+            not     CO;
+            chk     CO;
+            test    EC;
+            not     CO;
+            chk     CO;
+            test    ED;
+            not     CO;
+            chk     CO;
+            clr     EA;
+            ret;
+        };
+        // Use this line to compute offset of the `CHECK` routine when you modify the script above
+        //let lib = CompiledLib::compile(code.clone(), &[]).unwrap().into_lib();
+        let lib = Lib::assemble(&code).unwrap();
+        assert_eq!(lib.disassemble::<Instr<_>>().unwrap(), code);
+
+        let state = StateValue::Single { first: fe256::from(VALUE) };
+        let context = VmContext {
+            read_once_input: &[state],
+            immutable_input: &[state],
+            read_once_output: &[StateCell { data: state, auth: strict_dumb!(), lock: None }],
+            immutable_output: &[StateData { value: state, raw: None }],
+        };
+        let mut vm_main =
+            Vm::<Instr<LibId>>::with(CoreConfig { halt: true, complexity_lim: None }, GfaConfig {
+                field_order: FIELD_ORDER_SECP,
+            });
+        let resolver = |_: LibId| Some(&lib);
+        let status = vm_main.exec(LibSite::new(lib.lib_id(), 0), &context, resolver);
+        assert_eq!(status, Status::Ok);
+    }
+}
