@@ -408,9 +408,13 @@ mod _serde {
 #[cfg(test)]
 mod test {
     use core::str::FromStr;
+    use std::collections::HashMap;
 
+    use aluvm::alu::aluasm;
+    use aluvm::FIELD_ORDER_SECP;
     use amplify::ByteArray;
     use commit_verify::Digest;
+    use strict_encoding::StrictDumb;
 
     use super::*;
 
@@ -454,4 +458,57 @@ mod test {
             id
         );
     }
+
+    #[derive(Clone, Eq, PartialEq, Debug, Default)]
+    pub struct DumbMemory {
+        pub read_once: HashMap<CellAddr, StateCell>,
+        pub immutable: HashMap<CellAddr, StateValue>,
+    }
+
+    impl Memory for DumbMemory {
+        fn read_once(&self, addr: CellAddr) -> Option<StateCell> {
+            self.read_once.get(&addr).copied()
+        }
+
+        fn immutable(&self, addr: CellAddr) -> Option<StateValue> {
+            self.immutable.get(&addr).copied()
+        }
+    }
+
+    impl LibRepo for Lib {
+        fn get_lib(&self, lib_id: LibId) -> Option<&Lib> {
+            if lib_id == self.lib_id() {
+                Some(self)
+            } else {
+                None
+            }
+        }
+    }
+
+    fn lib_success() -> Lib { Lib::assemble(&aluasm! { stop; }).unwrap() }
+
+    fn test_stand(modify: impl FnOnce(&mut Codex, &mut Operation, &mut DumbMemory)) {
+        let repo = lib_success();
+
+        let mut codex = Codex::strict_dumb();
+        codex.field_order = FIELD_ORDER_SECP;
+        codex.verification_config = CoreConfig { halt: true, complexity_lim: Some(100_000) };
+        codex.input_config = CoreConfig { halt: true, complexity_lim: Some(100_000) };
+        codex.verifiers = tiny_bmap! { 0 => LibSite::new(repo.lib_id(), 0) };
+
+        let contract_id = ContractId::from_byte_array(Sha256::digest(b"test"));
+        let mut operation = Operation::strict_dumb();
+        operation.contract_id = contract_id;
+        operation.call_id = 0;
+        let mut memory = DumbMemory::default();
+
+        modify(&mut codex, &mut operation, &mut memory);
+
+        codex
+            .verify(contract_id, operation, &memory, &repo)
+            .unwrap();
+    }
+
+    #[test]
+    fn verify_dumb() { test_stand(|codex, operation, memory| {}); }
 }
