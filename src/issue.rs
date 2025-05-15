@@ -37,7 +37,7 @@ use crate::{Codex, Genesis, Identity, Opid, LIB_NAME_ULTRASONIC};
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct Issue {
-    pub version: ReservedBytes<2>,
+    pub version: ReservedBytes<1>,
     pub meta: ContractMeta,
     pub codex: Codex,
     pub genesis: Genesis,

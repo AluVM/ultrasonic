@@ -48,8 +48,8 @@ mod issue;
 pub mod stl;
 mod util;
 
-pub use codex::{AccessId, CallError, CallId, Codex, CodexId, LibRepo, Memory, VmContext};
-pub use isa::{Instr, IoCat, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
+pub use codex::{CallError, CallId, Codex, CodexId, LibRepo, Memory};
+pub use isa::{Instr, IoCat, UsonicCore, UsonicInstr, VmContext, ISA_ULTRASONIC};
 pub use issue::{Consensus, ContractId, ContractMeta, ContractName, Issue};
 #[cfg(feature = "baid64")]
 pub use operation::ParseAddrError;

@@ -29,6 +29,6 @@ mod microcode;
 #[macro_use]
 mod masm;
 
-pub use core::{IoCat, UsonicCore};
-
-pub use instr::{Instr, UsonicInstr, ISA_ULTRASONIC};
+pub use self::core::{IoCat, UsonicCore};
+pub use self::exec::VmContext;
+pub use self::instr::{Instr, UsonicInstr, ISA_ULTRASONIC};

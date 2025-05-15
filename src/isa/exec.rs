@@ -29,7 +29,32 @@ use aluvm::isa::Instruction;
 use aluvm::RegE;
 
 use super::{UsonicCore, UsonicInstr};
-use crate::{Instr, IoCat, VmContext, ISA_ULTRASONIC};
+use crate::{Instr, IoCat, StateCell, StateData, StateValue, ISA_ULTRASONIC};
+
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub struct VmContext<'ctx> {
+    pub read_once_input: &'ctx [StateValue],
+    pub immutable_input: &'ctx [StateValue],
+    pub read_once_output: &'ctx [StateCell],
+    pub immutable_output: &'ctx [StateData],
+}
+
+impl VmContext<'_> {
+    pub fn state_value(&self, cat: IoCat, index: u16) -> Option<StateValue> {
+        match cat {
+            IoCat::IN_RO => self.read_once_input.get(index as usize).copied(),
+            IoCat::IN_AO => self.immutable_input.get(index as usize).copied(),
+            IoCat::OUT_RO => self
+                .read_once_output
+                .get(index as usize)
+                .map(|cell| cell.data),
+            IoCat::OUT_AO => self
+                .immutable_output
+                .get(index as usize)
+                .map(|cell| cell.value),
+        }
+    }
+}
 
 impl<Id: SiteId> Instruction<Id> for UsonicInstr {
     const ISA_EXT: &'static [&'static str] = &[ISA_ULTRASONIC];

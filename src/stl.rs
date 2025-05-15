@@ -32,7 +32,7 @@ use crate::{ContractId, GenesisId, Issue, Operation, Opid, LIB_NAME_ULTRASONIC};
 
 /// Strict types id for the library providing data types for RGB consensus.
 pub const LIB_ID_ULTRASONIC: &str =
-    "stl:Tn2be5a_-uOQjX_K-IIf7jd~-v9Twmsn-ubRl~Xe-y0GmYz8#viva-armor-diagram";
+    "stl:38jm6HnZ-SJKYM0y-kC8zVQH-Awel6X4-8aAZJSs-TaW9w50#format-archer-complex";
 
 fn _usonic_stl() -> Result<TypeLib, CompileError> {
     LibBuilder::with(libname!(LIB_NAME_ULTRASONIC), [
@@ -50,7 +50,7 @@ fn _usonic_stl() -> Result<TypeLib, CompileError> {
     .compile()
 }
 
-/// Generates strict type library providing data types for RGB consensus.
+/// Generates a strict type library providing data types for RGB consensus.
 pub fn usonic_stl() -> TypeLib { _usonic_stl().expect("invalid strict type Ultrasonic library") }
 
 #[cfg(test)]
