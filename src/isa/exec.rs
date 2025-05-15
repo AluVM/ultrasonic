@@ -31,15 +31,25 @@ use aluvm::RegE;
 use super::{UsonicCore, UsonicInstr};
 use crate::{Instr, IoCat, StateCell, StateData, StateValue, ISA_ULTRASONIC};
 
+/// Context object provided to the VM instance, containing references to the operation inputs and
+/// outputs.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct VmContext<'ctx> {
+    /// Operation input consisting of the destructible (read-once) memory cells.
     pub destructible_input: &'ctx [StateValue],
+    /// Operation input consisting of the immutable (read-only) memory cells.
     pub immutable_input: &'ctx [StateValue],
+    /// Operation output defining new destructible (read-once) memory cells.
     pub destructible_output: &'ctx [StateCell],
+    /// Operation output defining new immutable (append-only) memory cells.
     pub immutable_output: &'ctx [StateData],
 }
 
 impl VmContext<'_> {
+    /// Returns a state value from the provided category of operation inputs/outputs using the given
+    /// `index`.
+    ///
+    /// If the operation doesn't contain input/output with the index, returns `None`.
     pub fn state_value(&self, cat: IoCat, index: u16) -> Option<StateValue> {
         match cat {
             IoCat::IN_RO => self.destructible_input.get(index as usize).copied(),

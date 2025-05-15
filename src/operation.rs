@@ -135,11 +135,15 @@ mod _baid64 {
     }
 
     impl Opid {
+        /// Create operation id by trying to copy bytes from slice.
+        ///
+        /// Errors if the number of bytes in the slice is not 32.
         pub fn copy_from_slice(slice: impl AsRef<[u8]>) -> Result<Self, FromSliceError> {
             Bytes32::copy_from_slice(slice).map(Self)
         }
     }
 
+    /// Errors during parsing [`CellAddr`] from a string representation.
     #[derive(Debug, Display, From, Error)]
     #[display(doc_comments)]
     pub enum ParseAddrError {
@@ -238,10 +242,10 @@ mod _serde {
     }
 }
 
-/// Operation input for destructible (read-once) state.
+/// Operation input for a destructible (read-once) state.
 ///
 /// The structure provides the reference to the memory cell, and an optional witness data which
-/// are used if the memory cell has a defined lock conditions (see [`StateCell::lock`]).
+/// are used if the memory cell has a defined access conditions (see [`StateCell::lock`]).
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[derive(CommitEncode)]
 #[commit_encode(strategy = strict, id = MerkleHash)]
@@ -253,6 +257,9 @@ pub struct Input {
     ///
     /// Memory cell address is the output of some operation defining that cell in its output.
     pub addr: CellAddr,
+
+    /// A witness which provides additional data for satisfying the memory cell access conditions
+    /// (see [`StateCell::lock`]).
     pub witness: StateValue,
 }
 

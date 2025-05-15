@@ -290,7 +290,9 @@ pub enum CallError {
         display = "operation doesn't belong to the current contract."
     )]
     WrongContract {
+        /// Expected contract id.
         expected: ContractId,
+        /// The actual contract id of the operation.
         found: ContractId,
     },
 

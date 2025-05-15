@@ -35,6 +35,28 @@ use commit_verify::{CommitEncode, CommitEngine, MerkleHash, StrictHash};
 
 use crate::LIB_NAME_ULTRASONIC;
 
+/// Authorization token used for controlling the destructible memory cell access.
+///
+/// Authorization token is defined together with a destructible memory cell, as a part of the
+/// operation output.
+///
+/// When the destructible cell is being accessed by another operation as a part of its input, the
+/// token value is put into the virtual machine register `E1`.
+/// Then, it can be used by the codex validating a script alongside the witness value, which is a
+/// part of the operation input data.
+///
+/// # Examples of use
+///
+/// One possible simplified scenario for the use of authorization token is the fact that the token
+/// provides a hash of a certain value; and the operation destroying the memory cell provides a
+/// preimage of the hash as a part of the input witness; and the validation script checks the
+/// preimage against the hash.
+///
+/// More complex scenarios involve single-use seals; the authorization token in this case
+/// represents a hash of (a commitment to) a single-use seal definition, and during the memory cell
+/// access the operation destroying that cell ("spending operation") needs to prove that it has
+/// properly closed that single-use seal over the commitment to the spending operation. This
+/// scenario is implemented in the RGB smart contract system.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, From)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
@@ -64,8 +86,10 @@ impl From<Bytes<30>> for AuthToken {
 }
 
 impl AuthToken {
+    /// Get a representation of a authorization token as a 256-bit field element.
     pub const fn to_fe256(&self) -> fe256 { self.0 }
 
+    /// Construct the token out of 30 bytes of raw data.
     pub fn from_byte_array(bytes: [u8; 30]) -> Self {
         let mut buf = [0u8; 32];
         buf[..30].copy_from_slice(&bytes);
@@ -73,6 +97,7 @@ impl AuthToken {
         Self(val)
     }
 
+    /// Convert the token to 30 bytes of raw data.
     pub fn to_byte_array(&self) -> [u8; 30] {
         let bytes = self.0.to_u256().to_le_bytes();
         debug_assert_eq!(&bytes[30..], &[0, 0]);
@@ -82,6 +107,7 @@ impl AuthToken {
         buf
     }
 
+    /// Convert the token to 30 bytes blob.
     pub fn to_bytes30(&self) -> Bytes<30> {
         let bytes = self.to_byte_array();
         Bytes::from(bytes)
@@ -117,6 +143,7 @@ mod _baid64 {
     }
 }
 
+/// A value stored in a single memory cell.
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Default)]
 #[derive(StrictType, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC, tags = custom)]
@@ -126,19 +153,32 @@ mod _baid64 {
     serde(tag = "type", rename_all = "camelCase")
 )]
 pub enum StateValue {
+    /// A unit value.
     #[default]
     #[strict_type(tag = 0x00)]
     None,
+
+    /// A single 256-bit field element.
+    #[allow(missing_docs)]
     #[strict_type(tag = 0x01)]
     Single { first: fe256 },
+
+    /// A tuple of two 256-bit field elements.
+    #[allow(missing_docs)]
     #[strict_type(tag = 0x02)]
     Double { first: fe256, second: fe256 },
+
+    /// A tuple of three 256-bit field elements.
+    #[allow(missing_docs)]
     #[strict_type(tag = 0x03)]
     Triple {
         first: fe256,
         second: fe256,
         third: fe256,
     },
+
+    /// A tuple of four 256-bit field elements.
+    #[allow(missing_docs)]
     #[strict_type(tag = 0x04)]
     Quadripple {
         first: fe256,
@@ -198,10 +238,15 @@ impl FromIterator<fe256> for StateValue {
 }
 
 impl StateValue {
+    /// Constructs a new state value in [`StateValue::Double`] form, using the first element to
+    /// store the value "type" from the first argument, and the second argument to store the data,
+    /// which can be anything representable with a single 256-bit field element.
     pub fn new(ty: impl Into<fe256>, val: impl Into<fe256>) -> Self {
         StateValue::Double { first: ty.into(), second: val.into() }
     }
 
+    /// Retrieve a field element with a provided index if the element is present in the state
+    /// value.
     pub const fn get(&self, pos: u8) -> Option<fe256> {
         match (*self, pos) {
             (Self::Single { first }, 0)
@@ -238,7 +283,7 @@ impl IntoIterator for StateValue {
     }
 }
 
-/// Read-once access-controlled memory cell.
+/// Read-once access-controlled memory cell, defining destructible part of the contract state.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[derive(CommitEncode)]
 #[commit_encode(strategy = strict, id = MerkleHash)]
@@ -246,12 +291,18 @@ impl IntoIterator for StateValue {
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct StateCell {
+    /// Value stored in the memory cell.
     pub data: StateValue,
-    /// Token of authority
+    /// Token of authority controlling the access to the memory cell.
     pub auth: AuthToken,
+    /// Additional (locking) conditions defined as an zk-AluVM script.
     pub lock: Option<LibSite>,
 }
 
+/// The raw data for the immutable (read-only) memory cells.
+///
+/// The raw data cannot be accessed by the verification scripts and zk-AluVM, and are not
+/// compressible as a part of zk proofs. See [`StateData`] for the details.
 #[derive(Wrapper, WrapperMut, Clone, PartialEq, Eq, Debug, Display, From)]
 #[wrapper(AsSlice, BorrowSlice, Hex, RangeOps)]
 #[wrapper_mut(BorrowSliceMut, RangeMut)]
@@ -270,12 +321,16 @@ impl FromStr for RawData {
     }
 }
 
+/// State kept in the immutable (read-only) memory cells.
 #[derive(Clone, PartialEq, Eq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct StateData {
+    /// The verifiable and compressible part of the state, in the form of field elements.
     pub value: StateValue,
+    /// Optional raw state, which cannot be accessed by the verification scripts and zk-AluVM, and
+    /// are not compressible as a part of zk proofs.
     pub raw: Option<RawData>,
 }
 
@@ -292,10 +347,20 @@ impl CommitEncode for StateData {
 }
 
 impl StateData {
+    /// Constructs a new state value in [`StateValue::Double`] form, using the first element to
+    /// store the value "type" from the first argument, and the second argument to store the data,
+    /// which can be anything representable with a single 256-bit field element.
+    ///
+    /// Leaves raw data empty.
     pub fn new(ty: impl Into<fe256>, val: impl Into<fe256>) -> Self {
         Self { value: StateValue::new(ty, val), raw: None }
     }
 
+    /// Constructs a new state value in [`StateValue::Double`] form, using the first element to
+    /// store the value "type" from the first argument, and the second argument to store the data,
+    /// which can be anything representable with a single 256-bit field element.
+    ///
+    /// Adds to that value raw data.
     pub fn with_raw(ty: impl Into<fe256>, val: impl Into<fe256>, raw: impl Into<RawData>) -> Self {
         Self { value: StateValue::new(ty, val), raw: Some(raw.into()) }
     }

@@ -21,9 +21,24 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
+//! **UltraSONIC** is a state machine with capability-based memory access. In simple words, this
+//! means <q>state machine with cryptographically protected memory cells</q>.
+//!
+//! What is capability-based memory access (or capability-addressable memory, **CAM**)? The
+//! computers we all used to are random memory access machines (RAM), where software accesses
+//! freely addressable global memory. This has opened a door for all the vulnerabilities and
+//! hacks happening in computer systems across the world for the past decades... CAM model instead,
+//! divides all memory into parts (called *words*) addressable only with some access token (called
+//! *capability*). One may think of this as of a memory where each part is "owned" by a certain
+//! party and can be accessed or modified only given a proof of ownership.
+//!
+//! **UltraSONIC** leverages zk-AluVM, so it is (1) zk-STARK-compatible and (2) exception-less, made
+//! with category theory in mind.
+
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 // TODO: Activate no_std once StrictEncoding will support it
 // #![no_std]
+#![deny(missing_docs)]
 
 extern crate alloc;
 
@@ -58,4 +73,5 @@ pub use state::{AuthToken, RawData, StateCell, StateData, StateValue};
 pub use util::Identity;
 pub use zkaluvm::fe256;
 
+/// Strict type library name for the types defined in this crate.
 pub const LIB_NAME_ULTRASONIC: &str = "UltraSONIC";
