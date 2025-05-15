@@ -1,5 +1,5 @@
 {-
-  Id: stl:1n5aF5wL-MKjT6k~-AvXF4PT-gSCzsVq-TQkK582-gzTpTT4#agent-trick-guitar
+  Id: stl:xSHGVSdV-QPaT~fp-A9oWq8V-jOKkVDT-~4La6ko-wjXzN9E#condor-evening-stone
   Name: UltraSONIC
   Version: 0.12.0
   Description: Transactional execution layer with capability-based memory access for zk-AluVM
@@ -74,8 +74,9 @@ data ContractMeta      : testnet Std.Bool
 data ContractName      : unnamed ()
                        | named StrictTypes.TypeName
 
-@mnemonic(email-alfred-chicago)
-data Genesis           : codexId CodexId
+@mnemonic(regard-lunar-helium)
+data Genesis           : version CommitVerify.ReservedBytes1
+                       , codexId CodexId
                        , callId U16
                        , nonce FiniteField.Fe256
                        , blank1 CommitVerify.ReservedBytes2
@@ -95,8 +96,9 @@ data Issue             : version CommitVerify.ReservedBytes1
                        , codex Codex
                        , genesis Genesis
 
-@mnemonic(carol-annual-polka)
-data Operation         : contractId ContractId
+@mnemonic(join-buenos-oliver)
+data Operation         : version CommitVerify.ReservedBytes1
+                       , contractId ContractId
                        , callId U16
                        , nonce FiniteField.Fe256
                        , destructibleIn [Input]

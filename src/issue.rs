@@ -38,7 +38,28 @@ use crate::{Codex, Genesis, Identity, Opid, LIB_NAME_ULTRASONIC};
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct Issue {
-    /// Version of the contract.
+    /// Version of the contract issue data structure.
+    ///
+    /// This version defines an overall contract version. Operations and Genesis have independent
+    /// versioning. Correspondence between these versions will be defined by the future consensus
+    /// rules.
+    ///
+    /// # Future use
+    ///
+    /// For now, the only supported version is one; thus, a `ReservedBytes` is used.
+    ///
+    /// In the future, with more versions coming, this should be replaced with an enum, where the
+    /// first byte will encode (with standard strict encoding) a version number as an enum variant.
+    /// For instance,
+    ///
+    /// ```ignore
+    /// pub enum Issue {
+    ///     V0(IssueV0),
+    ///     V1(IssueV1)
+    /// }
+    /// pub struct IssueV0 { /*...*/ }
+    /// pub struct IssueV1 { /*...*/ }
+    /// ```
     pub version: ReservedBytes<1>,
     /// Contract metadata.
     pub meta: ContractMeta,

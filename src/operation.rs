@@ -252,6 +252,25 @@ pub struct Input {
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct Genesis {
+    /// Genesis version.
+    ///
+    /// # Future use
+    ///
+    /// For now, the only supported version is one; thus, a `ReservedBytes` is used.
+    ///
+    /// In the future, with more versions coming, this should be replaced with an enum, where the
+    /// first byte will encode (with standard strict encoding) a version number as an enum variant.
+    /// For instance,
+    ///
+    /// ```ignore
+    /// pub enum Genesis {
+    ///     V0(GenesisV0),
+    ///     V1(GenesisV1)
+    /// }
+    /// pub struct GenesisV0 { /*...*/ }
+    /// pub struct GenesisV1 { /*...*/ }
+    /// ```
+    pub version: ReservedBytes<1>,
     /// Codex id under which this genesis is created.
     ///
     /// A usual operation contains at this place a contract id, which can't be known at the time
@@ -292,6 +311,7 @@ impl Genesis {
     /// Used for verification when genesis and other operations must have the same form.
     pub fn to_operation(&self, contract_id: ContractId) -> Operation {
         Operation {
+            version: self.version,
             contract_id,
             call_id: self.call_id,
             nonce: self.nonce,
@@ -319,6 +339,25 @@ impl Genesis {
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct Operation {
+    /// Operation version.
+    ///
+    /// # Future use
+    ///
+    /// For now, the only supported version is one; thus, a `ReservedBytes` is used.
+    ///
+    /// In the future, with more versions coming, this should be replaced with an enum, where the
+    /// first byte will encode (with standard strict encoding) a version number as an enum variant.
+    /// For instance,
+    ///
+    /// ```ignore
+    /// pub enum Operation {
+    ///     V0(OperationV0),
+    ///     V1(OperationV1)
+    /// }
+    /// pub struct OperationV0 { /*...*/ }
+    /// pub struct OperationV1 { /*...*/ }
+    /// ```
+    pub version: ReservedBytes<1>,
     /// Contract id for which this operation is performed.
     pub contract_id: ContractId,
     /// Contract method this operation calls to.
@@ -361,6 +400,7 @@ impl CommitEncode for Operation {
     type CommitmentId = Opid;
 
     fn commit_encode(&self, e: &mut CommitEngine) {
+        e.commit_to_serialized(&self.version);
         e.commit_to_serialized(&self.contract_id);
         e.commit_to_serialized(&self.call_id);
         e.commit_to_serialized(&self.nonce);

@@ -71,6 +71,7 @@ rec Issue
         bytes libId, len 32, aka LibId
         is offset, U16
   rec genesis, Genesis
+    bytes version, len 1, aka ReservedBytes1
     bytes codexId, len 32, aka CodexId
     is callId, U16
     is nonce, U256, aka Fe256
@@ -122,6 +123,7 @@ rec Issue
 -- Contract Genesis
 
 commitment Opid, hasher SHA256, tagged urn:ubideco:ultrasonic:operation#2024-11-14
+  serialized ReservedBytes1
   serialized ContractId
   serialized U16
   serialized Fe256
@@ -131,6 +133,7 @@ commitment Opid, hasher SHA256, tagged urn:ubideco:ultrasonic:operation#2024-11-
   merklized StateData
 
 rec Genesis
+  bytes version, len 1, aka ReservedBytes1
   bytes codexId, len 32, aka CodexId
   is callId, U16
   is nonce, U256, aka Fe256
@@ -182,6 +185,7 @@ rec Genesis
 -- Contract Operation
 
 commitment Opid, hasher SHA256, tagged urn:ubideco:ultrasonic:operation#2024-11-14
+  serialized ReservedBytes1
   serialized ContractId
   serialized U16
   serialized Fe256
@@ -191,6 +195,7 @@ commitment Opid, hasher SHA256, tagged urn:ubideco:ultrasonic:operation#2024-11-
   merklized StateData
 
 rec Operation
+  bytes version, len 1, aka ReservedBytes1
   bytes contractId, len 32, aka ContractId
   is callId, U16
   is nonce, U256, aka Fe256
