@@ -510,5 +510,5 @@ mod test {
     }
 
     #[test]
-    fn verify_dumb() { test_stand(|codex, operation, memory| {}); }
+    fn verify_dumb() { test_stand(|_codex, _operation, _memory| {}); }
 }

@@ -227,20 +227,20 @@ impl<Id: SiteId> Instruction<Id> for Instr<Id> {
         match self {
             Instr::Ctrl(instr) => {
                 let mut subcore = core.subcore();
-                let step = instr.exec(site, &mut subcore, &mut ());
+                let step = instr.exec(site, &mut subcore, &());
                 core.merge_subcore(subcore);
                 step
             }
             Instr::Gfa(instr) => {
                 let mut subcore = core.subcore();
-                let step = instr.exec(site, &mut subcore, &mut ());
+                let step = instr.exec(site, &mut subcore, &());
                 core.merge_subcore(subcore);
                 step
             }
             Instr::Usonic(instr) => Instruction::<Id>::exec(instr, site, core, context),
             Instr::Reserved(instr) => {
                 let mut subcore = core.subcore();
-                let step = instr.exec(site, &mut subcore, &mut ());
+                let step = instr.exec(site, &mut subcore, &());
                 core.merge_subcore(subcore);
                 step
             }
