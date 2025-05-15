@@ -435,6 +435,7 @@ mod test {
 
     use amplify::ByteArray;
     use commit_verify::Digest;
+    use strict_encoding::StrictDumb;
 
     use super::*;
 
@@ -464,5 +465,14 @@ mod test {
                 .unwrap(),
             id
         );
+    }
+
+    #[test]
+    fn genesis_opid() {
+        let contract_id = ContractId::strict_dumb();
+        let genesis = Genesis::strict_dumb();
+        assert_eq!(genesis.opid(contract_id), genesis.to_operation(contract_id).opid());
+        let other_contract_id = ContractId::from_byte_array(Sha256::digest(b"test"));
+        assert_ne!(genesis.opid(contract_id), genesis.to_operation(other_contract_id).opid())
     }
 }
