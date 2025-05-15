@@ -21,6 +21,8 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
+use std::cmp::Ordering;
+
 use aluvm::alu::regs::Status;
 use aluvm::alu::{CoreConfig, CoreExt, Lib, LibId, LibSite, Vm};
 use aluvm::{fe256, GfaConfig, RegE};
@@ -42,7 +44,7 @@ pub type CallId = u16;
 ///
 /// The main (and the only) operation of the codex is verification of contract [`Operation`]s. It is
 /// done in [`Self::verify`] method.
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+#[derive(Clone, Eq, Hash, Debug)]
 #[derive(CommitEncode)]
 #[commit_encode(strategy = strict, id = CodexId)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
@@ -89,6 +91,16 @@ pub struct Codex {
     pub verification_config: CoreConfig,
     /// List of verifiers for each of the calls supported by the codex.
     pub verifiers: TinyOrdMap<CallId, LibSite>,
+}
+
+impl PartialOrd for Codex {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> { Some(self.cmp(other)) }
+}
+impl Ord for Codex {
+    fn cmp(&self, other: &Self) -> Ordering { self.commit_id().cmp(&other.commit_id()) }
+}
+impl PartialEq for Codex {
+    fn eq(&self, other: &Self) -> bool { self.commit_id() == other.commit_id() }
 }
 
 impl Codex {

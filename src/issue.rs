@@ -32,7 +32,7 @@ use strict_encoding::{StrictDecode, StrictDumb, StrictEncode, TypeName};
 
 use crate::{Codex, Genesis, Identity, Opid, LIB_NAME_ULTRASONIC};
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
@@ -41,6 +41,10 @@ pub struct Issue {
     pub meta: ContractMeta,
     pub codex: Codex,
     pub genesis: Genesis,
+}
+
+impl PartialEq for Issue {
+    fn eq(&self, other: &Self) -> bool { self.commit_id() == other.commit_id() }
 }
 
 impl CommitEncode for Issue {
