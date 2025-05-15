@@ -22,6 +22,7 @@
 // the License.
 
 use std::cmp::Ordering;
+use std::hash::{Hash, Hasher};
 
 use aluvm::alu::regs::Status;
 use aluvm::alu::{CoreConfig, CoreExt, Lib, LibId, LibSite, Vm};
@@ -44,7 +45,7 @@ pub type CallId = u16;
 ///
 /// The main (and the only) operation of the codex is verification of contract [`Operation`]s. It is
 /// done in [`Self::verify`] method.
-#[derive(Clone, Eq, Hash, Debug)]
+#[derive(Clone, Eq, Debug)]
 #[derive(CommitEncode)]
 #[commit_encode(strategy = strict, id = CodexId)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
@@ -101,6 +102,9 @@ impl Ord for Codex {
 }
 impl PartialEq for Codex {
     fn eq(&self, other: &Self) -> bool { self.commit_id() == other.commit_id() }
+}
+impl Hash for Codex {
+    fn hash<H: Hasher>(&self, state: &mut H) { state.write(&self.commit_id().to_byte_array()); }
 }
 
 impl Codex {
