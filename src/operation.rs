@@ -304,10 +304,10 @@ impl Genesis {
             contract_id,
             call_id: self.call_id,
             nonce: self.nonce,
-            destroying: none!(),
-            reading: none!(),
-            destructible: self.destructible.clone(),
-            immutable: self.immutable.clone(),
+            destructible_in: none!(),
+            immutable_in: none!(),
+            destructible_out: self.destructible.clone(),
+            immutable_out: self.immutable.clone(),
             reserved: self.reserved,
         }
     }
@@ -326,12 +326,12 @@ pub struct Operation {
     pub call_id: CallId,
     pub nonce: fe256,
     /// Memory cells which were destroyed.
-    pub destroying: SmallVec<Input>,
-    pub reading: SmallVec<CellAddr>,
+    pub destructible_in: SmallVec<Input>,
+    pub immutable_in: SmallVec<CellAddr>,
     /// Memory cells which were created (read-once, access-controlled).
-    pub destructible: SmallVec<StateCell>,
+    pub destructible_out: SmallVec<StateCell>,
     /// Immutable memory data which were created (write-once, readable by all).
-    pub immutable: SmallVec<StateData>,
+    pub immutable_out: SmallVec<StateData>,
     pub reserved: ReservedBytes<8>,
 }
 
@@ -349,10 +349,10 @@ impl CommitEncode for Operation {
         e.commit_to_serialized(&self.contract_id);
         e.commit_to_serialized(&self.call_id);
         e.commit_to_serialized(&self.nonce);
-        e.commit_to_merkle(&self.destroying);
-        e.commit_to_merkle(&self.reading);
-        e.commit_to_merkle(&self.destructible);
-        e.commit_to_merkle(&self.immutable);
+        e.commit_to_merkle(&self.destructible_in);
+        e.commit_to_merkle(&self.immutable_in);
+        e.commit_to_merkle(&self.destructible_out);
+        e.commit_to_merkle(&self.immutable_out);
         e.commit_to_serialized(&self.reserved);
     }
 }

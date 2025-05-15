@@ -1,5 +1,5 @@
 {-
-  Id: stl:Tn2be5a_-uOQjX_K-IIf7jd~-v9Twmsn-ubRl~Xe-y0GmYz8#viva-armor-diagram
+  Id: stl:3MO3yDvM-hfXGKoU-G7XwNvn-wcZXEml-uVj7sOS-LNqq7x0#gemini-formula-student
   Name: UltraSONIC
   Version: 0.12.0
   Description: Transactional execution layer with capability-based memory access for zk-AluVM
@@ -29,6 +29,7 @@ import AluVM#reward-accent-swim
 
 import CommitVerify#biology-news-adam
   use ReservedBytes14#prize-edison-classic
+  use ReservedBytes1#origin-roger-relax
   use ReservedBytes2#florida-libra-circus
   use ReservedBytes8#rudolf-tape-adrian
 
@@ -42,8 +43,8 @@ data AuthToken         : FiniteField.Fe256
 @mnemonic(tahiti-tobacco-grid)
 data CellAddr          : opid Opid, pos U16
 
-@mnemonic(patron-tower-reply)
-data Codex             : version CommitVerify.ReservedBytes2
+@mnemonic(nirvana-remote-danube)
+data Codex             : version CommitVerify.ReservedBytes1
                        , name [Unicode ^ ..0xff]
                        , developer Identity
                        , timestamp I64
@@ -51,7 +52,6 @@ data Codex             : version CommitVerify.ReservedBytes2
                        , inputConfig AluVM.CoreConfig
                        , verificationConfig AluVM.CoreConfig
                        , verifiers {U16 -> ^ ..0xff AluVM.LibSite}
-                       , reserved CommitVerify.ReservedBytes8
 
 @mnemonic(cargo-season-impact)
 data CodexId           : [Byte ^ 32]
@@ -94,20 +94,20 @@ data Identity          : Std.AsciiPrintable, [Std.AsciiPrintable ^ ..0xfff]
 @mnemonic(region-gilbert-drama)
 data Input             : addr CellAddr, witness StateValue
 
-@mnemonic(avenue-wonder-newton)
-data Issue             : version CommitVerify.ReservedBytes2
+@mnemonic(field-angel-escape)
+data Issue             : version CommitVerify.ReservedBytes1
                        , meta ContractMeta
                        , codex Codex
                        , genesis Genesis
 
-@mnemonic(virtual-judge-friday)
+@mnemonic(china-flood-budget)
 data Operation         : contractId ContractId
                        , callId U16
                        , nonce FiniteField.Fe256
-                       , destroying [Input]
-                       , reading [CellAddr]
-                       , destructible [StateCell]
-                       , immutable [StateData]
+                       , destructibleIn [Input]
+                       , immutableIn [CellAddr]
+                       , destructibleOut [StateCell]
+                       , immutableOut [StateData]
                        , reserved CommitVerify.ReservedBytes8
 
 @mnemonic(storm-dragon-brain)

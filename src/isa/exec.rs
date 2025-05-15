@@ -33,19 +33,19 @@ use crate::{Instr, IoCat, StateCell, StateData, StateValue, ISA_ULTRASONIC};
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct VmContext<'ctx> {
-    pub read_once_input: &'ctx [StateValue],
+    pub destructible_input: &'ctx [StateValue],
     pub immutable_input: &'ctx [StateValue],
-    pub read_once_output: &'ctx [StateCell],
+    pub destructible_output: &'ctx [StateCell],
     pub immutable_output: &'ctx [StateData],
 }
 
 impl VmContext<'_> {
     pub fn state_value(&self, cat: IoCat, index: u16) -> Option<StateValue> {
         match cat {
-            IoCat::IN_RO => self.read_once_input.get(index as usize).copied(),
+            IoCat::IN_RO => self.destructible_input.get(index as usize).copied(),
             IoCat::IN_AO => self.immutable_input.get(index as usize).copied(),
             IoCat::OUT_RO => self
-                .read_once_output
+                .destructible_output
                 .get(index as usize)
                 .map(|cell| cell.data),
             IoCat::OUT_AO => self
@@ -360,9 +360,9 @@ mod test {
 
         let state = StateValue::Single { first: fe256::from(VALUE) };
         let context = VmContext {
-            read_once_input: &[state],
+            destructible_input: &[state],
             immutable_input: &[state],
-            read_once_output: &[StateCell { data: state, auth: strict_dumb!(), lock: None }],
+            destructible_output: &[StateCell { data: state, auth: strict_dumb!(), lock: None }],
             immutable_output: &[StateData { value: state, raw: None }],
         };
         let mut vm_main =

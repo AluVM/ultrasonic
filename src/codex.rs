@@ -163,11 +163,11 @@ impl Codex {
         let mut vm_inputs = Vm::<aluvm::gfa::Instr<LibId>>::with(self.input_config, GfaConfig {
             field_order: self.field_order,
         });
-        let mut read_once_input = SmallVec::new();
-        for input in &operation.destroying {
+        let mut destructible_inputs = SmallVec::new();
+        for input in &operation.destructible_in {
             // Read memory
             let cell = memory
-                .read_once(input.addr)
+                .destructible(input.addr)
                 .ok_or(CallError::NoReadOnceInput(input.addr))?;
 
             // Verify that the lock script conditions are satisfied
@@ -194,19 +194,19 @@ impl Codex {
 
             // We have same-sized arrays, so we happily skip the result returned by the confined
             // collection.
-            let _res = read_once_input.push(cell.data);
+            let _res = destructible_inputs.push(cell.data);
             debug_assert!(_res.is_ok());
         }
 
         // Check that all read values are present in the memory.
-        let mut immutable_input = SmallVec::new();
-        for addr in &operation.reading {
+        let mut immutable_inputs = SmallVec::new();
+        for addr in &operation.immutable_in {
             let data = memory
                 .immutable(*addr)
                 .ok_or(CallError::NoImmutableInput(*addr))?;
             // We have same-sized arrays, so we happily skip the result returned by the confined
             // collection.
-            let _res = immutable_input.push(data);
+            let _res = immutable_inputs.push(data);
             debug_assert!(_res.is_ok());
         }
 
@@ -216,10 +216,10 @@ impl Codex {
             .get(&operation.call_id)
             .ok_or(CallError::NotFound(operation.call_id))?;
         let context = VmContext {
-            read_once_input: read_once_input.as_slice(),
-            immutable_input: immutable_input.as_slice(),
-            read_once_output: operation.destructible.as_slice(),
-            immutable_output: operation.immutable.as_slice(),
+            destructible_input: destructible_inputs.as_slice(),
+            immutable_input: immutable_inputs.as_slice(),
+            destructible_output: operation.destructible_out.as_slice(),
+            immutable_output: operation.immutable_out.as_slice(),
         };
         let mut vm_main = Vm::<Instr<LibId>>::with(self.verification_config, GfaConfig {
             field_order: self.field_order,
@@ -238,14 +238,14 @@ impl Codex {
 }
 
 /// The trait, which must be implemented by a client library for a structure providing access to the
-/// valid and most recent contract state, consisting of two parts: *read-once* (also called
-/// *destructible*, or *owned*) and *immutable* (also called *read-only* or *global*).
+/// valid and most recent contract state, consisting of two parts: *destructible* (also called
+/// *read-once*, or *owned*) and *immutable* (also called *read-only*, *append-only* or *global*).
 pub trait Memory {
-    /// Read a read-once state created by a specific operation read-once output, which is defined as
-    /// a part of [`Operation::destructible`].
-    fn read_once(&self, addr: CellAddr) -> Option<StateCell>;
-    /// Read a read-once state created by a specific operation immutable output, which is defined as
-    /// a part of [`Operation::immutable`].
+    /// Read a destructible memory cell created by a specific operation read-once output, which is
+    /// defined as a part of [`Operation::destructible`].
+    fn destructible(&self, addr: CellAddr) -> Option<StateCell>;
+    /// Read an immutable memory cell created by a specific operation immutable output, which is
+    /// defined as a part of [`Operation::immutable`].
     fn immutable(&self, addr: CellAddr) -> Option<StateValue>;
 }
 
@@ -285,14 +285,14 @@ pub enum CallError {
     /// operation verifier {0} is not present in the codex.
     NotFound(CallId),
 
-    /// operation references read-once memory cell which was not defined.
+    /// operation references destructible memory cell which was not defined.
     #[cfg_attr(
         feature = "baid64",
-        display = "operation references read-once memory cell {0} which was not defined."
+        display = "operation references destructible memory cell {0} which was not defined."
     )]
     #[cfg_attr(
         not(feature = "baid64"),
-        display = "operation references read-once memory cell {0:?} which was not defined."
+        display = "operation references destructible memory cell {0:?} which was not defined."
     )]
     NoReadOnceInput(CellAddr),
 
@@ -462,13 +462,13 @@ mod test {
 
     #[derive(Clone, Eq, PartialEq, Debug, Default)]
     pub struct DumbMemory {
-        pub read_once: HashMap<CellAddr, StateCell>,
+        pub destructible: HashMap<CellAddr, StateCell>,
         pub immutable: HashMap<CellAddr, StateValue>,
     }
 
     impl Memory for DumbMemory {
-        fn read_once(&self, addr: CellAddr) -> Option<StateCell> {
-            self.read_once.get(&addr).copied()
+        fn destructible(&self, addr: CellAddr) -> Option<StateCell> {
+            self.destructible.get(&addr).copied()
         }
 
         fn immutable(&self, addr: CellAddr) -> Option<StateValue> {
@@ -586,7 +586,7 @@ mod test {
     )]
     fn verify_no_immutable() {
         test_stand(|_codex, operation, _memory| {
-            operation.reading = small_vec![CellAddr::strict_dumb()];
+            operation.immutable_in = small_vec![CellAddr::strict_dumb()];
         });
     }
 
@@ -596,7 +596,7 @@ mod test {
     )]
     fn verify_no_destructible() {
         test_stand(|_codex, operation, _memory| {
-            operation.destroying =
+            operation.destructible_in =
                 small_vec![Input { addr: CellAddr::strict_dumb(), witness: none!() }];
         });
     }
@@ -606,7 +606,7 @@ mod test {
         test_stand(|_codex, operation, memory| {
             let addr = CellAddr::strict_dumb();
             memory.immutable.insert(addr, StateValue::strict_dumb());
-            operation.reading = small_vec![addr];
+            operation.immutable_in = small_vec![addr];
         });
     }
 
@@ -614,8 +614,8 @@ mod test {
     fn verify_destructible() {
         test_stand(|_codex, operation, memory| {
             let addr = CellAddr::strict_dumb();
-            memory.read_once.insert(addr, StateCell::strict_dumb());
-            operation.destroying = small_vec![Input { addr, witness: none!() }];
+            memory.destructible.insert(addr, StateCell::strict_dumb());
+            operation.destructible_in = small_vec![Input { addr, witness: none!() }];
         });
     }
 
@@ -623,12 +623,12 @@ mod test {
     fn verify_protected_dumb() {
         test_stand_script(lib_lock(), |_codex, operation, memory| {
             let addr = CellAddr::strict_dumb();
-            memory.read_once.insert(addr, StateCell {
+            memory.destructible.insert(addr, StateCell {
                 data: StateValue::None,
                 auth: AuthToken::strict_dumb(),
                 lock: Some(LibSite::new(lib_lock().lib_id(), 0)),
             });
-            operation.destroying = small_vec![Input { addr, witness: none!() }];
+            operation.destructible_in = small_vec![Input { addr, witness: none!() }];
         });
     }
 
@@ -636,12 +636,12 @@ mod test {
     fn verify_protected() {
         test_stand_script(lib_lock(), |_codex, operation, memory| {
             let addr = CellAddr::strict_dumb();
-            memory.read_once.insert(addr, StateCell {
+            memory.destructible.insert(addr, StateCell {
                 data: StateValue::None,
                 auth: AuthToken::from(fe256::from(SECRET)),
                 lock: Some(LibSite::new(lib_lock().lib_id(), 1)),
             });
-            operation.destroying = small_vec![Input {
+            operation.destructible_in = small_vec![Input {
                 addr,
                 witness: StateValue::Single { first: fe256::from(SECRET) }
             }];
@@ -655,12 +655,12 @@ mod test {
     fn verify_protected_failure1() {
         test_stand_script(lib_lock(), |_codex, operation, memory| {
             let addr = CellAddr::strict_dumb();
-            memory.read_once.insert(addr, StateCell {
+            memory.destructible.insert(addr, StateCell {
                 data: StateValue::None,
                 auth: AuthToken::strict_dumb(),
                 lock: Some(LibSite::new(lib_lock().lib_id(), 1)),
             });
-            operation.destroying = small_vec![Input {
+            operation.destructible_in = small_vec![Input {
                 addr,
                 witness: StateValue::Single { first: fe256::from(SECRET) }
             }];
@@ -674,12 +674,12 @@ mod test {
     fn verify_protected_failure2() {
         test_stand_script(lib_lock(), |_codex, operation, memory| {
             let addr = CellAddr::strict_dumb();
-            memory.read_once.insert(addr, StateCell {
+            memory.destructible.insert(addr, StateCell {
                 data: StateValue::None,
                 auth: AuthToken::from(fe256::from(SECRET)),
                 lock: Some(LibSite::new(lib_lock().lib_id(), 1)),
             });
-            operation.destroying = small_vec![Input { addr, witness: StateValue::None }];
+            operation.destructible_in = small_vec![Input { addr, witness: StateValue::None }];
         });
     }
 
@@ -690,12 +690,12 @@ mod test {
     fn verify_protected_failure3() {
         test_stand_script(lib_lock(), |_codex, operation, memory| {
             let addr = CellAddr::strict_dumb();
-            memory.read_once.insert(addr, StateCell {
+            memory.destructible.insert(addr, StateCell {
                 data: StateValue::None,
                 auth: AuthToken::from(fe256::from(SECRET)),
                 lock: Some(LibSite::new(lib_lock().lib_id(), 1)),
             });
-            operation.destroying = small_vec![Input {
+            operation.destructible_in = small_vec![Input {
                 addr,
                 witness: StateValue::Double {
                     first: fe256::from(SECRET),

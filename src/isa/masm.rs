@@ -53,9 +53,9 @@
 /// let lib = Lib::assemble::<Instr<LibId>>(&code).unwrap();
 /// let mut vm = Vm::<Instr<LibId>>::new();
 /// let ctx = VmContext {
-///     read_once_input: &[],
+///     destructible_input: &[],
 ///     immutable_input: &[],
-///     read_once_output: &[],
+///     destructible_output: &[],
 ///     immutable_output: &[],
 /// };
 /// match vm.exec(LibSite::new(lib.lib_id(), 0), &ctx, |_| Some(&lib)) {
