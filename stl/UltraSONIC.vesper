@@ -40,7 +40,10 @@ commitment ContractId, hasher SHA256, tagged urn:ubideco:sonic:contract#2024-11-
   serialized ReservedBytes1
   serialized ContractMeta
   serialized CodexId
-  serialized GenesisId
+  serialized U16
+  serialized Fe256
+  merklized StateCell
+  merklized StateData
 
 rec Issue
   bytes version, len 1, aka ReservedBytes1
@@ -76,7 +79,7 @@ rec Issue
     is nonce, U256, aka Fe256
     bytes blank1, len 2, aka ReservedBytes2
     bytes blank2, len 2, aka ReservedBytes2
-    list destructible, len 0..MAX16
+    list destructibleOut, len 0..MAX16
       rec StateCell
         union data, StateValue
           is none, Unit, tag 0
@@ -98,7 +101,7 @@ rec Issue
           rec some, LibSite, option, wrapped, tag 1
             bytes libId, len 32, aka LibId
             is offset, U16
-    list immutable, len 0..MAX16
+    list immutableOut, len 0..MAX16
       rec StateData
         union value, StateValue
           is none, Unit, tag 0
@@ -117,7 +120,6 @@ rec Issue
             is third, U256, aka Fe256
             is fourth, U256, aka Fe256
           bytes some, len 0..MAX16, option, wrapped, aka RawData, tag 1
-    bytes reserved, len 8, aka ReservedBytes8
 
 
 -- Contract Genesis
@@ -130,7 +132,6 @@ commitment Opid, hasher SHA256, tagged urn:ubideco:ultrasonic:operation#2024-11-
   merklized CellAddr
   merklized StateCell
   merklized StateData
-  serialized ReservedBytes8
 
 rec Genesis
   bytes codexId, len 32, aka CodexId
@@ -138,7 +139,7 @@ rec Genesis
   is nonce, U256, aka Fe256
   bytes blank1, len 2, aka ReservedBytes2
   bytes blank2, len 2, aka ReservedBytes2
-  list destructible, len 0..MAX16
+  list destructibleOut, len 0..MAX16
     rec StateCell
       union data, StateValue
         is none, Unit, tag 0
@@ -160,7 +161,7 @@ rec Genesis
         rec some, LibSite, option, wrapped, tag 1
           bytes libId, len 32, aka LibId
           is offset, U16
-  list immutable, len 0..MAX16
+  list immutableOut, len 0..MAX16
     rec StateData
       union value, StateValue
         is none, Unit, tag 0
@@ -179,7 +180,6 @@ rec Genesis
           is third, U256, aka Fe256
           is fourth, U256, aka Fe256
         bytes some, len 0..MAX16, option, wrapped, aka RawData, tag 1
-  bytes reserved, len 8, aka ReservedBytes8
 
 
 -- Contract Operation
@@ -192,7 +192,6 @@ commitment Opid, hasher SHA256, tagged urn:ubideco:ultrasonic:operation#2024-11-
   merklized CellAddr
   merklized StateCell
   merklized StateData
-  serialized ReservedBytes8
 
 rec Operation
   bytes contractId, len 32, aka ContractId
@@ -264,5 +263,4 @@ rec Operation
           is third, U256, aka Fe256
           is fourth, U256, aka Fe256
         bytes some, len 0..MAX16, option, wrapped, aka RawData, tag 1
-  bytes reserved, len 8, aka ReservedBytes8
 

@@ -53,7 +53,7 @@ pub use isa::{Instr, IoCat, UsonicCore, UsonicInstr, VmContext, ISA_ULTRASONIC};
 pub use issue::{Consensus, ContractId, ContractMeta, ContractName, Issue};
 #[cfg(feature = "baid64")]
 pub use operation::ParseAddrError;
-pub use operation::{CellAddr, Genesis, GenesisId, Input, Operation, Opid, VerifiedOperation};
+pub use operation::{CellAddr, Genesis, Input, Operation, Opid, VerifiedOperation};
 pub use state::{AuthToken, RawData, StateCell, StateData, StateValue};
 pub use util::Identity;
 pub use zkaluvm::fe256;

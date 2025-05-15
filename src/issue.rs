@@ -54,7 +54,10 @@ impl CommitEncode for Issue {
         e.commit_to_serialized(&self.version);
         e.commit_to_serialized(&self.meta);
         e.commit_to_serialized(&self.codex.codex_id());
-        e.commit_to_serialized(&self.genesis.commit_id());
+        e.commit_to_serialized(&self.genesis.call_id);
+        e.commit_to_serialized(&self.genesis.nonce);
+        e.commit_to_merkle(&self.genesis.destructible_out);
+        e.commit_to_merkle(&self.genesis.immutable_out);
     }
 }
 
