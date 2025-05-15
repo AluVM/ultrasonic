@@ -411,12 +411,13 @@ mod test {
     use std::collections::HashMap;
 
     use aluvm::alu::aluasm;
-    use aluvm::FIELD_ORDER_SECP;
+    use aluvm::{zk_aluasm, FIELD_ORDER_SECP};
     use amplify::ByteArray;
     use commit_verify::Digest;
     use strict_encoding::StrictDumb;
 
     use super::*;
+    use crate::{uasm, AuthToken, Input};
 
     #[test]
     fn codex_id_display() {
@@ -486,14 +487,63 @@ mod test {
     }
 
     fn lib_success() -> Lib { Lib::assemble(&aluasm! { stop; }).unwrap() }
+    fn lib_failure_none() -> Lib {
+        Lib::assemble(&zk_aluasm! {
+            clr     E1;
+            test    E2;
+            chk     CO;
+        })
+        .unwrap()
+    }
+    fn lib_failure_one() -> Lib {
+        Lib::assemble(&zk_aluasm! {
+            mov     E1, 1;
+            test    E2;
+            chk     CO;
+        })
+        .unwrap()
+    }
+    const SECRET: u8 = 48;
+    fn lib_lock() -> Lib {
+        assert_eq!(SECRET, 48);
+        Lib::assemble(&uasm! {
+            stop;
+            mov     EA, 48; // Secret value
+
+            eq      EA, E1; // Must be provided as a token of authority
+            mov     E8, 1;  // Failure #1
+            chk     CO;
+
+            eq      EA, E2; // Must be provided in witness
+            mov     E8, 2;  // Failure #2
+            chk     CO;
+
+            mov     E8, 3;  // Failure #3
+            test    E3;     // The rest must be empty
+            not     CO;
+            chk     CO;
+            test    E4;
+            not     CO;
+            chk     CO;
+            test    E5;
+            not     CO;
+            chk     CO;
+        })
+        .unwrap()
+    }
 
     fn test_stand(modify: impl FnOnce(&mut Codex, &mut Operation, &mut DumbMemory)) {
-        let repo = lib_success();
+        test_stand_script(lib_success(), modify)
+    }
 
+    fn test_stand_script(
+        repo: Lib,
+        modify: impl FnOnce(&mut Codex, &mut Operation, &mut DumbMemory),
+    ) {
         let mut codex = Codex::strict_dumb();
         codex.field_order = FIELD_ORDER_SECP;
-        codex.verification_config = CoreConfig { halt: true, complexity_lim: Some(100_000) };
-        codex.input_config = CoreConfig { halt: true, complexity_lim: Some(100_000) };
+        codex.verification_config = CoreConfig { halt: true, complexity_lim: Some(10_000_000) };
+        codex.input_config = CoreConfig { halt: true, complexity_lim: Some(10_000_000) };
         codex.verifiers = tiny_bmap! { 0 => LibSite::new(repo.lib_id(), 0) };
 
         let contract_id = ContractId::from_byte_array(Sha256::digest(b"test"));
@@ -511,4 +561,153 @@ mod test {
 
     #[test]
     fn verify_dumb() { test_stand(|_codex, _operation, _memory| {}); }
+
+    #[test]
+    #[should_panic(
+        expected = "WrongContract { expected: ContractId(Array<32>(9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08)), found: ContractId(Array<32>(8810ad581e59f2bc3928b261707a71308f7e139eb04820366dc4d5c18d980225))"
+    )]
+    fn verify_contract_id() {
+        test_stand(|_codex, operation, _memory| {
+            operation.contract_id = ContractId::from_byte_array(Sha256::digest(b"wrong"));
+        });
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "NoImmutableInput(CellAddr { opid: Opid(Array<32>(0000000000000000000000000000000000000000000000000000000000000000)), pos: 0 })"
+    )]
+    fn verify_no_immutable() {
+        test_stand(|_codex, operation, _memory| {
+            operation.reading = small_vec![CellAddr::strict_dumb()];
+        });
+    }
+
+    #[test]
+    #[should_panic(
+        expected = " NoReadOnceInput(CellAddr { opid: Opid(Array<32>(0000000000000000000000000000000000000000000000000000000000000000)), pos: 0 })"
+    )]
+    fn verify_no_destructible() {
+        test_stand(|_codex, operation, _memory| {
+            operation.destroying =
+                small_vec![Input { addr: CellAddr::strict_dumb(), witness: none!() }];
+        });
+    }
+
+    #[test]
+    fn verify_immutable() {
+        test_stand(|_codex, operation, memory| {
+            let addr = CellAddr::strict_dumb();
+            memory.immutable.insert(addr, StateValue::strict_dumb());
+            operation.reading = small_vec![addr];
+        });
+    }
+
+    #[test]
+    fn verify_destructible() {
+        test_stand(|_codex, operation, memory| {
+            let addr = CellAddr::strict_dumb();
+            memory.read_once.insert(addr, StateCell::strict_dumb());
+            operation.destroying = small_vec![Input { addr, witness: none!() }];
+        });
+    }
+
+    #[test]
+    fn verify_protected_dumb() {
+        test_stand_script(lib_lock(), |_codex, operation, memory| {
+            let addr = CellAddr::strict_dumb();
+            memory.read_once.insert(addr, StateCell {
+                data: StateValue::None,
+                auth: AuthToken::strict_dumb(),
+                lock: Some(LibSite::new(lib_lock().lib_id(), 0)),
+            });
+            operation.destroying = small_vec![Input { addr, witness: none!() }];
+        });
+    }
+
+    #[test]
+    fn verify_protected() {
+        test_stand_script(lib_lock(), |_codex, operation, memory| {
+            let addr = CellAddr::strict_dumb();
+            memory.read_once.insert(addr, StateCell {
+                data: StateValue::None,
+                auth: AuthToken::from(fe256::from(SECRET)),
+                lock: Some(LibSite::new(lib_lock().lib_id(), 1)),
+            });
+            operation.destroying = small_vec![Input {
+                addr,
+                witness: StateValue::Single { first: fe256::from(SECRET) }
+            }];
+        });
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Lock(Some(fe256(0x0000000000000000000000000000000000000000000000000000000000000001)))"
+    )]
+    fn verify_protected_failure1() {
+        test_stand_script(lib_lock(), |_codex, operation, memory| {
+            let addr = CellAddr::strict_dumb();
+            memory.read_once.insert(addr, StateCell {
+                data: StateValue::None,
+                auth: AuthToken::strict_dumb(),
+                lock: Some(LibSite::new(lib_lock().lib_id(), 1)),
+            });
+            operation.destroying = small_vec![Input {
+                addr,
+                witness: StateValue::Single { first: fe256::from(SECRET) }
+            }];
+        });
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Lock(Some(fe256(0x0000000000000000000000000000000000000000000000000000000000000002)))"
+    )]
+    fn verify_protected_failure2() {
+        test_stand_script(lib_lock(), |_codex, operation, memory| {
+            let addr = CellAddr::strict_dumb();
+            memory.read_once.insert(addr, StateCell {
+                data: StateValue::None,
+                auth: AuthToken::from(fe256::from(SECRET)),
+                lock: Some(LibSite::new(lib_lock().lib_id(), 1)),
+            });
+            operation.destroying = small_vec![Input { addr, witness: StateValue::None }];
+        });
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Lock(Some(fe256(0x0000000000000000000000000000000000000000000000000000000000000003)))"
+    )]
+    fn verify_protected_failure3() {
+        test_stand_script(lib_lock(), |_codex, operation, memory| {
+            let addr = CellAddr::strict_dumb();
+            memory.read_once.insert(addr, StateCell {
+                data: StateValue::None,
+                auth: AuthToken::from(fe256::from(SECRET)),
+                lock: Some(LibSite::new(lib_lock().lib_id(), 1)),
+            });
+            operation.destroying = small_vec![Input {
+                addr,
+                witness: StateValue::Double {
+                    first: fe256::from(SECRET),
+                    second: fe256::from(SECRET)
+                }
+            }];
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "ScriptUnspecified")]
+    fn verify_script_failure_unspecified() {
+        test_stand_script(lib_failure_none(), |_codex, _operation, _memory| {});
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Script(fe256(0x0000000000000000000000000000000000000000000000000000000000000001))"
+    )]
+    fn verify_script_failure_code() {
+        test_stand_script(lib_failure_one(), |_codex, _operation, _memory| {});
+    }
 }

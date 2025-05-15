@@ -30,6 +30,9 @@ zk-aluvm = "~0.12.0-beta.6"
 commit_verify = { version = "~0.12.0-beta.6", features = ["derive"] }
 serde = { version = "1", features = ["derive"], optional = true }
 
+[dev-dependencies]
+zk-aluvm = { version = "~0.12.0-beta.6", features = ["log"] }
+
 [features]
 default = ["chf-sha256", "baid64"]
 all = ["stl", "baid64", "serde", "chf-sha256"]
