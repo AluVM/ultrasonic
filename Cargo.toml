@@ -15,7 +15,7 @@ exclude = [".github"]
 
 [[bin]]
 name = "ultrasonic-stl"
-required-features = ["stl"]
+required-features = ["stl", "vesper"]
 
 [lib]
 name = "ultrasonic"
@@ -37,13 +37,15 @@ bincode = "1.3.3"
 
 [features]
 default = ["chf-sha256", "baid64"]
-all = ["stl", "baid64", "serde", "chf-sha256"]
+all = ["stl", "baid64", "serde", "chf-sha256", "vesper"]
 
 std = ["zk-aluvm/std"]
 
 chf-sha256 = []
 
 stl = ["strict_types", "commit_verify/stl", "zk-aluvm/stl"]
+vesper = ["commit_verify/vesper"]
+
 serde = [
     "dep:serde",
     "amplify/serde",
@@ -62,5 +64,10 @@ wasm-bindgen-test = "0.3"
 [package.metadata.docs.rs]
 features = ["all"]
 
+[lints.rust]
+unexpected_cfgs = { level = "allow", check-cfg = ['cfg(coverage_nightly)'] }
+
 [patch.crates-io]
+commit_verify = { git = "https://github.com/LNP-BP/client_side_validation", branch = "revision" }
 aluvm = { git = "https://github.com/AluVM/aluvm", branch = "revision" }
+zk-aluvm = { git = "https://github.com/AluVM/zk-aluvm", branch = "revision" }

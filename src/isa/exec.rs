@@ -25,7 +25,7 @@ use std::collections::BTreeSet;
 
 use aluvm::alu::regs::Status;
 use aluvm::alu::{Core, CoreExt, ExecStep, Site, SiteId, Supercore};
-use aluvm::isa::Instruction;
+use aluvm::isa::{GotoTarget, Instruction};
 use aluvm::RegE;
 
 use super::{UsonicCore, UsonicInstr};
@@ -73,7 +73,7 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
 
     fn is_goto_target(&self) -> bool { false }
 
-    fn local_goto_pos(&mut self) -> Option<&mut u16> { None }
+    fn local_goto_pos(&mut self) -> GotoTarget { GotoTarget::None }
 
     fn remote_goto_pos(&mut self) -> Option<&mut Site<Id>> { None }
 
@@ -174,7 +174,7 @@ impl<Id: SiteId> Instruction<Id> for Instr<Id> {
         }
     }
 
-    fn local_goto_pos(&mut self) -> Option<&mut u16> {
+    fn local_goto_pos(&mut self) -> GotoTarget {
         match self {
             Instr::Ctrl(instr) => instr.local_goto_pos(),
             Instr::Gfa(instr) => Instruction::<Id>::local_goto_pos(instr),
@@ -272,82 +272,82 @@ mod test {
         const VALUE: u32 = 1234567890u32;
         let code = uasm! {
             // We check we have at least one element of state
-            cknxi   :destructible;
+            cknxi   destructible;
             chk     CO;
-            cknxi   :immutable;
+            cknxi   immutable;
             chk     CO;
-            cknxo   :destructible;
+            cknxo   destructible;
             chk     CO;
-            cknxo   :immutable;
+            cknxo   immutable;
             chk     CO;
 
             //Ensure the check is idempotent
-            cknxi   :destructible;
+            cknxi   destructible;
             chk     CO;
-            cknxi   :immutable;
+            cknxi   immutable;
             chk     CO;
-            cknxo   :destructible;
+            cknxo   destructible;
             chk     CO;
-            cknxo   :immutable;
+            cknxo   immutable;
             chk     CO;
 
             // We load the first element of state
-            ldi     :destructible;
-            call    :CHECK;
-            ldi     :immutable;
-            call    :CHECK;
-            ldo     :destructible;
-            call    :CHECK;
-            ldo     :immutable;
-            call    :CHECK;
+            ldi     destructible;
+            call    CHECK;
+            ldi     immutable;
+            call    CHECK;
+            ldo     destructible;
+            call    CHECK;
+            ldo     immutable;
+            call    CHECK;
 
             // We reset the counter
-            rsti    :destructible;
-            rsti    :immutable;
-            rsto    :destructible;
-            rsto    :immutable;
+            rsti    destructible;
+            rsti    immutable;
+            rsto    destructible;
+            rsto    immutable;
 
             // We load the first element of state once more
-            ldi     :destructible;
-            call    :CHECK;
-            ldi     :immutable;
-            call    :CHECK;
-            ldo     :destructible;
-            call    :CHECK;
-            ldo     :immutable;
-            call    :CHECK;
+            ldi     destructible;
+            call    CHECK;
+            ldi     immutable;
+            call    CHECK;
+            ldo     destructible;
+            call    CHECK;
+            ldo     immutable;
+            call    CHECK;
 
             // Now we make sure that there is no second argument
-            cknxi   :destructible;
+            cknxi   destructible;
             not     CO;
             chk     CO;
-            cknxi   :immutable;
+            cknxi   immutable;
             not     CO;
             chk     CO;
-            cknxo   :destructible;
+            cknxo   destructible;
             not     CO;
             chk     CO;
-            cknxo   :immutable;
+            cknxo   immutable;
             not     CO;
             chk     CO;
 
             // As well as we can't load the second argument
-            ldi     :destructible;
+            ldi     destructible;
             not     CO;
             chk     CO;
-            ldi     :immutable;
+            ldi     immutable;
             not     CO;
             chk     CO;
-            ldo     :destructible;
+            ldo     destructible;
             not     CO;
             chk     CO;
-            ldo     :immutable;
+            ldo     immutable;
             not     CO;
             chk     CO;
             stop;
 
-           .routine :CHECK;
-            mov     E2, :VALUE;
+           routine CHECK:
+            put     E2, VALUE;
             chk     CO;
             eq      EA, E2;
             chk     CO;

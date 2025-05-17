@@ -21,6 +21,22 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
+// TODO: Activate no_std once StrictEncoding will support it
+// #![no_std]
+#![deny(
+    unsafe_code,
+    dead_code,
+    missing_docs,
+    unused_variables,
+    unused_mut,
+    unused_imports,
+    non_upper_case_globals,
+    non_camel_case_types,
+    non_snake_case
+)]
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+
 //! **UltraSONIC** is a state machine with capability-based memory access. In simple words, this
 //! means <q>state machine with cryptographically protected memory cells</q>.
 //!
@@ -34,11 +50,6 @@
 //!
 //! **UltraSONIC** leverages zk-AluVM, so it is (1) zk-STARK-compatible and (2) exception-less, made
 //! with category theory in mind.
-
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
-// TODO: Activate no_std once StrictEncoding will support it
-// #![no_std]
-#![deny(missing_docs)]
 
 extern crate alloc;
 

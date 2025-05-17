@@ -482,7 +482,7 @@ mod test {
     }
     fn lib_failure_one() -> Lib {
         Lib::assemble(&zk_aluasm! {
-            mov     E1, 1;
+            put     E1, 1;
             test    E2;
             chk     CO;
         })
@@ -493,17 +493,17 @@ mod test {
         assert_eq!(SECRET, 48);
         Lib::assemble(&uasm! {
             stop;
-            mov     EA, 48; // Secret value
+            put     EA, 48; // Secret value
 
             eq      EA, E1; // Must be provided as a token of authority
-            mov     E8, 1;  // Failure #1
+            put     E8, 1;  // Failure #1
             chk     CO;
 
             eq      EA, E2; // Must be provided in witness
-            mov     E8, 2;  // Failure #2
+            put     E8, 2;  // Failure #2
             chk     CO;
 
-            mov     E8, 3;  // Failure #3
+            put     E8, 3;  // Failure #3
             test    E3;     // The rest must be empty
             not     CO;
             chk     CO;

@@ -80,6 +80,7 @@ pub struct UsonicCore {
     pub(super) gfa: GfaCore,
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 impl Debug for UsonicCore {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let (sect, reg, val, reset) = if f.alternate() {
