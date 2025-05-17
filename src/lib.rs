@@ -21,9 +21,35 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 // TODO: Activate no_std once StrictEncoding will support it
 // #![no_std]
+#![deny(
+    unsafe_code,
+    dead_code,
+    missing_docs,
+    unused_variables,
+    unused_mut,
+    unused_imports,
+    non_upper_case_globals,
+    non_camel_case_types,
+    non_snake_case
+)]
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+
+//! **UltraSONIC** is a state machine with capability-based memory access. In simple words, this
+//! means <q>state machine with cryptographically protected memory cells</q>.
+//!
+//! What is capability-based memory access (or capability-addressable memory, **CAM**)? The
+//! computers we all used to are random memory access machines (RAM), where software accesses
+//! freely addressable global memory. This has opened a door for all the vulnerabilities and
+//! hacks happening in computer systems across the world for the past decades... CAM model instead,
+//! divides all memory into parts (called *words*) addressable only with some access token (called
+//! *capability*). One may think of this as of a memory where each part is "owned" by a certain
+//! party and can be accessed or modified only given a proof of ownership.
+//!
+//! **UltraSONIC** leverages zk-AluVM, so it is (1) zk-STARK-compatible and (2) exception-less, made
+//! with category theory in mind.
 
 extern crate alloc;
 
@@ -39,6 +65,9 @@ pub extern crate zkaluvm as aluvm;
 #[macro_use]
 extern crate serde;
 
+#[macro_use]
+#[cfg(feature = "serde")]
+mod macros;
 mod codex;
 mod state;
 mod operation;
@@ -48,14 +77,15 @@ mod issue;
 pub mod stl;
 mod util;
 
-pub use codex::{AccessId, CallError, CallId, Codex, CodexId, LibRepo, Memory, VmContext};
-pub use isa::{Instr, IoCat, UsonicCore, UsonicInstr, ISA_ULTRASONIC};
+pub use codex::{CallError, CallId, Codex, CodexId, LibRepo, Memory};
+pub use isa::{Instr, IoCat, UsonicCore, UsonicInstr, VmContext, ISA_ULTRASONIC};
 pub use issue::{Consensus, ContractId, ContractMeta, ContractName, Issue};
 #[cfg(feature = "baid64")]
 pub use operation::ParseAddrError;
-pub use operation::{CellAddr, Genesis, GenesisId, Input, Operation, Opid, VerifiedOperation};
+pub use operation::{CellAddr, Genesis, Input, Operation, Opid, VerifiedOperation};
 pub use state::{AuthToken, RawData, StateCell, StateData, StateValue};
 pub use util::Identity;
 pub use zkaluvm::fe256;
 
+/// Strict type library name for the types defined in this crate.
 pub const LIB_NAME_ULTRASONIC: &str = "UltraSONIC";

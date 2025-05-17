@@ -35,6 +35,28 @@ use commit_verify::{CommitEncode, CommitEngine, MerkleHash, StrictHash};
 
 use crate::LIB_NAME_ULTRASONIC;
 
+/// Authorization token used for controlling the destructible memory cell access.
+///
+/// Authorization token is defined together with a destructible memory cell, as a part of the
+/// operation output.
+///
+/// When the destructible cell is being accessed by another operation as a part of its input, the
+/// token value is put into the virtual machine register `E1`.
+/// Then, it can be used by the codex validating a script alongside the witness value, which is a
+/// part of the operation input data.
+///
+/// # Examples of use
+///
+/// One possible simplified scenario for the use of authorization token is the fact that the token
+/// provides a hash of a certain value; and the operation destroying the memory cell provides a
+/// preimage of the hash as a part of the input witness; and the validation script checks the
+/// preimage against the hash.
+///
+/// More complex scenarios involve single-use seals; the authorization token in this case
+/// represents a hash of (a commitment to) a single-use seal definition, and during the memory cell
+/// access the operation destroying that cell ("spending operation") needs to prove that it has
+/// properly closed that single-use seal over the commitment to the spending operation. This
+/// scenario is implemented in the RGB smart contract system.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, From)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
@@ -44,6 +66,9 @@ use crate::LIB_NAME_ULTRASONIC;
     serde(transparent)
 )]
 pub struct AuthToken(#[from] fe256);
+
+#[cfg(all(feature = "serde", feature = "baid64"))]
+impl_serde_str_bin_wrapper!(AuthToken, fe256);
 
 // Types in ultrasonic must not be ordered, since zk-STARK proofs are really inefficient in applying
 // ordering to field elements. However, upstream we need to put `AuthToken` into `BTreeMap`, thus we
@@ -64,8 +89,10 @@ impl From<Bytes<30>> for AuthToken {
 }
 
 impl AuthToken {
+    /// Get a representation of a authorization token as a 256-bit field element.
     pub const fn to_fe256(&self) -> fe256 { self.0 }
 
+    /// Construct the token out of 30 bytes of raw data.
     pub fn from_byte_array(bytes: [u8; 30]) -> Self {
         let mut buf = [0u8; 32];
         buf[..30].copy_from_slice(&bytes);
@@ -73,6 +100,7 @@ impl AuthToken {
         Self(val)
     }
 
+    /// Convert the token to 30 bytes of raw data.
     pub fn to_byte_array(&self) -> [u8; 30] {
         let bytes = self.0.to_u256().to_le_bytes();
         debug_assert_eq!(&bytes[30..], &[0, 0]);
@@ -82,6 +110,7 @@ impl AuthToken {
         buf
     }
 
+    /// Convert the token to 30 bytes blob.
     pub fn to_bytes30(&self) -> Bytes<30> {
         let bytes = self.to_byte_array();
         Bytes::from(bytes)
@@ -117,7 +146,8 @@ mod _baid64 {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug, Default)]
+/// A value stored in a single memory cell.
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Default)]
 #[derive(StrictType, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC, tags = custom)]
 #[cfg_attr(
@@ -126,19 +156,32 @@ mod _baid64 {
     serde(tag = "type", rename_all = "camelCase")
 )]
 pub enum StateValue {
+    /// A unit value.
     #[default]
     #[strict_type(tag = 0x00)]
     None,
+
+    /// A single 256-bit field element.
+    #[allow(missing_docs)]
     #[strict_type(tag = 0x01)]
     Single { first: fe256 },
+
+    /// A tuple of two 256-bit field elements.
+    #[allow(missing_docs)]
     #[strict_type(tag = 0x02)]
     Double { first: fe256, second: fe256 },
+
+    /// A tuple of three 256-bit field elements.
+    #[allow(missing_docs)]
     #[strict_type(tag = 0x03)]
     Triple {
         first: fe256,
         second: fe256,
         third: fe256,
     },
+
+    /// A tuple of four 256-bit field elements.
+    #[allow(missing_docs)]
     #[strict_type(tag = 0x04)]
     Quadripple {
         first: fe256,
@@ -198,10 +241,15 @@ impl FromIterator<fe256> for StateValue {
 }
 
 impl StateValue {
+    /// Constructs a new state value in [`StateValue::Double`] form, using the first element to
+    /// store the value "type" from the first argument, and the second argument to store the data,
+    /// which can be anything representable with a single 256-bit field element.
     pub fn new(ty: impl Into<fe256>, val: impl Into<fe256>) -> Self {
         StateValue::Double { first: ty.into(), second: val.into() }
     }
 
+    /// Retrieve a field element with a provided index if the element is present in the state
+    /// value.
     pub const fn get(&self, pos: u8) -> Option<fe256> {
         match (*self, pos) {
             (Self::Single { first }, 0)
@@ -238,21 +286,27 @@ impl IntoIterator for StateValue {
     }
 }
 
-/// Read-once access-controlled memory cell.
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+/// Read-once access-controlled memory cell, defining destructible part of the contract state.
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 #[derive(CommitEncode)]
 #[commit_encode(strategy = strict, id = MerkleHash)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct StateCell {
+    /// Value stored in the memory cell.
     pub data: StateValue,
-    /// Token of authority
+    /// Token of authority controlling the access to the memory cell.
     pub auth: AuthToken,
+    /// Additional (locking) conditions defined as an zk-AluVM script.
     pub lock: Option<LibSite>,
 }
 
-#[derive(Wrapper, WrapperMut, Clone, PartialEq, Eq, Debug, Display, From)]
+/// The raw data for the immutable (read-only) memory cells.
+///
+/// The raw data cannot be accessed by the verification scripts and zk-AluVM, and are not
+/// compressible as a part of zk proofs. See [`StateData`] for the details.
+#[derive(Wrapper, WrapperMut, Clone, PartialEq, Eq, Hash, Debug, Display, From)]
 #[wrapper(AsSlice, BorrowSlice, Hex, RangeOps)]
 #[wrapper_mut(BorrowSliceMut, RangeMut)]
 #[display("0x{0:X}")]
@@ -262,6 +316,9 @@ pub struct StateCell {
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 pub struct RawData(#[from] SmallBlob);
 
+#[cfg(feature = "serde")]
+impl_serde_str_bin_wrapper!(RawData, SmallBlob);
+
 impl FromStr for RawData {
     type Err = hex::Error;
     fn from_str(mut s: &str) -> Result<Self, Self::Err> {
@@ -270,12 +327,16 @@ impl FromStr for RawData {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+/// State kept in the immutable (read-only) memory cells.
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
 pub struct StateData {
+    /// The verifiable and compressible part of the state, in the form of field elements.
     pub value: StateValue,
+    /// Optional raw state, which cannot be accessed by the verification scripts and zk-AluVM, and
+    /// are not compressible as a part of zk proofs.
     pub raw: Option<RawData>,
 }
 
@@ -292,83 +353,36 @@ impl CommitEncode for StateData {
 }
 
 impl StateData {
+    /// Constructs a new state value in [`StateValue::Double`] form, using the first element to
+    /// store the value "type" from the first argument, and the second argument to store the data,
+    /// which can be anything representable with a single 256-bit field element.
+    ///
+    /// Leaves raw data empty.
     pub fn new(ty: impl Into<fe256>, val: impl Into<fe256>) -> Self {
         Self { value: StateValue::new(ty, val), raw: None }
     }
 
+    /// Constructs a new state value in [`StateValue::Double`] form, using the first element to
+    /// store the value "type" from the first argument, and the second argument to store the data,
+    /// which can be anything representable with a single 256-bit field element.
+    ///
+    /// Adds to that value raw data.
     pub fn with_raw(ty: impl Into<fe256>, val: impl Into<fe256>, raw: impl Into<RawData>) -> Self {
         Self { value: StateValue::new(ty, val), raw: Some(raw.into()) }
     }
 }
 
-#[cfg(all(feature = "serde", feature = "baid64"))]
-mod _serde {
-    use serde::de::Error;
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-    use super::*;
-
-    impl Serialize for AuthToken {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer {
-            if serializer.is_human_readable() {
-                serializer.serialize_str(&self.to_string())
-            } else {
-                self.0.serialize(serializer)
-            }
-        }
-    }
-
-    impl<'de> Deserialize<'de> for AuthToken {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de> {
-            if deserializer.is_human_readable() {
-                let s = String::deserialize(deserializer)?;
-                s.parse().map_err(D::Error::custom)
-            } else {
-                fe256::deserialize(deserializer).map(Self)
-            }
-        }
-    }
-}
-
-#[cfg(feature = "serde")]
-mod _serde2 {
-    use serde::de::Error;
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-    use super::*;
-    impl Serialize for RawData {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer {
-            if serializer.is_human_readable() {
-                serializer.serialize_str(&self.to_string())
-            } else {
-                self.0.serialize(serializer)
-            }
-        }
-    }
-
-    impl<'de> Deserialize<'de> for RawData {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de> {
-            if deserializer.is_human_readable() {
-                let s = String::deserialize(deserializer)?;
-                s.parse().map_err(D::Error::custom)
-            } else {
-                SmallBlob::deserialize(deserializer).map(Self)
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod test {
+    #![cfg_attr(coverage_nightly, coverage(off))]
+
+    use strict_encoding::StrictDumb;
+
     #[cfg(feature = "baid64")]
     use super::*;
 
     #[test]
-    #[cfg(feature = "baid64")]
+    #[cfg(all(feature = "serde", feature = "baid64"))]
     fn auth_baid64() {
         use baid64::DisplayBaid64;
         let auth = AuthToken::from_byte_array([0xAD; 30]);
@@ -382,5 +396,84 @@ mod test {
 
         let reconstructed = AuthToken::from_str(&baid64.replace('-', "")).unwrap();
         assert_eq!(reconstructed, auth);
+    }
+
+    #[test]
+    #[cfg(all(feature = "serde", feature = "baid64"))]
+    fn auth_serde() {
+        let val = AuthToken::strict_dumb();
+        test_serde_str_bin_wrapper!(
+            val,
+            "at:AAAAAAAA-AAAAAAAA-AAAAAAAA-AAAAAAAA-AAAAAAAA-1EFBiQ",
+            &[
+                32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ]
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "serde")]
+    fn raw_data_serde() {
+        let val = RawData::strict_dumb();
+        test_serde_str_bin_wrapper!(val, "0x", &[0, 0, 0, 0, 0, 0, 0, 0]);
+    }
+
+    #[test]
+    fn state_value() {
+        let val = StateValue::None;
+        assert_eq!(val, StateValue::from_iter([] as [u256; 0]));
+        assert_eq!(val.get(0), None);
+        assert_eq!(val.get(1), None);
+        assert_eq!(val.get(2), None);
+        assert_eq!(val.get(3), None);
+        assert_eq!(val.get(4), None);
+        assert_eq!(val.into_iter().collect::<Vec<_>>(), vec![]);
+
+        let first = fe256::from(0xDEADBEEFu32);
+        let val = StateValue::Single { first };
+        assert_eq!(val, StateValue::from_iter([first]));
+        assert_eq!(val.get(0), Some(first));
+        assert_eq!(val.get(1), None);
+        assert_eq!(val.get(2), None);
+        assert_eq!(val.get(3), None);
+        assert_eq!(val.get(4), None);
+        assert_eq!(val.into_iter().collect::<Vec<_>>(), vec![first]);
+
+        let first = fe256::from(0xDEADBEEFu32);
+        let second = fe256::from(0xBEADCAFEu32);
+        let val = StateValue::Double { first, second };
+        assert_eq!(val, StateValue::from_iter([first, second]));
+        assert_eq!(val.get(0), Some(first));
+        assert_eq!(val.get(1), Some(second));
+        assert_eq!(val.get(2), None);
+        assert_eq!(val.get(3), None);
+        assert_eq!(val.get(4), None);
+        assert_eq!(val.into_iter().collect::<Vec<_>>(), vec![first, second]);
+
+        let first = fe256::from(0xDEADBEEFu32);
+        let second = fe256::from(0xBEADCAFEu32);
+        let third = fe256::from(0xBEEDFACEu32);
+        let val = StateValue::Triple { first, second, third };
+        assert_eq!(val, StateValue::from_iter([first, second, third]));
+        assert_eq!(val.get(0), Some(first));
+        assert_eq!(val.get(1), Some(second));
+        assert_eq!(val.get(2), Some(third));
+        assert_eq!(val.get(3), None);
+        assert_eq!(val.get(4), None);
+        assert_eq!(val.into_iter().collect::<Vec<_>>(), vec![first, second, third]);
+
+        let first = fe256::from(0xDEADBEEFu32);
+        let second = fe256::from(0xBEADCAFEu32);
+        let third = fe256::from(0xBEEDFACEu32);
+        let fourth = fe256::from(0xFEEDDEEDu32);
+        let val = StateValue::Quadripple { first, second, third, fourth };
+        assert_eq!(val, StateValue::from_iter([first, second, third, fourth]));
+        assert_eq!(val.get(0), Some(first));
+        assert_eq!(val.get(1), Some(second));
+        assert_eq!(val.get(2), Some(third));
+        assert_eq!(val.get(3), Some(fourth));
+        assert_eq!(val.get(4), None);
+        assert_eq!(val.into_iter().collect::<Vec<_>>(), vec![first, second, third, fourth]);
     }
 }

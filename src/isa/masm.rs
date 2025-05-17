@@ -26,36 +26,37 @@
 /// # Example
 ///
 /// ```
+/// ##![cfg_attr(coverage_nightly, feature(coverage_attribute), coverage(off))]
 /// use ultrasonic::{uasm, Instr, VmContext};
 /// use zkaluvm::alu::regs::Status;
 /// use zkaluvm::alu::{Lib, LibId, LibSite, Vm};
 ///
 /// let code = uasm! {
-///     nop                  ;
-///     chk     CK           ;
-///     test    E1           ;
-///     cknxi   :destructible;
-///     not     CO           ;
-///     jif     CO, +2       ;
-///     mov     CO, CK       ;
-///     chk     CO           ;
-///     ldi     :immutable   ;
-///     clr     EA           ;
-///     mov     E2, 0        ;
-///     mov     EB, 20       ;
-///     mov     E1, E2       ;
-///     eq      E1, E2       ;
-///     neg     EA, EH       ;
-///     add     EA, EH       ;
-///     mul     EA, EH       ;
+///     nop;
+///     chk     CK;
+///     test    E1;
+///     cknxi   destructible;
+///     not     CO;
+///     jif     CO, +2;
+///     mov     CO, CK;
+///     chk     CO;
+///     ldi     immutable;
+///     clr     EA;
+///     put     E2, 0;
+///     put     EB, 20;
+///     mov     E1, E2;
+///     eq      E1, E2;
+///     neg     EA, EH;
+///     add     EA, EH;
+///     mul     EA, EH;
 /// };
 ///
 /// let lib = Lib::assemble::<Instr<LibId>>(&code).unwrap();
 /// let mut vm = Vm::<Instr<LibId>>::new();
 /// let ctx = VmContext {
-///     read_once_input: &[],
+///     destructible_input: &[],
 ///     immutable_input: &[],
-///     read_once_output: &[],
+///     destructible_output: &[],
 ///     immutable_output: &[],
 /// };
 /// match vm.exec(LibSite::new(lib.lib_id(), 0), &ctx, |_| Some(&lib)) {
@@ -81,42 +82,42 @@ macro_rules! uasm {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! instr {
-    (cknxi :destructible) => {
+    (cknxi destructible) => {
         $crate::UsonicInstr::CkNxIRo.into()
     };
-    (cknxi :immutable) => {
+    (cknxi immutable) => {
         $crate::UsonicInstr::CkNxIAo.into()
     };
-    (cknxo :destructible) => {
+    (cknxo destructible) => {
         $crate::UsonicInstr::CkNxORo.into()
     };
-    (cknxo :immutable) => {
+    (cknxo immutable) => {
         $crate::UsonicInstr::CkNxOAo.into()
     };
 
-    (ldi :destructible) => {
+    (ldi destructible) => {
         $crate::UsonicInstr::LdIRo.into()
     };
-    (ldi :immutable) => {
+    (ldi immutable) => {
         $crate::UsonicInstr::LdIAo.into()
     };
-    (ldo :destructible) => {
+    (ldo destructible) => {
         $crate::UsonicInstr::LdORo.into()
     };
-    (ldo :immutable) => {
+    (ldo immutable) => {
         $crate::UsonicInstr::LdOAo.into()
     };
 
-    (rsti :destructible) => {
+    (rsti destructible) => {
         $crate::UsonicInstr::RstIRo.into()
     };
-    (rsti :immutable) => {
+    (rsti immutable) => {
         $crate::UsonicInstr::RstIAo.into()
     };
-    (rsto :destructible) => {
+    (rsto destructible) => {
         $crate::UsonicInstr::RstORo.into()
     };
-    (rsto :immutable) => {
+    (rsto immutable) => {
         $crate::UsonicInstr::RstOAo.into()
     };
 

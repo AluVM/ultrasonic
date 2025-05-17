@@ -25,19 +25,27 @@ use aluvm::alu::SiteId;
 use aluvm::gfa::FieldInstr;
 use aluvm::isa::{CtrlInstr, ReservedInstr};
 
+/// AluVM ISA architecture id for Ultrasonic ISA extension.
 pub const ISA_ULTRASONIC: &str = "USONIC";
 
+/// Complete AluVM instruction set for the Ultrasonic virtual machine, which includes the following
+/// architectures:
+/// - Base ALU control architecture
+/// - `GFA256` (256-bit Galois-field arithmetics).
+/// - `USONIC`
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Display, From)]
 #[display(inner)]
 #[non_exhaustive]
 pub enum Instr<Id: SiteId> {
-    /// Control flow instructions.
+    /// Control flow instructions (base ALU ISA)..
     #[from]
     Ctrl(CtrlInstr<Id>),
 
+    /// GFA256` (256-bit Galois-field arithmetics).
     #[from]
     Gfa(FieldInstr),
 
+    /// USONIC ISA.
     #[from]
     Usonic(UsonicInstr),
 
