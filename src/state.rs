@@ -68,7 +68,7 @@ use crate::LIB_NAME_ULTRASONIC;
 pub struct AuthToken(#[from] fe256);
 
 #[cfg(all(feature = "serde", feature = "baid64"))]
-impl_serde_wrapper!(AuthToken, fe256);
+impl_serde_str_bin_wrapper!(AuthToken, fe256);
 
 // Types in ultrasonic must not be ordered, since zk-STARK proofs are really inefficient in applying
 // ordering to field elements. However, upstream we need to put `AuthToken` into `BTreeMap`, thus we
@@ -317,7 +317,7 @@ pub struct StateCell {
 pub struct RawData(#[from] SmallBlob);
 
 #[cfg(feature = "serde")]
-impl_serde_wrapper!(RawData, SmallBlob);
+impl_serde_str_bin_wrapper!(RawData, SmallBlob);
 
 impl FromStr for RawData {
     type Err = hex::Error;
@@ -402,17 +402,21 @@ mod test {
     #[cfg(all(feature = "serde", feature = "baid64"))]
     fn auth_serde() {
         let val = AuthToken::strict_dumb();
-        test_serde_wrapper!(val, "at:AAAAAAAA-AAAAAAAA-AAAAAAAA-AAAAAAAA-AAAAAAAA-1EFBiQ", &[
-            32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-        ]);
+        test_serde_str_bin_wrapper!(
+            val,
+            "at:AAAAAAAA-AAAAAAAA-AAAAAAAA-AAAAAAAA-AAAAAAAA-1EFBiQ",
+            &[
+                32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ]
+        );
     }
 
     #[test]
     #[cfg(feature = "serde")]
     fn raw_data_serde() {
         let val = RawData::strict_dumb();
-        test_serde_wrapper!(val, "0x", &[0, 0, 0, 0, 0, 0, 0, 0]);
+        test_serde_str_bin_wrapper!(val, "0x", &[0, 0, 0, 0, 0, 0, 0, 0]);
     }
 
     #[test]

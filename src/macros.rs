@@ -21,7 +21,11 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
-macro_rules! impl_serde_wrapper {
+// TODO: Move to amplify
+/// Implement serde serialize and deserialize traits for a type wrapping another type, such that it
+/// uses Display and FromStr for human-readable serialization, and binary for non-human readable.
+#[macro_export]
+macro_rules! impl_serde_str_bin_wrapper {
     ($ty:ty, $inner:ty) => {
         impl serde::Serialize for $ty {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -49,8 +53,9 @@ macro_rules! impl_serde_wrapper {
     };
 }
 
-#[cfg(test)]
-macro_rules! test_serde_wrapper {
+/// Testing macro for implementations of [`impl_serde_str_bin_wrapper`].
+#[macro_export]
+macro_rules! test_serde_str_bin_wrapper {
     ($val:expr, $str:literal, $dat:expr) => {
         use serde_test::{assert_tokens, Configure, Token};
         assert_eq!(bincode::serialize(&$val).unwrap(), $dat);

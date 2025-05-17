@@ -196,7 +196,7 @@ pub struct ContractId(
 );
 
 #[cfg(all(feature = "serde", feature = "baid64"))]
-impl_serde_wrapper!(ContractId, Bytes32);
+impl_serde_str_bin_wrapper!(ContractId, Bytes32);
 
 impl From<Sha256> for ContractId {
     fn from(hasher: Sha256) -> Self { hasher.finish().into() }
@@ -285,9 +285,13 @@ mod test {
     #[cfg(all(feature = "serde", feature = "baid64"))]
     fn contract_id_serde() {
         let val = ContractId::strict_dumb();
-        test_serde_wrapper!(val, "contract:AAAAAAAA-AAAAAAA-AAAAAAA-AAAAAAA-AAAAAAA-AAAAAAA", &[
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0
-        ]);
+        test_serde_str_bin_wrapper!(
+            val,
+            "contract:AAAAAAAA-AAAAAAA-AAAAAAA-AAAAAAA-AAAAAAA-AAAAAAA",
+            &[
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0
+            ]
+        );
     }
 }

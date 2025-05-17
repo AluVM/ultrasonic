@@ -353,7 +353,7 @@ pub struct CodexId(
 );
 
 #[cfg(all(feature = "serde", feature = "baid64"))]
-impl_serde_wrapper!(CodexId, Bytes32);
+impl_serde_str_bin_wrapper!(CodexId, Bytes32);
 
 impl From<Sha256> for CodexId {
     fn from(hasher: Sha256) -> Self { hasher.finish().into() }

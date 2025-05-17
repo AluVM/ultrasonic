@@ -53,7 +53,7 @@ pub struct Opid(
 );
 
 #[cfg(all(feature = "serde", feature = "baid64"))]
-impl_serde_wrapper!(Opid, Bytes32);
+impl_serde_str_bin_wrapper!(Opid, Bytes32);
 
 impl From<Opid> for [u8; 32] {
     fn from(opid: Opid) -> Self { opid.to_byte_array() }
@@ -497,7 +497,7 @@ mod test {
     #[cfg(all(feature = "serde", feature = "baid64"))]
     fn opid_serde() {
         let val = Opid::strict_dumb();
-        test_serde_wrapper!(val, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", &[
+        test_serde_str_bin_wrapper!(val, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", &[
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0
         ]);
