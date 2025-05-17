@@ -221,9 +221,9 @@ mod _serde {
 
 /// Operation input for a destructible (read-once) state.
 ///
-/// The structure provides the reference to the memory cell, and an optional witness data which
-/// are used if the memory cell has a defined access conditions (see [`StateCell::lock`]).
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+/// The structure provides the reference to the memory cell and an optional witness data which
+/// are used if the memory cell has a defined access condition (see [`StateCell::lock`]).
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 #[derive(CommitEncode)]
 #[commit_encode(strategy = strict, id = MerkleHash)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
@@ -334,7 +334,7 @@ impl Genesis {
 }
 
 /// Operation under a contract which may update the contract state.
-#[derive(Clone, Eq, Debug)]
+#[derive(Clone, Eq, Hash, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
@@ -379,7 +379,7 @@ pub struct Operation {
     ///
     /// The list may be empty.
     pub destructible_out: SmallVec<StateCell>,
-    /// A list of the state for the new Immutable memory cells which are created by the operation
+    /// A list of the state for the new Immutable memory cells, which are created by the operation
     /// (write-once, readable by all).
     ///
     /// The list may be empty.

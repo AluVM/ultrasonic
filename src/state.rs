@@ -147,7 +147,7 @@ mod _baid64 {
 }
 
 /// A value stored in a single memory cell.
-#[derive(Copy, Clone, PartialEq, Eq, Debug, Default)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug, Default)]
 #[derive(StrictType, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC, tags = custom)]
 #[cfg_attr(
@@ -287,7 +287,7 @@ impl IntoIterator for StateValue {
 }
 
 /// Read-once access-controlled memory cell, defining destructible part of the contract state.
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 #[derive(CommitEncode)]
 #[commit_encode(strategy = strict, id = MerkleHash)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
@@ -306,7 +306,7 @@ pub struct StateCell {
 ///
 /// The raw data cannot be accessed by the verification scripts and zk-AluVM, and are not
 /// compressible as a part of zk proofs. See [`StateData`] for the details.
-#[derive(Wrapper, WrapperMut, Clone, PartialEq, Eq, Debug, Display, From)]
+#[derive(Wrapper, WrapperMut, Clone, PartialEq, Eq, Hash, Debug, Display, From)]
 #[wrapper(AsSlice, BorrowSlice, Hex, RangeOps)]
 #[wrapper_mut(BorrowSliceMut, RangeMut)]
 #[display("0x{0:X}")]
@@ -328,7 +328,7 @@ impl FromStr for RawData {
 }
 
 /// State kept in the immutable (read-only) memory cells.
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
