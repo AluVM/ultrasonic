@@ -455,6 +455,8 @@ impl VerifiedOperation {
 
 #[cfg(test)]
 mod test {
+    #![cfg_attr(coverage_nightly, coverage(off))]
+
     use core::str::FromStr;
 
     use amplify::ByteArray;

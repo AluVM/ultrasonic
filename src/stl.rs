@@ -36,7 +36,7 @@ use crate::{ContractId, Issue, Operation, Opid, LIB_NAME_ULTRASONIC};
 pub const LIB_ID_ULTRASONIC: &str =
     "stl:xSHGVSdV-QPaT~fp-A9oWq8V-jOKkVDT-~4La6ko-wjXzN9E#condor-evening-stone";
 
-#[allow(clippy::type_complexity)]
+#[allow(clippy::result_large_err)]
 fn _usonic_stl() -> Result<TypeLib, CompileError> {
     LibBuilder::with(libname!(LIB_NAME_ULTRASONIC), [
         std_stl().to_dependency_types(),
@@ -57,6 +57,8 @@ pub fn usonic_stl() -> TypeLib { _usonic_stl().expect("invalid strict type Ultra
 
 #[cfg(test)]
 mod test {
+    #![cfg_attr(coverage_nightly, coverage(off))]
+
     use super::*;
 
     #[test]

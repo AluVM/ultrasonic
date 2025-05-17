@@ -260,6 +260,8 @@ impl<Id: SiteId> Instruction<Id> for Instr<Id> {
 
 #[cfg(test)]
 mod test {
+    #![cfg_attr(coverage_nightly, coverage(off))]
+
     use aluvm::alu::{CoreConfig, Lib, LibId, LibSite, Vm};
     use aluvm::{fe256, GfaConfig, FIELD_ORDER_SECP};
 

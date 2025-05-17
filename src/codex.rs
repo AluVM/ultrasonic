@@ -392,6 +392,8 @@ mod _baid4 {
 
 #[cfg(test)]
 mod test {
+    #![cfg_attr(coverage_nightly, coverage(off))]
+
     use core::str::FromStr;
     use std::collections::HashMap;
 

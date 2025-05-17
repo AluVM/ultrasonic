@@ -235,6 +235,8 @@ mod _baid4 {
 
 #[cfg(test)]
 mod test {
+    #![cfg_attr(coverage_nightly, coverage(off))]
+
     use amplify::ByteArray;
     use commit_verify::Digest;
 
