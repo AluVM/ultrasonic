@@ -30,7 +30,7 @@ use commit_verify::{
 };
 use strict_encoding::{StrictDecode, StrictDumb, StrictEncode, TypeName};
 
-use crate::{Codex, Genesis, Identity, Opid, LIB_NAME_ULTRASONIC};
+use crate::{Codex, CodexId, Genesis, Identity, Opid, LIB_NAME_ULTRASONIC};
 
 /// Information on the issue of the contract.
 #[derive(Clone, Eq, Debug)]
@@ -79,7 +79,7 @@ impl CommitEncode for Issue {
     fn commit_encode(&self, e: &mut CommitEngine) {
         e.commit_to_serialized(&self.version);
         e.commit_to_serialized(&self.meta);
-        e.commit_to_serialized(&self.codex.codex_id());
+        e.commit_to_serialized(&self.codex_id());
         e.commit_to_serialized(&self.genesis.opid(ContractId::from_byte_array([0xFFu8; 32])));
     }
 }
@@ -91,6 +91,12 @@ impl Issue {
     /// metadata, codex, and genesis operation.
     #[inline]
     pub fn contract_id(&self) -> ContractId { self.commit_id() }
+
+    /// Compute codex id.
+    ///
+    /// Shorthand for [`Self::issue::codex_id()`].
+    #[inline]
+    pub fn codex_id(&self) -> CodexId { self.codex.codex_id() }
 
     /// Computes the operation id of the genesis operation.
     ///
