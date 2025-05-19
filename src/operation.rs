@@ -94,7 +94,7 @@ impl CellAddr {
 
 impl From<[u8; 34]> for CellAddr {
     fn from(value: [u8; 34]) -> Self {
-        let opid = Opid::from_slice_unsafe(&value[..32]);
+        let opid = Opid::from_slice_checked(&value[..32]);
         let pos = u16::from_le_bytes(value[32..34].try_into().unwrap());
         Self::new(opid, pos)
     }
