@@ -47,7 +47,6 @@ rec Issue
   rec meta, ContractMeta
     enum testnet, Bool, false 0, true 1
     enum consensus, Consensus, none 0, bitcoin 16, liquid 17, prime 32
-    bytes reserved, len 14, aka ReservedBytes14
     is timestamp, I64
     union name, ContractName
       is unnamed, Unit, tag 0

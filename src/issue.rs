@@ -154,12 +154,8 @@ pub struct ContractMeta {
     pub testnet: bool,
     /// Consensus layer used by the contract.
     pub consensus: Consensus,
-    /// Reserved bytes, providing alignment to the 16-byte edge
-    #[cfg_attr(feature = "serde", serde(skip))]
-    pub reserved: ReservedBytes<14>,
     /// Timestamp of the moment the contract is issued
     pub timestamp: i64,
-    // ^^ above is a fixed-size contract header of 32 bytes
     /// A name of the contract.
     pub name: ContractName,
     /// An identity of the contract issuer.
