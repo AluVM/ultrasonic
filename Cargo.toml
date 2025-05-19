@@ -1,6 +1,6 @@
 [package]
 name = "ultrasonic"
-version = "0.12.0-beta.6"
+version = "0.12.0-rc.1"
 authors = ["Dr Maxim Orlovsky <orlovsky@ubideco.org>"]
 description = "Transactional execution layer with capability-based memory access for zk-AluVM"
 repository = "https://github.com/AluVM/ultrasonic"

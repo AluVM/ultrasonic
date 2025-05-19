@@ -588,7 +588,7 @@ checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
 
 [[package]]
 name = "ultrasonic"
-version = "0.12.0-beta.6"
+version = "0.12.0-rc.1"
 dependencies = [
  "amplify",
  "baid64",
