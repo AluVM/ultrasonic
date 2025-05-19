@@ -22,6 +22,7 @@
 // the License.
 
 use core::cmp::Ordering;
+use core::hash::{Hash, Hasher};
 
 #[cfg(feature = "baid64")]
 pub use _baid64::ParseAddrError;
@@ -334,7 +335,7 @@ impl Genesis {
 }
 
 /// Operation under a contract which may update the contract state.
-#[derive(Clone, Eq, Hash, Debug)]
+#[derive(Clone, Eq, Debug)]
 #[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
 #[strict_type(lib = LIB_NAME_ULTRASONIC)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
@@ -394,6 +395,9 @@ impl Ord for Operation {
 }
 impl PartialEq for Operation {
     fn eq(&self, other: &Self) -> bool { self.opid() == other.opid() }
+}
+impl Hash for Operation {
+    fn hash<H: Hasher>(&self, state: &mut H) { state.write(&self.opid().to_byte_array()); }
 }
 
 impl CommitEncode for Operation {
