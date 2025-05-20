@@ -49,5 +49,6 @@ impl UsonicCore {
         co
     }
 
+    /// Reset a value (set to zero) of an `UI` register.
     pub fn reset(&mut self, cat: IoCat) { self.ui[cat.index()] = 0; }
 }

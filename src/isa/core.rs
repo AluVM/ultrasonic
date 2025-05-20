@@ -42,6 +42,9 @@ enum Mem {
     AppendOnly,
 }
 
+/// Category of operation input or output data.
+///
+/// See constants for the way to construct specific values.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub struct IoCat {
     io: Io,
@@ -49,12 +52,16 @@ pub struct IoCat {
 }
 
 impl IoCat {
+    /// Operation input pointing to a destructible (read-once) memory cell.
     pub const IN_RO: Self = Self { io: Io::Input, mem: Mem::ReadOnce };
+    /// Operation input pointing to an immutable (append-only) memory cell.
     pub const IN_AO: Self = Self { io: Io::Input, mem: Mem::AppendOnly };
+    /// Operation output defining a destructible (read-once) memory cell.
     pub const OUT_RO: Self = Self { io: Io::Output, mem: Mem::ReadOnce };
+    /// Operation output defining an immutable (append-only) memory cell.
     pub const OUT_AO: Self = Self { io: Io::Output, mem: Mem::AppendOnly };
 
-    pub const fn index(&self) -> usize {
+    pub(crate) const fn index(&self) -> usize {
         match (self.io, self.mem) {
             (Io::Input, Mem::ReadOnce) => 0,
             (Io::Input, Mem::AppendOnly) => 1,
@@ -64,6 +71,7 @@ impl IoCat {
     }
 }
 
+/// ALU Core extension for USONIC ISA.
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct UsonicCore {
     /// State value iterator positions
@@ -72,6 +80,7 @@ pub struct UsonicCore {
     pub(super) gfa: GfaCore,
 }
 
+#[cfg_attr(coverage_nightly, coverage(off))]
 impl Debug for UsonicCore {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let (sect, reg, val, reset) = if f.alternate() {

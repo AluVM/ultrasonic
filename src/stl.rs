@@ -21,6 +21,8 @@
 // or implied. See the License for the specific language governing permissions and limitations under
 // the License.
 
+//! Ultrasonic strict types library.
+
 pub use aluvm::alu::stl::aluvm_stl;
 pub use aluvm::zkstl::{finite_field_stl, LIB_ID_FINITE_FIELD};
 use commit_verify::stl::commit_verify_stl;
@@ -28,12 +30,13 @@ use strict_types::stl::{std_stl, strict_types_stl};
 use strict_types::typelib::LibBuilder;
 use strict_types::{CompileError, TypeLib};
 
-use crate::{ContractId, GenesisId, Issue, Operation, Opid, LIB_NAME_ULTRASONIC};
+use crate::{ContractId, Issue, Operation, Opid, LIB_NAME_ULTRASONIC};
 
 /// Strict types id for the library providing data types for RGB consensus.
 pub const LIB_ID_ULTRASONIC: &str =
-    "stl:Tn2be5a_-uOQjX_K-IIf7jd~-v9Twmsn-ubRl~Xe-y0GmYz8#viva-armor-diagram";
+    "stl:Gv1vKbrx-JdB52Tc-bJ8vebC-Ol_tGiv-1Je5TSn-1dDGDH4#stuart-memphis-english";
 
+#[allow(clippy::result_large_err)]
 fn _usonic_stl() -> Result<TypeLib, CompileError> {
     LibBuilder::with(libname!(LIB_NAME_ULTRASONIC), [
         std_stl().to_dependency_types(),
@@ -43,18 +46,19 @@ fn _usonic_stl() -> Result<TypeLib, CompileError> {
         finite_field_stl().to_dependency_types(),
     ])
     .transpile::<Opid>()
-    .transpile::<GenesisId>()
     .transpile::<Operation>()
     .transpile::<ContractId>()
     .transpile::<Issue>()
     .compile()
 }
 
-/// Generates strict type library providing data types for RGB consensus.
+/// Generates a strict type library providing data types for RGB consensus.
 pub fn usonic_stl() -> TypeLib { _usonic_stl().expect("invalid strict type Ultrasonic library") }
 
 #[cfg(test)]
 mod test {
+    #![cfg_attr(coverage_nightly, coverage(off))]
+
     use super::*;
 
     #[test]

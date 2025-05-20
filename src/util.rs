@@ -53,6 +53,8 @@ impl From<&'static str> for Identity {
 }
 
 impl Identity {
+    /// Tests whether the identity is not provided, which is equal to an anonymous identity.
     pub fn is_empty(&self) -> bool { self.is_anonymous() }
+    /// Tests whether the identity is anonymous.
     pub fn is_anonymous(&self) -> bool { self == &default!() }
 }

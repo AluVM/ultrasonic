@@ -1,5 +1,5 @@
 {-
-  Id: stl:Tn2be5a_-uOQjX_K-IIf7jd~-v9Twmsn-ubRl~Xe-y0GmYz8#viva-armor-diagram
+  Id: stl:Gv1vKbrx-JdB52Tc-bJ8vebC-Ol_tGiv-1Je5TSn-1dDGDH4#stuart-memphis-english
   Name: UltraSONIC
   Version: 0.12.0
   Description: Transactional execution layer with capability-based memory access for zk-AluVM
@@ -28,9 +28,8 @@ import AluVM#reward-accent-swim
   use LibSite#polo-macro-elite
 
 import CommitVerify#biology-news-adam
-  use ReservedBytes14#prize-edison-classic
+  use ReservedBytes1#origin-roger-relax
   use ReservedBytes2#florida-libra-circus
-  use ReservedBytes8#rudolf-tape-adrian
 
 import StrictTypes#henry-heart-survive
   use TypeName#edgar-carol-mystery
@@ -42,8 +41,8 @@ data AuthToken         : FiniteField.Fe256
 @mnemonic(tahiti-tobacco-grid)
 data CellAddr          : opid Opid, pos U16
 
-@mnemonic(patron-tower-reply)
-data Codex             : version CommitVerify.ReservedBytes2
+@mnemonic(nirvana-remote-danube)
+data Codex             : version CommitVerify.ReservedBytes1
                        , name [Unicode ^ ..0xff]
                        , developer Identity
                        , timestamp I64
@@ -51,7 +50,6 @@ data Codex             : version CommitVerify.ReservedBytes2
                        , inputConfig AluVM.CoreConfig
                        , verificationConfig AluVM.CoreConfig
                        , verifiers {U16 -> ^ ..0xff AluVM.LibSite}
-                       , reserved CommitVerify.ReservedBytes8
 
 @mnemonic(cargo-season-impact)
 data CodexId           : [Byte ^ 32]
@@ -63,10 +61,9 @@ data Consensus         : none | bitcoin#16 | liquid | prime#32
 @mnemonic(uniform-welcome-papa)
 data ContractId        : [Byte ^ 32]
 
-@mnemonic(aspirin-byte-elvis)
+@mnemonic(genius-patent-alfonso)
 data ContractMeta      : testnet Std.Bool
                        , consensus Consensus
-                       , reserved CommitVerify.ReservedBytes14
                        , timestamp I64
                        , name ContractName
                        , issuer Identity
@@ -75,18 +72,15 @@ data ContractMeta      : testnet Std.Bool
 data ContractName      : unnamed ()
                        | named StrictTypes.TypeName
 
-@mnemonic(teacher-russian-desert)
-data Genesis           : codexId CodexId
+@mnemonic(regard-lunar-helium)
+data Genesis           : version CommitVerify.ReservedBytes1
+                       , codexId CodexId
                        , callId U16
                        , nonce FiniteField.Fe256
                        , blank1 CommitVerify.ReservedBytes2
                        , blank2 CommitVerify.ReservedBytes2
-                       , destructible [StateCell]
-                       , immutable [StateData]
-                       , reserved CommitVerify.ReservedBytes8
-
-@mnemonic(herbert-trident-buzzer)
-data GenesisId         : [Byte ^ 32]
+                       , destructibleOut [StateCell]
+                       , immutableOut [StateData]
 
 @mnemonic(smart-pioneer-nominal)
 data Identity          : Std.AsciiPrintable, [Std.AsciiPrintable ^ ..0xfff]
@@ -94,21 +88,21 @@ data Identity          : Std.AsciiPrintable, [Std.AsciiPrintable ^ ..0xfff]
 @mnemonic(region-gilbert-drama)
 data Input             : addr CellAddr, witness StateValue
 
-@mnemonic(avenue-wonder-newton)
-data Issue             : version CommitVerify.ReservedBytes2
+@mnemonic(field-angel-escape)
+data Issue             : version CommitVerify.ReservedBytes1
                        , meta ContractMeta
                        , codex Codex
                        , genesis Genesis
 
-@mnemonic(virtual-judge-friday)
-data Operation         : contractId ContractId
+@mnemonic(join-buenos-oliver)
+data Operation         : version CommitVerify.ReservedBytes1
+                       , contractId ContractId
                        , callId U16
                        , nonce FiniteField.Fe256
-                       , destroying [Input]
-                       , reading [CellAddr]
-                       , destructible [StateCell]
-                       , immutable [StateData]
-                       , reserved CommitVerify.ReservedBytes8
+                       , destructibleIn [Input]
+                       , immutableIn [CellAddr]
+                       , destructibleOut [StateCell]
+                       , immutableOut [StateData]
 
 @mnemonic(storm-dragon-brain)
 data Opid              : [Byte ^ 32]
