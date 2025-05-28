@@ -156,6 +156,10 @@ pub struct ContractMeta {
     pub consensus: Consensus,
     /// Timestamp of the moment the contract is issued
     pub timestamp: i64,
+    /// A set of feature flags.
+    ///
+    /// RGB-I-0 consensus has no flags, which is enforced with [`ReservedBytes`] structure.
+    pub features: ReservedBytes<6>,
     /// A name of the contract.
     pub name: ContractName,
     /// An identity of the contract issuer.

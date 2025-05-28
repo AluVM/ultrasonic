@@ -25,7 +25,7 @@ use core::cmp::Ordering;
 use core::str::FromStr;
 use std::vec;
 
-use aluvm::alu::LibSite;
+use aluvm::alu::{LibId, LibSite};
 use aluvm::fe256;
 use amplify::confinement::SmallBlob;
 use amplify::hex::FromHex;
@@ -298,8 +298,40 @@ pub struct StateCell {
     pub data: StateValue,
     /// Token of authority controlling the access to the memory cell.
     pub auth: AuthToken,
-    /// Additional (locking) conditions defined as an zk-AluVM script.
-    pub lock: Option<LibSite>,
+    /// Additional (locking) conditions.
+    pub lock: Option<CellLock>,
+}
+
+/// Custom lock conditions specific to a single destructible lock cell.
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(StrictType, StrictDumb, StrictEncode, StrictDecode)]
+#[strict_type(lib = LIB_NAME_ULTRASONIC)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(rename_all = "camelCase"))]
+pub struct CellLock {
+    /// Auxiliary data which may be used by the codex verifier script or the custom script below in
+    /// checking the satisfaction of the lock conditions with a witness, which will come from
+    /// the spending input.
+    ///
+    /// For instance, this may be a value of a public key, and the witness will have a signature,
+    /// while the script will validate the signature for that key.
+    pub aux: StateValue,
+
+    /// An entry point to a script which should be executed by the zk-AluVM to check the
+    /// satisfaction of the witness against the lock conditions data from [`Self::data`].
+    ///
+    /// Unlike the verification script which is run for the operation as a whole, this script
+    /// will be called for each individual input.
+    ///
+    /// Please keep in mind that the lock scripts may be effectively prohibited by a codex
+    /// just via defining `input_config` complexity level to be zero.
+    pub script: Option<LibSite>,
+}
+
+impl CellLock {
+    /// Construct script-based lock conditions.
+    pub fn with_script(lib: LibId, pos: u16) -> Self {
+        Self { aux: StateValue::None, script: Some(LibSite::new(lib, pos)) }
+    }
 }
 
 /// The raw data for the immutable (read-only) memory cells.

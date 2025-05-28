@@ -20,11 +20,12 @@ rec Codex
   str name, len 0..MAX8
   ascii developer, aka Identity, first AsciiPrintable, rest AsciiPrintable, len 1..4096
   is timestamp, I64
+  bytes features, len 4, aka ReservedBytes4
   is fieldOrder, U256
-  rec inputConfig, CoreConfig
+  rec verificationConfig, CoreConfig
     enum halt, Bool, false 0, true 1
       is some, U64, option, wrapped, tag 1
-  rec verificationConfig, CoreConfig
+  rec inputConfig, CoreConfig
     enum halt, Bool, false 0, true 1
       is some, U64, option, wrapped, tag 1
   map verifiers, len 0..MAX8
@@ -48,6 +49,7 @@ rec Issue
     enum testnet, Bool, false 0, true 1
     enum consensus, Consensus, none 0, bitcoin 16, liquid 17, prime 32
     is timestamp, I64
+    bytes features, len 6, aka ReservedBytes6
     union name, ContractName
       is unnamed, Unit, tag 0
       ascii named, wrapped, aka TypeName, first AlphaCapsLodash, rest AlphaNumLodash, len 1..100, tag 1
@@ -57,11 +59,12 @@ rec Issue
     str name, len 0..MAX8
     ascii developer, aka Identity, first AsciiPrintable, rest AsciiPrintable, len 1..4096
     is timestamp, I64
+    bytes features, len 4, aka ReservedBytes4
     is fieldOrder, U256
-    rec inputConfig, CoreConfig
+    rec verificationConfig, CoreConfig
       enum halt, Bool, false 0, true 1
         is some, U64, option, wrapped, tag 1
-    rec verificationConfig, CoreConfig
+    rec inputConfig, CoreConfig
       enum halt, Bool, false 0, true 1
         is some, U64, option, wrapped, tag 1
     map verifiers, len 0..MAX8
@@ -96,9 +99,26 @@ rec Issue
             is third, U256, aka Fe256
             is fourth, U256, aka Fe256
         is auth, U256, aka AuthToken, aka Fe256
-          rec some, LibSite, option, wrapped, tag 1
-            bytes libId, len 32, aka LibId
-            is offset, U16
+          rec some, CellLock, option, wrapped, tag 1
+            union aux, StateValue
+              is none, Unit, tag 0
+              rec single, tag 1
+                is first, U256, aka Fe256
+              rec double, tag 2
+                is first, U256, aka Fe256
+                is second, U256, aka Fe256
+              rec triple, tag 3
+                is first, U256, aka Fe256
+                is second, U256, aka Fe256
+                is third, U256, aka Fe256
+              rec quadruple, tag 4
+                is first, U256, aka Fe256
+                is second, U256, aka Fe256
+                is third, U256, aka Fe256
+                is fourth, U256, aka Fe256
+              rec some, LibSite, option, wrapped, tag 1
+                bytes libId, len 32, aka LibId
+                is offset, U16
     list immutableOut, len 0..MAX16
       rec StateData
         union value, StateValue
@@ -160,9 +180,26 @@ rec Genesis
           is third, U256, aka Fe256
           is fourth, U256, aka Fe256
       is auth, U256, aka AuthToken, aka Fe256
-        rec some, LibSite, option, wrapped, tag 1
-          bytes libId, len 32, aka LibId
-          is offset, U16
+        rec some, CellLock, option, wrapped, tag 1
+          union aux, StateValue
+            is none, Unit, tag 0
+            rec single, tag 1
+              is first, U256, aka Fe256
+            rec double, tag 2
+              is first, U256, aka Fe256
+              is second, U256, aka Fe256
+            rec triple, tag 3
+              is first, U256, aka Fe256
+              is second, U256, aka Fe256
+              is third, U256, aka Fe256
+            rec quadruple, tag 4
+              is first, U256, aka Fe256
+              is second, U256, aka Fe256
+              is third, U256, aka Fe256
+              is fourth, U256, aka Fe256
+            rec some, LibSite, option, wrapped, tag 1
+              bytes libId, len 32, aka LibId
+              is offset, U16
   list immutableOut, len 0..MAX16
     rec StateData
       union value, StateValue
@@ -262,9 +299,26 @@ rec Operation
           is third, U256, aka Fe256
           is fourth, U256, aka Fe256
       is auth, U256, aka AuthToken, aka Fe256
-        rec some, LibSite, option, wrapped, tag 1
-          bytes libId, len 32, aka LibId
-          is offset, U16
+        rec some, CellLock, option, wrapped, tag 1
+          union aux, StateValue
+            is none, Unit, tag 0
+            rec single, tag 1
+              is first, U256, aka Fe256
+            rec double, tag 2
+              is first, U256, aka Fe256
+              is second, U256, aka Fe256
+            rec triple, tag 3
+              is first, U256, aka Fe256
+              is second, U256, aka Fe256
+              is third, U256, aka Fe256
+            rec quadruple, tag 4
+              is first, U256, aka Fe256
+              is second, U256, aka Fe256
+              is third, U256, aka Fe256
+              is fourth, U256, aka Fe256
+            rec some, LibSite, option, wrapped, tag 1
+              bytes libId, len 32, aka LibId
+              is offset, U16
   list immutableOut, len 0..MAX16
     rec StateData
       union value, StateValue

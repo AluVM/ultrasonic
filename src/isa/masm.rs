@@ -96,6 +96,19 @@ macro_rules! instr {
         $crate::UsonicInstr::CkNxOAo.into()
     };
 
+    (ldw) => {
+        $crate::UsonicInstr::LdW.into()
+    };
+    (ldi witness) => {
+        $crate::UsonicInstr::LdIW.into()
+    };
+    (ldi lock) => {
+        $crate::UsonicInstr::LdIL.into()
+    };
+    (ldi auth) => {
+        $crate::UsonicInstr::LdIT.into()
+    };
+
     (ldi destructible) => {
         $crate::UsonicInstr::LdIRo.into()
     };

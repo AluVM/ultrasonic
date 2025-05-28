@@ -76,77 +76,120 @@ impl<Id: SiteId> From<aluvm::gfa::Instr<Id>> for Instr<Id> {
 pub enum UsonicInstr {
     /// Checks whether there is a next destructible memory cell in the contract state listed in the
     /// operation input and sets `CO` register accordingly.
-    #[display("cknxi   :destructible")]
+    #[display("cknxi   destructible")]
     CkNxIRo,
 
     /// Checks whether there is a next immutable memory cell in the contract state listed in the
     /// operation input and sets `CO` register accordingly.
-    #[display("cknxi   :immutable")]
+    #[display("cknxi   immutable")]
     CkNxIAo,
 
     /// Checks whether there is a next destructible memory cell defined by the operation and sets
     /// `CO` register accordingly.
-    #[display("cknxo   :destructible")]
+    #[display("cknxo   destructible")]
     CkNxORo,
 
     /// Checks whether there is a next immutable memory cell defined by the operation and sets `CO`
     /// register accordingly.
-    #[display("cknxo   :immutable")]
+    #[display("cknxo   immutable")]
     CkNxOAo,
+
+    /// Load operation witness [`StateValue`] to `EA`-`ED` registers.
+    #[display("ldw")]
+    LdW,
 
     /// Load next [`StateValue`] from the current destructible memory cell input to `EA`-`ED`
     /// registers.
     ///
     /// If the next state value is absent, sets `CO` to a failed state. Otherwise, resets `CO`.
-    #[display("ldi     :destructible")]
+    #[display("ldi     destructible")]
     LdIRo,
 
     /// Load next [`StateValue`] from the current immutable memory cell input to `EA`-`ED`
     /// registers.
     ///
     /// If the next state value is absent, sets `CO` to a failed state. Otherwise, resets `CO`.
-    #[display("ldi     :immutable")]
+    #[display("ldi     immutable")]
     LdIAo,
 
     /// Load next [`StateValue`] from the current destructible memory cell output to `EA`-`ED`
     /// registers.
     ///
     /// If the next state value is absent, sets `CO` to a failed state. Otherwise, resets `CO`.
-    #[display("ldo     :destructible")]
+    #[display("ldo     destructible")]
     LdORo,
 
     /// Load next [`StateValue`] from the current immutable memory cell output to `EA`-`ED`
     /// registers.
     ///
     /// If the next state value is absent, sets `CO` to a failed state. Otherwise, resets `CO`.
-    #[display("ldo     :immutable")]
+    #[display("ldo     immutable")]
     LdOAo,
+
+    /// Load destructible input witness [`StateValue`] for the current input number (determined by
+    /// the value in `UI` register) to `EA`-`ED` registers.
+    ///
+    /// The operation is idempotent.
+    ///
+    /// Does not update the value of `UI` register.
+    ///
+    /// If the input matching `UI` index is absent, sets `CO` to a failed state.
+    /// Otherwise, resets `CO`.
+    #[display("ldi     witness")]
+    LdIW,
+
+    /// Load a lock conditions value for the current input number (determined by the value in `UI`
+    /// register) to `EA`-`ED` registers.
+    ///
+    /// The operation is idempotent.
+    ///
+    /// Does not update the value of `UI` register.
+    ///
+    /// If the input matching `UI` index is absent, sets `CO` to a failed state.
+    /// Otherwise, resets `CO`.
+    #[display("ldi     lock")]
+    LdIL,
+
+    /// Load a destructible input authorization token [`AuthToken`] for the current input number
+    /// (determined by the value in `UI` register) to `EA` register.
+    ///
+    /// The operation also sets `EB` to either `0` (if a custom lock script is not present)
+    /// or `1`, if it is present.
+    ///
+    /// The operation is idempotent.
+    ///
+    /// Does not update the value of `UI` register.
+    ///
+    /// If the input matching `UI` index is absent, sets `CO` to a failed state.
+    /// Otherwise, resets `CO`.
+    #[display("ldi     auth")]
+    LdIT,
 
     /// Resets iterator over the input destructible memory cells by setting the corresponding `UI`
     /// value to zero.
     ///
     /// Does not affect the value of `CO` or `CK` registers.
-    #[display("rsti    :destructible")]
+    #[display("rsti    destructible")]
     RstIRo,
 
     /// Resets iterator over the input immutable memory cells by setting the corresponding `UI`
     /// value to zero.
     ///
     /// Does not affect the value of `CO` or `CK` registers.
-    #[display("rsti    :immutable")]
+    #[display("rsti    immutable")]
     RstIAo,
 
     /// Resets iterator over the output destructible memory cells by setting the corresponding `UI`
     /// value to zero.
     ///
     /// Does not affect the value of `CO` or `CK` registers.
-    #[display("rsto    :destructible")]
+    #[display("rsto    destructible")]
     RstORo,
 
     /// Resets iterator over the output immutable memory cells by setting the corresponding `UI`
     /// value to zero.
     ///
     /// Does not affect the value of `CO` or `CK` registers.
-    #[display("rsto    :immutable")]
+    #[display("rsto    immutable")]
     RstOAo,
 }

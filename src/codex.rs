@@ -82,14 +82,24 @@ pub struct Codex {
     /// standard way of doing this, rather to force them into abusing and misusing other fields of
     /// the codex.
     pub timestamp: i64,
+    /// A set of feature flags.
+    ///
+    /// RGB-I-0 consensus has no flags, which is enforced with [`ReservedBytes`] structure.
+    pub features: ReservedBytes<4>,
     /// The order of the field used by VM for all scripts (operation verification and state access
     /// condition satisfaction).
     pub field_order: u256,
-    /// Input config is used by the VM to verify the satisfaction of the lock conditions for
-    /// operation inputs.
-    pub input_config: CoreConfig,
     /// VM core configuration for the operation verification.
     pub verification_config: CoreConfig,
+    /// The VM uses input config to verify the satisfaction of the lock conditions for
+    /// operation inputs.
+    ///
+    /// This configuration is given in the codex and not the contract, but contract issuers still
+    /// decide on it since they can just use a different codex or modify it here.
+    ///
+    /// Please keep in mind that this config may be used to effectively prohibit the use of custom
+    /// lock scripts in destructible state, via setting the maximal complexity level to zero.
+    pub input_config: CoreConfig,
     /// List of verifiers for each of the calls supported by the codex.
     pub verifiers: TinyOrdMap<CallId, LibSite>,
 }
@@ -135,7 +145,7 @@ impl Codex {
     ///
     /// # Returns
     ///
-    /// On success, returns a operation wrapped as [`VerifiedOperation`] structure, which should be
+    /// On success, returns an operation wrapped as [`VerifiedOperation`] structure, which should be
     /// used (1) for updating the contract state by applying the operation, and (2) for the
     /// persistence of the contract history.
     ///
@@ -175,47 +185,27 @@ impl Codex {
             });
         }
 
-        // Phase 1: get inputs, verify their presence in the memory and access conditions
-        let mut vm_inputs = Vm::<aluvm::gfa::Instr<LibId>>::with(self.input_config, GfaConfig {
+        // Phase 1: get inputs, verify their presence in the memory
+        let mut vm_inputs = Vm::<Instr<LibId>>::with(self.input_config, GfaConfig {
             field_order: self.field_order,
         });
-        let mut destructible_inputs = SmallVec::new();
+        let len = operation.destructible_in.len();
+        let mut destructible_inputs = SmallVec::with_capacity(len);
         for input in &operation.destructible_in {
             // Read memory
             let cell = memory
                 .destructible(input.addr)
                 .ok_or(CallError::NoReadOnceInput(input.addr))?;
 
-            // Verify that the lock script conditions are satisfied
-            if let Some(lock) = cell.lock {
-                // Put also token of authority into a register
-                vm_inputs.core.cx.set(RegE::E1, cell.auth.to_fe256());
-
-                // Put witness into input registers
-                for (no, reg) in [RegE::E2, RegE::E3, RegE::E4, RegE::E5]
-                    .into_iter()
-                    .enumerate()
-                {
-                    let Some(el) = input.witness.get(no as u8) else {
-                        break;
-                    };
-                    vm_inputs.core.cx.set(reg, el);
-                }
-                if vm_inputs.exec(lock, &(), resolver) == Status::Fail {
-                    // Read error code from output register
-                    return Err(CallError::Lock(vm_inputs.core.cx.get(RegE::E8)));
-                }
-                vm_inputs.reset();
-            }
-
             // We have same-sized arrays, so we happily skip the result returned by the confined
             // collection.
-            let _res = destructible_inputs.push(cell.data);
+            let _res = destructible_inputs.push((*input, cell));
             debug_assert!(_res.is_ok());
         }
 
         // Check that all read values are present in the memory.
-        let mut immutable_inputs = SmallVec::new();
+        let len = operation.immutable_in.len();
+        let mut immutable_inputs = SmallVec::with_capacity(len);
         for addr in &operation.immutable_in {
             let data = memory
                 .immutable(*addr)
@@ -241,16 +231,35 @@ impl Codex {
         let mut vm_main = Vm::<Instr<LibId>>::with(self.verification_config, GfaConfig {
             field_order: self.field_order,
         });
-        match vm_main.exec(*entry_point, &context, resolver) {
-            Status::Ok => Ok(VerifiedOperation::new_unchecked(operation.opid(), operation)),
-            Status::Fail => {
-                if let Some(err_code) = vm_main.core.cx.get(RegE::E1) {
-                    Err(CallError::Script(err_code))
-                } else {
-                    Err(CallError::ScriptUnspecified)
-                }
+        if vm_main.exec(*entry_point, &context, resolver) == Status::Fail {
+            if let Some(err_code) = vm_main.core.cx.get(RegE::E1) {
+                return Err(CallError::Script(err_code));
+            } else {
+                return Err(CallError::ScriptUnspecified);
             }
         }
+
+        // Phase 3: Verify input access conditions
+        // Initialize a virtual machine for the input access conditions.
+        // This machine sets the `UI` register to the input index, so the standard destructible
+        // state iterators start with it.
+        for (input_no, (_, cell)) in context.destructible_input.iter().enumerate() {
+            // Verify that the lock script conditions are satisfied.
+            // Please keep in mind that the lock scripts may be effectively prohibited by a codex
+            // just via defining `input_config` complexity level to be zero.
+            if let Some(lock) = cell.lock.and_then(|l| l.script) {
+                // Put also token of authority into a register
+                vm_inputs.core.cx.set_inro_index(input_no as u16);
+
+                if vm_inputs.exec(lock, &context, resolver) == Status::Fail {
+                    // Read error code from the output register
+                    return Err(CallError::Lock(vm_inputs.core.cx.get(RegE::E8)));
+                }
+                vm_inputs.reset();
+            }
+        }
+
+        Ok(VerifiedOperation::new_unchecked(operation.opid(), operation))
     }
 }
 
@@ -405,7 +414,7 @@ mod test {
     use strict_encoding::StrictDumb;
 
     use super::*;
-    use crate::{uasm, AuthToken, Input};
+    use crate::{uasm, AuthToken, CellLock, Input};
 
     #[test]
     fn codex_id_display() {
@@ -496,24 +505,29 @@ mod test {
         assert_eq!(SECRET, 48);
         Lib::assemble(&uasm! {
             stop;
-            put     EA, 48; // Secret value
+            put     E1, 48; // Secret value
 
+            ldi     auth;
             eq      EA, E1; // Must be provided as a token of authority
             put     E8, 1;  // Failure #1
             chk     CO;
+            put     E2, 1; // script is present
+            eq      EB, E2; // Must be provided in witness
+            chk     CO;
 
-            eq      EA, E2; // Must be provided in witness
+            ldi     witness;
+            eq      EA, E1; // Must be provided in witness
             put     E8, 2;  // Failure #2
             chk     CO;
 
             put     E8, 3;  // Failure #3
-            test    E3;     // The rest must be empty
+            test    EB;     // The rest must be empty
             not     CO;
             chk     CO;
-            test    E4;
+            test    EC;     // The rest must be empty
             not     CO;
             chk     CO;
-            test    E5;
+            test    ED;
             not     CO;
             chk     CO;
         })
@@ -614,7 +628,7 @@ mod test {
             memory.destructible.insert(addr, StateCell {
                 data: StateValue::None,
                 auth: AuthToken::strict_dumb(),
-                lock: Some(LibSite::new(lib_lock().lib_id(), 0)),
+                lock: Some(CellLock::with_script(lib_lock().lib_id(), 0)),
             });
             operation.destructible_in = small_vec![Input { addr, witness: none!() }];
         });
@@ -627,7 +641,7 @@ mod test {
             memory.destructible.insert(addr, StateCell {
                 data: StateValue::None,
                 auth: AuthToken::from(fe256::from(SECRET)),
-                lock: Some(LibSite::new(lib_lock().lib_id(), 1)),
+                lock: Some(CellLock::with_script(lib_lock().lib_id(), 1)),
             });
             operation.destructible_in = small_vec![Input {
                 addr,
@@ -646,7 +660,7 @@ mod test {
             memory.destructible.insert(addr, StateCell {
                 data: StateValue::None,
                 auth: AuthToken::strict_dumb(),
-                lock: Some(LibSite::new(lib_lock().lib_id(), 1)),
+                lock: Some(CellLock::with_script(lib_lock().lib_id(), 1)),
             });
             operation.destructible_in = small_vec![Input {
                 addr,
@@ -665,7 +679,7 @@ mod test {
             memory.destructible.insert(addr, StateCell {
                 data: StateValue::None,
                 auth: AuthToken::from(fe256::from(SECRET)),
-                lock: Some(LibSite::new(lib_lock().lib_id(), 1)),
+                lock: Some(CellLock::with_script(lib_lock().lib_id(), 1)),
             });
             operation.destructible_in = small_vec![Input { addr, witness: StateValue::None }];
         });
@@ -681,7 +695,7 @@ mod test {
             memory.destructible.insert(addr, StateCell {
                 data: StateValue::None,
                 auth: AuthToken::from(fe256::from(SECRET)),
-                lock: Some(LibSite::new(lib_lock().lib_id(), 1)),
+                lock: Some(CellLock::with_script(lib_lock().lib_id(), 1)),
             });
             operation.destructible_in = small_vec![Input {
                 addr,

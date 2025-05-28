@@ -34,7 +34,7 @@ use crate::{ContractId, Issue, Operation, Opid, LIB_NAME_ULTRASONIC};
 
 /// Strict types id for the library providing data types for RGB consensus.
 pub const LIB_ID_ULTRASONIC: &str =
-    "stl:DeU9UmM1-iqldIk~-FR5dSox-ir3V1fJ-OCx59kG-gJLAmDA#active-memo-ringo";
+    "stl:BOTMlgPh-hfgchcg-6JOjpdM-GicZTSt-UVHP7gA-ub505gM#korea-helena-moral";
 
 #[allow(clippy::result_large_err)]
 fn _usonic_stl() -> Result<TypeLib, CompileError> {

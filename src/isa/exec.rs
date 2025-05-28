@@ -29,7 +29,7 @@ use aluvm::isa::{GotoTarget, Instruction};
 use aluvm::RegE;
 
 use super::{UsonicCore, UsonicInstr};
-use crate::{Instr, IoCat, StateCell, StateData, StateValue, ISA_ULTRASONIC};
+use crate::{AuthToken, Input, Instr, IoCat, StateCell, StateData, StateValue, ISA_ULTRASONIC};
 
 /// Context object provided to the VM instance, containing references to the operation inputs and
 /// outputs.
@@ -38,7 +38,7 @@ pub struct VmContext<'ctx> {
     /// Operation-level witness.
     pub witness: StateValue,
     /// Operation input consisting of the destructible (read-once) memory cells.
-    pub destructible_input: &'ctx [StateValue],
+    pub destructible_input: &'ctx [(Input, StateCell)],
     /// Operation input consisting of the immutable (read-only) memory cells.
     pub immutable_input: &'ctx [StateValue],
     /// Operation output defining new destructible (read-once) memory cells.
@@ -54,7 +54,10 @@ impl VmContext<'_> {
     /// If the operation doesn't contain input/output with the index, returns `None`.
     pub fn state_value(&self, cat: IoCat, index: u16) -> Option<StateValue> {
         match cat {
-            IoCat::IN_RO => self.destructible_input.get(index as usize).copied(),
+            IoCat::IN_RO => self
+                .destructible_input
+                .get(index as usize)
+                .map(|(_, cell)| cell.data),
             IoCat::IN_AO => self.immutable_input.get(index as usize).copied(),
             IoCat::OUT_RO => self
                 .destructible_output
@@ -65,6 +68,29 @@ impl VmContext<'_> {
                 .get(index as usize)
                 .map(|cell| cell.value),
         }
+    }
+
+    /// Returns a state value from the destructible input previous output auxiliary data.
+    pub fn input_lock_aux(&self, index: u16) -> Option<StateValue> {
+        self.destructible_input
+            .get(index as usize)
+            .and_then(|(_, cell)| cell.lock)
+            .map(|lock| lock.aux)
+    }
+
+    /// Returns a state value from the destructible input witness.
+    pub fn input_witness(&self, index: u16) -> Option<StateValue> {
+        self.destructible_input
+            .get(index as usize)
+            .map(|(input, _)| input.witness)
+    }
+
+    /// Returns a state value from the destructible input previous output auth token and whether
+    ///  it is locked by a script.
+    pub fn input_auth_token(&self, index: u16) -> Option<(AuthToken, bool)> {
+        self.destructible_input
+            .get(index as usize)
+            .map(|(_, cell)| (cell.auth, cell.lock.map(|lock| lock.script).is_some()))
     }
 }
 
@@ -87,8 +113,17 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
             | UsonicInstr::CkNxIAo
             | UsonicInstr::CkNxORo
             | UsonicInstr::CkNxOAo => none!(),
-            UsonicInstr::LdIRo | UsonicInstr::LdIAo | UsonicInstr::LdORo | UsonicInstr::LdOAo => {
+            UsonicInstr::LdW
+            | UsonicInstr::LdIW
+            | UsonicInstr::LdIL
+            | UsonicInstr::LdIRo
+            | UsonicInstr::LdIAo
+            | UsonicInstr::LdORo
+            | UsonicInstr::LdOAo => {
                 bset![RegE::EA, RegE::EB, RegE::EC, RegE::ED]
+            }
+            UsonicInstr::LdIT => {
+                bset![RegE::EA, RegE::EB]
             }
             UsonicInstr::RstIRo
             | UsonicInstr::RstIAo
@@ -103,7 +138,14 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
             | UsonicInstr::CkNxIAo
             | UsonicInstr::CkNxORo
             | UsonicInstr::CkNxOAo => 0,
-            UsonicInstr::LdIRo | UsonicInstr::LdIAo | UsonicInstr::LdORo | UsonicInstr::LdOAo => 0,
+            UsonicInstr::LdW
+            | UsonicInstr::LdIW
+            | UsonicInstr::LdIL
+            | UsonicInstr::LdIT
+            | UsonicInstr::LdIRo
+            | UsonicInstr::LdIAo
+            | UsonicInstr::LdORo
+            | UsonicInstr::LdOAo => 0,
             UsonicInstr::RstIRo
             | UsonicInstr::RstIAo
             | UsonicInstr::RstORo
@@ -117,7 +159,14 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
             | UsonicInstr::CkNxIAo
             | UsonicInstr::CkNxORo
             | UsonicInstr::CkNxOAo => 0,
-            UsonicInstr::LdIRo | UsonicInstr::LdIAo | UsonicInstr::LdORo | UsonicInstr::LdOAo => 0,
+            UsonicInstr::LdW
+            | UsonicInstr::LdIW
+            | UsonicInstr::LdIL
+            | UsonicInstr::LdIT
+            | UsonicInstr::LdIRo
+            | UsonicInstr::LdIAo
+            | UsonicInstr::LdORo
+            | UsonicInstr::LdOAo => 0,
             UsonicInstr::RstIRo
             | UsonicInstr::RstIAo
             | UsonicInstr::RstORo
@@ -136,6 +185,19 @@ impl<Id: SiteId> Instruction<Id> for UsonicInstr {
             UsonicInstr::CkNxIAo => core.cx.has_data(IoCat::IN_AO, context),
             UsonicInstr::CkNxORo => core.cx.has_data(IoCat::OUT_RO, context),
             UsonicInstr::CkNxOAo => core.cx.has_data(IoCat::OUT_AO, context),
+            UsonicInstr::LdW => {
+                core.cx.set_ea_ed(context.witness);
+                return ExecStep::Next;
+            }
+            UsonicInstr::LdIW => core
+                .cx
+                .set_ea_ed_opt(context.input_witness(core.cx.get_ui_inro())),
+            UsonicInstr::LdIL => core
+                .cx
+                .set_ea_ed_opt(context.input_lock_aux(core.cx.get_ui_inro())),
+            UsonicInstr::LdIT => core
+                .cx
+                .set_ed_eb(context.input_auth_token(core.cx.get_ui_inro())),
             UsonicInstr::LdIRo => core.cx.load(IoCat::IN_RO, context),
             UsonicInstr::LdIAo => core.cx.load(IoCat::IN_AO, context),
             UsonicInstr::LdORo => core.cx.load(IoCat::OUT_RO, context),
@@ -375,7 +437,11 @@ mod test {
         let state = StateValue::Single { first: fe256::from(VALUE) };
         let context = VmContext {
             witness: StateValue::None,
-            destructible_input: &[state],
+            destructible_input: &[(strict_dumb!(), StateCell {
+                data: state,
+                auth: strict_dumb!(),
+                lock: None,
+            })],
             immutable_input: &[state],
             destructible_output: &[StateCell { data: state, auth: strict_dumb!(), lock: None }],
             immutable_output: &[StateData { value: state, raw: None }],
