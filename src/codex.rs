@@ -232,6 +232,7 @@ impl Codex {
             .get(&operation.call_id)
             .ok_or(CallError::NotFound(operation.call_id))?;
         let context = VmContext {
+            witness: operation.witness,
             destructible_input: destructible_inputs.as_slice(),
             immutable_input: immutable_inputs.as_slice(),
             destructible_output: operation.destructible_out.as_slice(),

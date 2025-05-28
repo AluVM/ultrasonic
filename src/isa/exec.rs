@@ -35,6 +35,8 @@ use crate::{Instr, IoCat, StateCell, StateData, StateValue, ISA_ULTRASONIC};
 /// outputs.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct VmContext<'ctx> {
+    /// Operation-level witness.
+    pub witness: StateValue,
     /// Operation input consisting of the destructible (read-once) memory cells.
     pub destructible_input: &'ctx [StateValue],
     /// Operation input consisting of the immutable (read-only) memory cells.
@@ -372,6 +374,7 @@ mod test {
 
         let state = StateValue::Single { first: fe256::from(VALUE) };
         let context = VmContext {
+            witness: StateValue::None,
             destructible_input: &[state],
             immutable_input: &[state],
             destructible_output: &[StateCell { data: state, auth: strict_dumb!(), lock: None }],

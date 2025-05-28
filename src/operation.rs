@@ -285,6 +285,10 @@ pub struct Genesis {
     /// A nonce, which in genesis may be used to "mine" a vanity contract id.
     pub nonce: fe256,
 
+    /// Genesis doesn't contain mn operation witness, but we have to put these reserved zero bytes
+    /// (matching [`StateValue:None`]) in order to have [`Genesis`] serialized the same way as an
+    /// [`Operation`].
+    pub blank0: ReservedBytes<1>,
     /// Genesis doesn't contain input, but we have to put these reserved zero bytes (matching zero
     /// length inpyt) in order to have [`Genesis`] serialized the same way as an [`Operation`].
     #[cfg_attr(feature = "serde", serde(skip))]
@@ -316,6 +320,7 @@ impl Genesis {
             contract_id,
             call_id: self.call_id,
             nonce: self.nonce,
+            witness: StateValue::None,
             destructible_in: none!(),
             immutable_in: none!(),
             destructible_out: self.destructible_out.clone(),
@@ -365,6 +370,9 @@ pub struct Operation {
     pub call_id: CallId,
     /// A nonce, used to change operation id for subsequent operations using the same arguments.
     pub nonce: fe256,
+    /// An operation witness, which, unlike [`Input::witness`] is not specific to any particular
+    ///  input but applies to all of them.
+    pub witness: StateValue,
     /// A list of read-once memory cells which are the inputs to the operation and which state must
     /// be destroyed in the result of operation application.
     ///
@@ -408,6 +416,7 @@ impl CommitEncode for Operation {
         e.commit_to_serialized(&self.contract_id);
         e.commit_to_serialized(&self.call_id);
         e.commit_to_serialized(&self.nonce);
+        e.commit_to_serialized(&self.witness);
         e.commit_to_merkle(&self.destructible_in);
         e.commit_to_merkle(&self.immutable_in);
         e.commit_to_merkle(&self.destructible_out);
