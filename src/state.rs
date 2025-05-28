@@ -183,7 +183,7 @@ pub enum StateValue {
     /// A tuple of four 256-bit field elements.
     #[allow(missing_docs)]
     #[strict_type(tag = 0x04)]
-    Quadripple {
+    Quadruple {
         first: fe256,
         second: fe256,
         third: fe256,
@@ -229,7 +229,7 @@ impl FromIterator<fe256> for StateValue {
                 second: second.unwrap(),
                 third: third.unwrap(),
             },
-            4 => StateValue::Quadripple {
+            4 => StateValue::Quadruple {
                 first: first.unwrap(),
                 second: second.unwrap(),
                 third: third.unwrap(),
@@ -255,15 +255,15 @@ impl StateValue {
             (Self::Single { first }, 0)
             | (Self::Double { first, .. }, 0)
             | (Self::Triple { first, .. }, 0)
-            | (Self::Quadripple { first, .. }, 0) => Some(first),
+            | (Self::Quadruple { first, .. }, 0) => Some(first),
 
             (Self::Double { second, .. }, 1)
             | (Self::Triple { second, .. }, 1)
-            | (Self::Quadripple { second, .. }, 1) => Some(second),
+            | (Self::Quadruple { second, .. }, 1) => Some(second),
 
-            (Self::Triple { third, .. }, 2) | (Self::Quadripple { third, .. }, 2) => Some(third),
+            (Self::Triple { third, .. }, 2) | (Self::Quadruple { third, .. }, 2) => Some(third),
 
-            (Self::Quadripple { fourth, .. }, 3) => Some(fourth),
+            (Self::Quadruple { fourth, .. }, 3) => Some(fourth),
 
             _ => None,
         }
@@ -280,7 +280,7 @@ impl IntoIterator for StateValue {
             Self::Single { first } => vec![first],
             Self::Double { first, second } => vec![first, second],
             Self::Triple { first, second, third } => vec![first, second, third],
-            Self::Quadripple { first, second, third, fourth } => vec![first, second, third, fourth],
+            Self::Quadruple { first, second, third, fourth } => vec![first, second, third, fourth],
         };
         vec.into_iter()
     }
@@ -467,7 +467,7 @@ mod test {
         let second = fe256::from(0xBEADCAFEu32);
         let third = fe256::from(0xBEEDFACEu32);
         let fourth = fe256::from(0xFEEDDEEDu32);
-        let val = StateValue::Quadripple { first, second, third, fourth };
+        let val = StateValue::Quadruple { first, second, third, fourth };
         assert_eq!(val, StateValue::from_iter([first, second, third, fourth]));
         assert_eq!(val.get(0), Some(first));
         assert_eq!(val.get(1), Some(second));

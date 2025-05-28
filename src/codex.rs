@@ -279,12 +279,12 @@ pub trait LibRepo {
 
 /// Contract operation verification errors returned by [`Codex::verify`].
 ///
-/// The name of the error type is chose so since the operation "calls" to a contract method, and the
+/// The name of the error type is chosen so since the operation "calls" a contract method, and the
 /// codex verification verifies the integrity of the call.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Display, Error)]
 #[display(doc_comments)]
 pub enum CallError {
-    /// operation doesn't belong to the currecnt contract.
+    /// operation doesn't belong to the current contract.
     #[cfg_attr(
         feature = "baid64",
         display = "operation doesn't belong to the current contract {expected} (operation \

@@ -74,6 +74,7 @@ rec Issue
     bytes codexId, len 32, aka CodexId
     is callId, U16
     is nonce, U256, aka Fe256
+    bytes blank0, len 1, aka ReservedBytes1
     bytes blank1, len 2, aka ReservedBytes2
     bytes blank2, len 2, aka ReservedBytes2
     list destructibleOut, len 0..MAX16
@@ -89,7 +90,7 @@ rec Issue
             is first, U256, aka Fe256
             is second, U256, aka Fe256
             is third, U256, aka Fe256
-          rec quadripple, tag 4
+          rec quadruple, tag 4
             is first, U256, aka Fe256
             is second, U256, aka Fe256
             is third, U256, aka Fe256
@@ -111,7 +112,7 @@ rec Issue
             is first, U256, aka Fe256
             is second, U256, aka Fe256
             is third, U256, aka Fe256
-          rec quadripple, tag 4
+          rec quadruple, tag 4
             is first, U256, aka Fe256
             is second, U256, aka Fe256
             is third, U256, aka Fe256
@@ -126,6 +127,7 @@ commitment Opid, hasher SHA256, tagged urn:ubideco:ultrasonic:operation#2024-11-
   serialized ContractId
   serialized U16
   serialized Fe256
+  serialized StateValue
   merklized Input
   merklized CellAddr
   merklized StateCell
@@ -136,6 +138,7 @@ rec Genesis
   bytes codexId, len 32, aka CodexId
   is callId, U16
   is nonce, U256, aka Fe256
+  bytes blank0, len 1, aka ReservedBytes1
   bytes blank1, len 2, aka ReservedBytes2
   bytes blank2, len 2, aka ReservedBytes2
   list destructibleOut, len 0..MAX16
@@ -151,7 +154,7 @@ rec Genesis
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
-        rec quadripple, tag 4
+        rec quadruple, tag 4
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
@@ -173,7 +176,7 @@ rec Genesis
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
-        rec quadripple, tag 4
+        rec quadruple, tag 4
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
@@ -188,6 +191,7 @@ commitment Opid, hasher SHA256, tagged urn:ubideco:ultrasonic:operation#2024-11-
   serialized ContractId
   serialized U16
   serialized Fe256
+  serialized StateValue
   merklized Input
   merklized CellAddr
   merklized StateCell
@@ -198,6 +202,22 @@ rec Operation
   bytes contractId, len 32, aka ContractId
   is callId, U16
   is nonce, U256, aka Fe256
+  union witness, StateValue
+    is none, Unit, tag 0
+    rec single, tag 1
+      is first, U256, aka Fe256
+    rec double, tag 2
+      is first, U256, aka Fe256
+      is second, U256, aka Fe256
+    rec triple, tag 3
+      is first, U256, aka Fe256
+      is second, U256, aka Fe256
+      is third, U256, aka Fe256
+    rec quadruple, tag 4
+      is first, U256, aka Fe256
+      is second, U256, aka Fe256
+      is third, U256, aka Fe256
+      is fourth, U256, aka Fe256
   list destructibleIn, len 0..MAX16
     rec Input
       rec addr, CellAddr
@@ -214,7 +234,7 @@ rec Operation
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
-        rec quadripple, tag 4
+        rec quadruple, tag 4
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
@@ -236,7 +256,7 @@ rec Operation
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
-        rec quadripple, tag 4
+        rec quadruple, tag 4
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
@@ -258,7 +278,7 @@ rec Operation
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
-        rec quadripple, tag 4
+        rec quadruple, tag 4
           is first, U256, aka Fe256
           is second, U256, aka Fe256
           is third, U256, aka Fe256
