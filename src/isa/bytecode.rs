@@ -39,15 +39,20 @@ impl UsonicInstr {
     const CKNXORO: u8 = 2;
     const CKNXOAO: u8 = 3;
 
-    const LDIRO: u8 = 4;
-    const LDIAO: u8 = 5;
-    const LDORO: u8 = 6;
-    const LDOAO: u8 = 7;
+    const LDW: u8 = 4;
+    const LDIW: u8 = 5;
+    const LDIL: u8 = 6;
+    const LDIT: u8 = 7;
 
-    const RSTIRO: u8 = 8;
-    const RSTIAO: u8 = 9;
-    const RSTORO: u8 = 10;
-    const RSTOAO: u8 = 11;
+    const LDIRO: u8 = 8;
+    const LDIAO: u8 = 9;
+    const LDORO: u8 = 10;
+    const LDOAO: u8 = 11;
+
+    const RSTIRO: u8 = 12;
+    const RSTIAO: u8 = 13;
+    const RSTORO: u8 = 14;
+    const RSTOAO: u8 = 15;
 }
 
 impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
@@ -60,6 +65,10 @@ impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
                 UsonicInstr::CkNxIAo => Self::CKNXIAO,
                 UsonicInstr::CkNxORo => Self::CKNXORO,
                 UsonicInstr::CkNxOAo => Self::CKNXOAO,
+                UsonicInstr::LdW => Self::LDW,
+                UsonicInstr::LdIW => Self::LDIW,
+                UsonicInstr::LdIL => Self::LDIL,
+                UsonicInstr::LdIT => Self::LDIT,
                 UsonicInstr::LdIRo => Self::LDIRO,
                 UsonicInstr::LdIAo => Self::LDIAO,
                 UsonicInstr::LdORo => Self::LDORO,
@@ -82,9 +91,14 @@ impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
             | UsonicInstr::CkNxIAo
             | UsonicInstr::CkNxORo
             | UsonicInstr::CkNxOAo => Ok(()),
-            UsonicInstr::LdIRo | UsonicInstr::LdIAo | UsonicInstr::LdORo | UsonicInstr::LdOAo => {
-                Ok(())
-            }
+            UsonicInstr::LdW
+            | UsonicInstr::LdIW
+            | UsonicInstr::LdIL
+            | UsonicInstr::LdIT
+            | UsonicInstr::LdIRo
+            | UsonicInstr::LdIAo
+            | UsonicInstr::LdORo
+            | UsonicInstr::LdOAo => Ok(()),
             UsonicInstr::RstIRo
             | UsonicInstr::RstIAo
             | UsonicInstr::RstORo
@@ -102,6 +116,10 @@ impl<Id: SiteId> Bytecode<Id> for UsonicInstr {
             Self::CKNXIAO => UsonicInstr::CkNxIAo,
             Self::CKNXORO => UsonicInstr::CkNxORo,
             Self::CKNXOAO => UsonicInstr::CkNxOAo,
+            Self::LDW => UsonicInstr::LdW,
+            Self::LDIW => UsonicInstr::LdIW,
+            Self::LDIL => UsonicInstr::LdIL,
+            Self::LDIT => UsonicInstr::LdIT,
             Self::LDIRO => UsonicInstr::LdIRo,
             Self::LDIAO => UsonicInstr::LdIAo,
             Self::LDORO => UsonicInstr::LdORo,

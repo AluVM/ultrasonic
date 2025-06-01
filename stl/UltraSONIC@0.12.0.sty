@@ -1,5 +1,5 @@
 {-
-  Id: stl:Gv1vKbrx-JdB52Tc-bJ8vebC-Ol_tGiv-1Je5TSn-1dDGDH4#stuart-memphis-english
+  Id: stl:BOTMlgPh-hfgchcg-6JOjpdM-GicZTSt-UVHP7gA-ub505gM#korea-helena-moral
   Name: UltraSONIC
   Version: 0.12.0
   Description: Transactional execution layer with capability-based memory access for zk-AluVM
@@ -30,6 +30,8 @@ import AluVM#reward-accent-swim
 import CommitVerify#biology-news-adam
   use ReservedBytes1#origin-roger-relax
   use ReservedBytes2#florida-libra-circus
+  use ReservedBytes6#joker-peru-brave
+  use ReservedBytes4#young-goblin-academy
 
 import StrictTypes#henry-heart-survive
   use TypeName#edgar-carol-mystery
@@ -41,14 +43,18 @@ data AuthToken         : FiniteField.Fe256
 @mnemonic(tahiti-tobacco-grid)
 data CellAddr          : opid Opid, pos U16
 
-@mnemonic(nirvana-remote-danube)
+@mnemonic(famous-karma-igor)
+data CellLock          : aux StateValue, script AluVM.LibSite?
+
+@mnemonic(british-chicago-cabinet)
 data Codex             : version CommitVerify.ReservedBytes1
                        , name [Unicode ^ ..0xff]
                        , developer Identity
                        , timestamp I64
+                       , features CommitVerify.ReservedBytes4
                        , fieldOrder U256
-                       , inputConfig AluVM.CoreConfig
                        , verificationConfig AluVM.CoreConfig
+                       , inputConfig AluVM.CoreConfig
                        , verifiers {U16 -> ^ ..0xff AluVM.LibSite}
 
 @mnemonic(cargo-season-impact)
@@ -61,10 +67,11 @@ data Consensus         : none | bitcoin#16 | liquid | prime#32
 @mnemonic(uniform-welcome-papa)
 data ContractId        : [Byte ^ 32]
 
-@mnemonic(genius-patent-alfonso)
+@mnemonic(future-vortex-secret)
 data ContractMeta      : testnet Std.Bool
                        , consensus Consensus
                        , timestamp I64
+                       , features CommitVerify.ReservedBytes6
                        , name ContractName
                        , issuer Identity
 
@@ -72,11 +79,12 @@ data ContractMeta      : testnet Std.Bool
 data ContractName      : unnamed ()
                        | named StrictTypes.TypeName
 
-@mnemonic(regard-lunar-helium)
+@mnemonic(apollo-system-cabinet)
 data Genesis           : version CommitVerify.ReservedBytes1
                        , codexId CodexId
                        , callId U16
                        , nonce FiniteField.Fe256
+                       , blank0 CommitVerify.ReservedBytes1
                        , blank1 CommitVerify.ReservedBytes2
                        , blank2 CommitVerify.ReservedBytes2
                        , destructibleOut [StateCell]
@@ -94,11 +102,12 @@ data Issue             : version CommitVerify.ReservedBytes1
                        , codex Codex
                        , genesis Genesis
 
-@mnemonic(join-buenos-oliver)
+@mnemonic(balance-sonata-unit)
 data Operation         : version CommitVerify.ReservedBytes1
                        , contractId ContractId
                        , callId U16
                        , nonce FiniteField.Fe256
+                       , witness StateValue
                        , destructibleIn [Input]
                        , immutableIn [CellAddr]
                        , destructibleOut [StateCell]
@@ -110,22 +119,22 @@ data Opid              : [Byte ^ 32]
 @mnemonic(lima-anvil-karate)
 data RawData           : [Byte]
 
-@mnemonic(libra-grille-grace)
+@mnemonic(critic-chicken-verona)
 data StateCell         : data StateValue
                        , auth AuthToken
-                       , lock AluVM.LibSite?
+                       , lock CellLock?
 
 @mnemonic(siren-organic-double)
 data StateData         : value StateValue, raw RawData?
 
-@mnemonic(bamboo-morgan-edition)
+@mnemonic(kiwi-million-ford)
 data StateValue        : none ()
                        | single first FiniteField.Fe256
                        | double (first FiniteField.Fe256, second FiniteField.Fe256)
                        | triple (first FiniteField.Fe256
                        , second FiniteField.Fe256
                        , third FiniteField.Fe256)
-                       | quadripple (first FiniteField.Fe256
+                       | quadruple (first FiniteField.Fe256
                        , second FiniteField.Fe256
                        , third FiniteField.Fe256
                        , fourth FiniteField.Fe256)

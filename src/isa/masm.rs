@@ -27,7 +27,7 @@
 ///
 /// ```
 /// ##![cfg_attr(coverage_nightly, feature(coverage_attribute), coverage(off))]
-/// use ultrasonic::{uasm, Instr, VmContext};
+/// use ultrasonic::{uasm, Instr, StateValue, VmContext};
 /// use zkaluvm::alu::regs::Status;
 /// use zkaluvm::alu::{Lib, LibId, LibSite, Vm};
 ///
@@ -54,6 +54,7 @@
 /// let lib = Lib::assemble::<Instr<LibId>>(&code).unwrap();
 /// let mut vm = Vm::<Instr<LibId>>::new();
 /// let ctx = VmContext {
+///     witness: StateValue::None,
 ///     destructible_input: &[],
 ///     immutable_input: &[],
 ///     destructible_output: &[],
@@ -93,6 +94,19 @@ macro_rules! instr {
     };
     (cknxo immutable) => {
         $crate::UsonicInstr::CkNxOAo.into()
+    };
+
+    (ldw) => {
+        $crate::UsonicInstr::LdW.into()
+    };
+    (ldi witness) => {
+        $crate::UsonicInstr::LdIW.into()
+    };
+    (ldi lock) => {
+        $crate::UsonicInstr::LdIL.into()
+    };
+    (ldi auth) => {
+        $crate::UsonicInstr::LdIT.into()
     };
 
     (ldi destructible) => {

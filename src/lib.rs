@@ -83,7 +83,7 @@ pub use issue::{Consensus, ContractId, ContractMeta, ContractName, Issue};
 #[cfg(feature = "baid64")]
 pub use operation::ParseAddrError;
 pub use operation::{CellAddr, Genesis, Input, Operation, Opid, VerifiedOperation};
-pub use state::{AuthToken, RawData, StateCell, StateData, StateValue};
+pub use state::{AuthToken, CellLock, RawData, StateCell, StateData, StateValue};
 pub use util::Identity;
 pub use zkaluvm::fe256;
 
