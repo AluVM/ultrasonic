@@ -588,7 +588,7 @@ checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
 
 [[package]]
 name = "ultrasonic"
-version = "0.12.0-rc.1"
+version = "0.12.0-rc.2"
 dependencies = [
  "amplify",
  "baid64",
@@ -871,9 +871,9 @@ dependencies = [
 
 [[package]]
 name = "zk-aluvm"
-version = "0.12.0-rc.1"
+version = "0.12.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7cf36dc73e2b1f5b173e44924b8e4822fe81fc5c9d5ab7a2570b6b9d0debbfb"
+checksum = "91226187d08b7ce594c0a633e33cd192a1cfacc7fb88e90010836963b71d8a9c"
 dependencies = [
  "aluvm",
  "amplify",
