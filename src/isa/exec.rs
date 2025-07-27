@@ -333,6 +333,43 @@ mod test {
     use crate::uasm;
 
     #[test]
+    fn instr() {
+        let instructions = [
+            UsonicInstr::CkNxIRo,
+            UsonicInstr::CkNxIAo,
+            UsonicInstr::CkNxORo,
+            UsonicInstr::CkNxOAo,
+            UsonicInstr::LdW,
+            UsonicInstr::LdIRo,
+            UsonicInstr::LdIAo,
+            UsonicInstr::LdORo,
+            UsonicInstr::LdOAo,
+            UsonicInstr::LdIW,
+            UsonicInstr::LdIL,
+            UsonicInstr::LdIT,
+            UsonicInstr::RstIRo,
+            UsonicInstr::RstIAo,
+            UsonicInstr::RstORo,
+            UsonicInstr::RstOAo,
+        ];
+        for instr in instructions {
+            let mut instr = Instr::<LibId>::Usonic(instr);
+            assert_eq!(instr.is_goto_target(), false);
+            assert_eq!(instr.local_goto_pos(), GotoTarget::None);
+            assert_eq!(instr.remote_goto_pos(), None);
+            assert_eq!(instr.regs(), instr.src_regs().union(&instr.dst_regs()).copied().collect());
+            assert_eq!(instr.src_regs(), none!());
+            assert_eq!(instr.dst_regs(), none![]);
+            assert_eq!(instr.src_reg_bytes(), 0);
+            assert_eq!(instr.dst_reg_bytes(), 0);
+            assert_eq!(instr.op_data_bytes(), 0);
+            assert_eq!(instr.ext_data_bytes(), 0);
+            assert_eq!(instr.base_complexity(), 0);
+            assert_eq!(instr.complexity(), instr.base_complexity());
+        }
+    }
+
+    #[test]
     fn exec() {
         const CHECK: u16 = 77;
         const VALUE: u32 = 1234567890u32;
